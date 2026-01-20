@@ -16,6 +16,12 @@ import Specialties from "./pages/Specialties";
 import Packages from "./pages/Packages";
 import Schedule from "./pages/Schedule";
 import Appointments from "./pages/Appointments";
+import FinancialTransactions from "./pages/FinancialTransactions";
+import MedicalGuides from "./pages/MedicalGuides";
+import ProfessionalPayouts from "./pages/ProfessionalPayouts";
+import BillingBatches from "./pages/BillingBatches";
+import FinancialReports from "./pages/FinancialReports";
+import PaymentMethods from "./pages/PaymentMethods";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +46,12 @@ const App = () => (
               <Route path="/pacotes" element={<Packages />} />
               <Route path="/agenda" element={<Schedule />} />
               <Route path="/agendamentos" element={<Appointments />} />
+              <Route path="/financeiro" element={<FinancialTransactions />} />
+              <Route path="/guias" element={<MedicalGuides />} />
+              <Route path="/repasses" element={<ProfessionalPayouts />} />
+              <Route path="/lotes-faturamento" element={<BillingBatches />} />
+              <Route path="/relatorios-financeiros" element={<FinancialReports />} />
+              <Route path="/formas-pagamento" element={<PaymentMethods />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

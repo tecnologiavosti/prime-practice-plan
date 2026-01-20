@@ -14,6 +14,11 @@ import {
   LogOut,
   LayoutDashboard,
   ClipboardList,
+  DollarSign,
+  Receipt,
+  Wallet,
+  FileBarChart,
+  Banknote,
 } from 'lucide-react';
 
 const menuItems = [
@@ -27,6 +32,13 @@ const menuItems = [
   { to: '/administradoras', icon: CreditCard, label: 'Administradoras', roles: ['administrador'] },
   { to: '/pacotes', icon: Package, label: 'Pacotes', roles: ['administrador', 'recepcao'] },
   { to: '/especialidades', icon: Stethoscope, label: 'Especialidades', roles: ['administrador'] },
+  // Financeiro
+  { to: '/financeiro', icon: DollarSign, label: 'Financeiro', roles: ['administrador', 'financeiro'] },
+  { to: '/guias', icon: Receipt, label: 'Guias Médicas', roles: ['administrador', 'financeiro', 'recepcao'] },
+  { to: '/lotes-faturamento', icon: FileBarChart, label: 'Faturamento', roles: ['administrador', 'financeiro'] },
+  { to: '/repasses', icon: Wallet, label: 'Repasses', roles: ['administrador', 'financeiro'] },
+  { to: '/relatorios-financeiros', icon: FileBarChart, label: 'Relatórios', roles: ['administrador', 'financeiro'] },
+  { to: '/formas-pagamento', icon: Banknote, label: 'Formas Pgto', roles: ['administrador'] },
 ];
 
 export function Sidebar() {
