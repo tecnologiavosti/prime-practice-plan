@@ -235,6 +235,222 @@ export type Database = {
           },
         ]
       }
+      billing_batch_guides: {
+        Row: {
+          batch_id: string
+          created_at: string
+          guide_id: string
+          id: string
+        }
+        Insert: {
+          batch_id: string
+          created_at?: string
+          guide_id: string
+          id?: string
+        }
+        Update: {
+          batch_id?: string
+          created_at?: string
+          guide_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_batch_guides_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "billing_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_batch_guides_guide_id_fkey"
+            columns: ["guide_id"]
+            isOneToOne: false
+            referencedRelation: "medical_guides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      billing_batches: {
+        Row: {
+          administrator_id: string | null
+          batch_number: string
+          created_at: string
+          health_insurance_id: string | null
+          id: string
+          notes: string | null
+          period_end: string
+          period_start: string
+          status: string
+          total_amount: number
+          total_guides: number | null
+          updated_at: string
+        }
+        Insert: {
+          administrator_id?: string | null
+          batch_number: string
+          created_at?: string
+          health_insurance_id?: string | null
+          id?: string
+          notes?: string | null
+          period_end: string
+          period_start: string
+          status?: string
+          total_amount?: number
+          total_guides?: number | null
+          updated_at?: string
+        }
+        Update: {
+          administrator_id?: string | null
+          batch_number?: string
+          created_at?: string
+          health_insurance_id?: string | null
+          id?: string
+          notes?: string | null
+          period_end?: string
+          period_start?: string
+          status?: string
+          total_amount?: number
+          total_guides?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_batches_administrator_id_fkey"
+            columns: ["administrator_id"]
+            isOneToOne: false
+            referencedRelation: "administrators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_batches_health_insurance_id_fkey"
+            columns: ["health_insurance_id"]
+            isOneToOne: false
+            referencedRelation: "health_insurances"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_transactions: {
+        Row: {
+          amount: number
+          appointment_id: string | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          health_insurance_id: string | null
+          id: string
+          medical_guide_id: string | null
+          notes: string | null
+          patient_id: string | null
+          patient_package_id: string | null
+          payment_date: string | null
+          payment_method_id: string | null
+          procedure_id: string | null
+          professional_id: string | null
+          status: string
+          transaction_type: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          appointment_id?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          health_insurance_id?: string | null
+          id?: string
+          medical_guide_id?: string | null
+          notes?: string | null
+          patient_id?: string | null
+          patient_package_id?: string | null
+          payment_date?: string | null
+          payment_method_id?: string | null
+          procedure_id?: string | null
+          professional_id?: string | null
+          status?: string
+          transaction_type: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          appointment_id?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          health_insurance_id?: string | null
+          id?: string
+          medical_guide_id?: string | null
+          notes?: string | null
+          patient_id?: string | null
+          patient_package_id?: string | null
+          payment_date?: string | null
+          payment_method_id?: string | null
+          procedure_id?: string | null
+          professional_id?: string | null
+          status?: string
+          transaction_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_transactions_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_transactions_health_insurance_id_fkey"
+            columns: ["health_insurance_id"]
+            isOneToOne: false
+            referencedRelation: "health_insurances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_transactions_medical_guide_id_fkey"
+            columns: ["medical_guide_id"]
+            isOneToOne: false
+            referencedRelation: "medical_guides"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_transactions_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_transactions_patient_package_id_fkey"
+            columns: ["patient_package_id"]
+            isOneToOne: false
+            referencedRelation: "patient_packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_transactions_payment_method_id_fkey"
+            columns: ["payment_method_id"]
+            isOneToOne: false
+            referencedRelation: "payment_methods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_transactions_procedure_id_fkey"
+            columns: ["procedure_id"]
+            isOneToOne: false
+            referencedRelation: "procedures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_transactions_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       health_insurances: {
         Row: {
           active: boolean
@@ -281,6 +497,96 @@ export type Database = {
             columns: ["administrator_id"]
             isOneToOne: false
             referencedRelation: "administrators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      medical_guides: {
+        Row: {
+          appointment_id: string | null
+          created_at: string
+          guide_date: string
+          guide_number: string
+          health_insurance_id: string | null
+          id: string
+          notes: string | null
+          patient_id: string
+          procedure_id: string | null
+          professional_id: string | null
+          quantity: number | null
+          status: string
+          total_value: number | null
+          unit_value: number | null
+          updated_at: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          created_at?: string
+          guide_date?: string
+          guide_number: string
+          health_insurance_id?: string | null
+          id?: string
+          notes?: string | null
+          patient_id: string
+          procedure_id?: string | null
+          professional_id?: string | null
+          quantity?: number | null
+          status?: string
+          total_value?: number | null
+          unit_value?: number | null
+          updated_at?: string
+        }
+        Update: {
+          appointment_id?: string | null
+          created_at?: string
+          guide_date?: string
+          guide_number?: string
+          health_insurance_id?: string | null
+          id?: string
+          notes?: string | null
+          patient_id?: string
+          procedure_id?: string | null
+          professional_id?: string | null
+          quantity?: number | null
+          status?: string
+          total_value?: number | null
+          unit_value?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medical_guides_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medical_guides_health_insurance_id_fkey"
+            columns: ["health_insurance_id"]
+            isOneToOne: false
+            referencedRelation: "health_insurances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medical_guides_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medical_guides_procedure_id_fkey"
+            columns: ["procedure_id"]
+            isOneToOne: false
+            referencedRelation: "procedures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medical_guides_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
             referencedColumns: ["id"]
           },
         ]
@@ -476,6 +782,27 @@ export type Database = {
           },
         ]
       }
+      payment_methods: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       private_packages: {
         Row: {
           active: boolean
@@ -581,6 +908,60 @@ export type Database = {
         }
         Relationships: []
       }
+      professional_fees: {
+        Row: {
+          active: boolean
+          created_at: string
+          fee_type: string
+          fixed_value: number | null
+          id: string
+          per_procedure_value: number | null
+          percentage_value: number | null
+          procedure_id: string | null
+          professional_id: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          fee_type: string
+          fixed_value?: number | null
+          id?: string
+          per_procedure_value?: number | null
+          percentage_value?: number | null
+          procedure_id?: string | null
+          professional_id: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          fee_type?: string
+          fixed_value?: number | null
+          id?: string
+          per_procedure_value?: number | null
+          percentage_value?: number | null
+          procedure_id?: string | null
+          professional_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professional_fees_procedure_id_fkey"
+            columns: ["procedure_id"]
+            isOneToOne: false
+            referencedRelation: "procedures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professional_fees_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       professional_insurances: {
         Row: {
           created_at: string
@@ -610,6 +991,80 @@ export type Database = {
           },
           {
             foreignKeyName: "professional_insurances_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      professional_payouts: {
+        Row: {
+          appointment_id: string | null
+          created_at: string
+          id: string
+          medical_guide_id: string | null
+          notes: string | null
+          payment_date: string | null
+          payout_amount: number
+          procedure_id: string | null
+          professional_id: string
+          reference_date: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          created_at?: string
+          id?: string
+          medical_guide_id?: string | null
+          notes?: string | null
+          payment_date?: string | null
+          payout_amount?: number
+          procedure_id?: string | null
+          professional_id: string
+          reference_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          appointment_id?: string | null
+          created_at?: string
+          id?: string
+          medical_guide_id?: string | null
+          notes?: string | null
+          payment_date?: string | null
+          payout_amount?: number
+          procedure_id?: string | null
+          professional_id?: string
+          reference_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professional_payouts_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professional_payouts_medical_guide_id_fkey"
+            columns: ["medical_guide_id"]
+            isOneToOne: false
+            referencedRelation: "medical_guides"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professional_payouts_procedure_id_fkey"
+            columns: ["procedure_id"]
+            isOneToOne: false
+            referencedRelation: "procedures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professional_payouts_professional_id_fkey"
             columns: ["professional_id"]
             isOneToOne: false
             referencedRelation: "professionals"

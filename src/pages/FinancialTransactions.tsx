@@ -1,0 +1,559 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
+import { Plus, Search, DollarSign, FileText, Clock } from 'lucide-react';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
+
+interface Transaction {
+  id: string;
+  transaction_type: string;
+  description: string | null;
+  amount: number;
+  due_date: string | null;
+  payment_date: string | null;
+  status: string;
+  patient: { full_name: string } | null;
+  professional: { full_name: string } | null;
+  health_insurance: { name: string } | null;
+  medical_guide: { guide_number: string } | null;
+  payment_method: { name: string } | null;
+  procedure: { name: string } | null;
+}
+
+interface Patient {
+  id: string;
+  full_name: string;
+}
+
+interface Professional {
+  id: string;
+  full_name: string;
+}
+
+interface HealthInsurance {
+  id: string;
+  name: string;
+}
+
+interface PaymentMethod {
+  id: string;
+  name: string;
+}
+
+interface Procedure {
+  id: string;
+  name: string;
+  private_price: number;
+}
+
+const statusColors: Record<string, string> = {
+  pendente: 'bg-yellow-100 text-yellow-800',
+  pago: 'bg-green-100 text-green-800',
+  cancelado: 'bg-red-100 text-red-800',
+};
+
+const emptyForm = {
+  transaction_type: 'particular' as 'particular' | 'convenio',
+  patient_id: '',
+  professional_id: '',
+  health_insurance_id: '',
+  procedure_id: '',
+  amount: 0,
+  due_date: format(new Date(), 'yyyy-MM-dd'),
+  payment_method_id: '',
+  description: '',
+};
+
+export default function FinancialTransactions() {
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [professionals, setProfessionals] = useState<Professional[]>([]);
+  const [insurances, setInsurances] = useState<HealthInsurance[]>([]);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [procedures, setProcedures] = useState<Procedure[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'particular' | 'convenio'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pendente' | 'pago' | 'cancelado'>('all');
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [formData, setFormData] = useState(emptyForm);
+  const { toast } = useToast();
+
+  const [stats, setStats] = useState({
+    totalPendente: 0,
+    totalPago: 0,
+    countPendente: 0,
+    countPago: 0,
+  });
+
+  useEffect(() => {
+    fetchData();
+  }, [typeFilter, statusFilter]);
+
+  const fetchData = async () => {
+    await Promise.all([
+      fetchTransactions(),
+      fetchPatients(),
+      fetchProfessionals(),
+      fetchInsurances(),
+      fetchPaymentMethods(),
+      fetchProcedures(),
+    ]);
+    setLoading(false);
+  };
+
+  const fetchTransactions = async () => {
+    let query = supabase
+      .from('financial_transactions')
+      .select(`
+        *,
+        patient:patients(full_name),
+        professional:professionals(full_name),
+        health_insurance:health_insurances(name),
+        medical_guide:medical_guides(guide_number),
+        payment_method:payment_methods(name),
+        procedure:procedures(name)
+      `)
+      .order('created_at', { ascending: false });
+
+    if (typeFilter !== 'all') {
+      query = query.eq('transaction_type', typeFilter);
+    }
+    if (statusFilter !== 'all') {
+      query = query.eq('status', statusFilter);
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      toast({ variant: 'destructive', title: 'Erro', description: error.message });
+      return;
+    }
+    setTransactions((data as any) || []);
+    calculateStats(data || []);
+  };
+
+  const calculateStats = (data: any[]) => {
+    const pendentes = data.filter(t => t.status === 'pendente');
+    const pagos = data.filter(t => t.status === 'pago');
+    setStats({
+      totalPendente: pendentes.reduce((acc, t) => acc + Number(t.amount), 0),
+      totalPago: pagos.reduce((acc, t) => acc + Number(t.amount), 0),
+      countPendente: pendentes.length,
+      countPago: pagos.length,
+    });
+  };
+
+  const fetchPatients = async () => {
+    const { data } = await supabase.from('patients').select('id, full_name').eq('active', true).order('full_name');
+    setPatients(data || []);
+  };
+
+  const fetchProfessionals = async () => {
+    const { data } = await supabase.from('professionals').select('id, full_name').eq('active', true).order('full_name');
+    setProfessionals(data || []);
+  };
+
+  const fetchInsurances = async () => {
+    const { data } = await supabase.from('health_insurances').select('id, name').eq('active', true).order('name');
+    setInsurances(data || []);
+  };
+
+  const fetchPaymentMethods = async () => {
+    const { data } = await supabase.from('payment_methods').select('id, name').eq('active', true).order('name');
+    setPaymentMethods(data || []);
+  };
+
+  const fetchProcedures = async () => {
+    const { data } = await supabase.from('procedures').select('id, name, private_price').eq('active', true).order('name');
+    setProcedures(data || []);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const payload = {
+      transaction_type: formData.transaction_type,
+      patient_id: formData.patient_id || null,
+      professional_id: formData.professional_id || null,
+      health_insurance_id: formData.transaction_type === 'convenio' ? formData.health_insurance_id || null : null,
+      procedure_id: formData.procedure_id || null,
+      amount: formData.amount,
+      due_date: formData.due_date || null,
+      payment_method_id: formData.transaction_type === 'particular' ? formData.payment_method_id || null : null,
+      description: formData.description || null,
+      status: 'pendente',
+    };
+
+    const { error } = await supabase.from('financial_transactions').insert([payload]);
+
+    if (error) {
+      toast({ variant: 'destructive', title: 'Erro', description: error.message });
+      return;
+    }
+
+    toast({ title: 'Lançamento criado com sucesso!' });
+    setDialogOpen(false);
+    setFormData(emptyForm);
+    fetchTransactions();
+  };
+
+  const handleStatusChange = async (id: string, newStatus: string, paymentMethodId?: string) => {
+    const update: any = { status: newStatus };
+    if (newStatus === 'pago') {
+      update.payment_date = format(new Date(), 'yyyy-MM-dd');
+      if (paymentMethodId) update.payment_method_id = paymentMethodId;
+    }
+
+    const { error } = await supabase.from('financial_transactions').update(update).eq('id', id);
+
+    if (error) {
+      toast({ variant: 'destructive', title: 'Erro', description: error.message });
+      return;
+    }
+
+    toast({ title: 'Status atualizado!' });
+    fetchTransactions();
+  };
+
+  const handleProcedureChange = (procedureId: string) => {
+    const procedure = procedures.find(p => p.id === procedureId);
+    if (procedure) {
+      setFormData({ ...formData, procedure_id: procedureId, amount: Number(procedure.private_price) });
+    } else {
+      setFormData({ ...formData, procedure_id: procedureId });
+    }
+  };
+
+  const openNew = () => {
+    setFormData(emptyForm);
+    setDialogOpen(true);
+  };
+
+  const filtered = transactions.filter((t) =>
+    t.patient?.full_name.toLowerCase().includes(search.toLowerCase()) ||
+    t.medical_guide?.guide_number.includes(search) ||
+    t.description?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+  };
+
+  return (
+    <div className="p-6">
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Contas a Receber</h1>
+          <p className="text-muted-foreground">Gerencie os lançamentos financeiros</p>
+        </div>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger asChild>
+            <Button onClick={openNew}>
+              <Plus className="mr-2 h-4 w-4" />
+              Novo Lançamento
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Novo Lançamento</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label>Tipo *</Label>
+                <Select
+                  value={formData.transaction_type}
+                  onValueChange={(v) => setFormData({ ...formData, transaction_type: v as 'particular' | 'convenio' })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="particular">Particular</SelectItem>
+                    <SelectItem value="convenio">Convênio</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Paciente</Label>
+                  <Select
+                    value={formData.patient_id}
+                    onValueChange={(v) => setFormData({ ...formData, patient_id: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {patients.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>{p.full_name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Profissional</Label>
+                  <Select
+                    value={formData.professional_id}
+                    onValueChange={(v) => setFormData({ ...formData, professional_id: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {professionals.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>{p.full_name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {formData.transaction_type === 'convenio' && (
+                <div className="space-y-2">
+                  <Label>Convênio</Label>
+                  <Select
+                    value={formData.health_insurance_id}
+                    onValueChange={(v) => setFormData({ ...formData, health_insurance_id: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {insurances.map((i) => (
+                        <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label>Procedimento</Label>
+                <Select
+                  value={formData.procedure_id}
+                  onValueChange={handleProcedureChange}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {procedures.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Valor (R$) *</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    required
+                    value={formData.amount}
+                    onChange={(e) => setFormData({ ...formData, amount: parseFloat(e.target.value) || 0 })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Vencimento</Label>
+                  <Input
+                    type="date"
+                    value={formData.due_date}
+                    onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              {formData.transaction_type === 'particular' && (
+                <div className="space-y-2">
+                  <Label>Forma de Pagamento</Label>
+                  <Select
+                    value={formData.payment_method_id}
+                    onValueChange={(v) => setFormData({ ...formData, payment_method_id: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {paymentMethods.map((m) => (
+                        <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label>Descrição</Label>
+                <Input
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                />
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit">Salvar</Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="mb-6 grid gap-4 md:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Pendentes</CardTitle>
+            <Clock className="h-4 w-4 text-yellow-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatCurrency(stats.totalPendente)}</div>
+            <p className="text-xs text-muted-foreground">{stats.countPendente} lançamentos</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Recebidos</CardTitle>
+            <DollarSign className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatCurrency(stats.totalPago)}</div>
+            <p className="text-xs text-muted-foreground">{stats.countPago} lançamentos</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filters */}
+      <div className="mb-4 flex flex-wrap gap-4">
+        <div className="relative max-w-sm">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Buscar..."
+            className="pl-10"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <Select value={typeFilter} onValueChange={(v: any) => setTypeFilter(v)}>
+          <SelectTrigger className="w-[150px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos</SelectItem>
+            <SelectItem value="particular">Particular</SelectItem>
+            <SelectItem value="convenio">Convênio</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
+          <SelectTrigger className="w-[150px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos</SelectItem>
+            <SelectItem value="pendente">Pendente</SelectItem>
+            <SelectItem value="pago">Pago</SelectItem>
+            <SelectItem value="cancelado">Cancelado</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Guia / Descrição</TableHead>
+              <TableHead>Paciente</TableHead>
+              <TableHead>Tipo</TableHead>
+              <TableHead>Procedimento</TableHead>
+              <TableHead>Valor</TableHead>
+              <TableHead>Vencimento</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Ações</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={8} className="text-center">Carregando...</TableCell>
+              </TableRow>
+            ) : filtered.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={8} className="text-center">Nenhum lançamento encontrado</TableCell>
+              </TableRow>
+            ) : (
+              filtered.map((t) => (
+                <TableRow key={t.id}>
+                  <TableCell className="font-medium">
+                    {t.medical_guide?.guide_number || t.description || '-'}
+                  </TableCell>
+                  <TableCell>{t.patient?.full_name || '-'}</TableCell>
+                  <TableCell>
+                    <span className={cn(
+                      'rounded-full px-2 py-1 text-xs',
+                      t.transaction_type === 'particular' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
+                    )}>
+                      {t.transaction_type === 'particular' ? 'Particular' : t.health_insurance?.name || 'Convênio'}
+                    </span>
+                  </TableCell>
+                  <TableCell>{t.procedure?.name || '-'}</TableCell>
+                  <TableCell className="font-medium">{formatCurrency(Number(t.amount))}</TableCell>
+                  <TableCell>{t.due_date ? format(new Date(t.due_date), 'dd/MM/yyyy') : '-'}</TableCell>
+                  <TableCell>
+                    <span className={cn('rounded-full px-2 py-1 text-xs', statusColors[t.status])}>
+                      {t.status === 'pendente' ? 'Pendente' : t.status === 'pago' ? 'Pago' : 'Cancelado'}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    {t.status === 'pendente' && (
+                      <div className="flex gap-1">
+                        <Button size="sm" variant="outline" onClick={() => handleStatusChange(t.id, 'pago')}>
+                          Receber
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => handleStatusChange(t.id, 'cancelado')}>
+                          Cancelar
+                        </Button>
+                      </div>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  );
+}
