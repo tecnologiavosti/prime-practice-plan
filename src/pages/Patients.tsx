@@ -156,7 +156,7 @@ export default function Patients() {
       birth_date: patient.birth_date || '',
       health_insurance_id: patient.health_insurance_id || '',
       insurance_card_number: patient.insurance_card_number || '',
-      preferred_service_type: patient.preferred_service_type || 'particular',
+      preferred_service_type: (patient.preferred_service_type || 'particular') as 'particular' | 'convenio' | 'pacote',
       address: patient.address || '',
       city: patient.city || '',
       state: patient.state || '',
@@ -259,7 +259,7 @@ export default function Patients() {
                   <Label>Tipo de Atendimento</Label>
                   <Select
                     value={formData.preferred_service_type}
-                    onValueChange={(v) => setFormData({ ...formData, preferred_service_type: v })}
+                    onValueChange={(v) => setFormData({ ...formData, preferred_service_type: v as 'particular' | 'convenio' | 'pacote' })}
                   >
                     <SelectTrigger>
                       <SelectValue />
