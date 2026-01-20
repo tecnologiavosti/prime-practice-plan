@@ -1,0 +1,86 @@
+import { NavLink, useNavigate } from 'react-router-dom';
+import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import {
+  Calendar,
+  Users,
+  UserCog,
+  Stethoscope,
+  FileText,
+  Building2,
+  CreditCard,
+  Package,
+  LogOut,
+  LayoutDashboard,
+  ClipboardList,
+} from 'lucide-react';
+
+const menuItems = [
+  { to: '/', icon: LayoutDashboard, label: 'Dashboard', roles: ['administrador', 'recepcao', 'profissional', 'financeiro'] },
+  { to: '/agenda', icon: Calendar, label: 'Agenda', roles: ['administrador', 'recepcao', 'profissional'] },
+  { to: '/agendamentos', icon: ClipboardList, label: 'Agendamentos', roles: ['administrador', 'recepcao', 'profissional'] },
+  { to: '/pacientes', icon: Users, label: 'Pacientes', roles: ['administrador', 'recepcao', 'profissional'] },
+  { to: '/profissionais', icon: UserCog, label: 'Profissionais', roles: ['administrador'] },
+  { to: '/procedimentos', icon: FileText, label: 'Procedimentos', roles: ['administrador'] },
+  { to: '/convenios', icon: Building2, label: 'Convênios', roles: ['administrador'] },
+  { to: '/administradoras', icon: CreditCard, label: 'Administradoras', roles: ['administrador'] },
+  { to: '/pacotes', icon: Package, label: 'Pacotes', roles: ['administrador', 'recepcao'] },
+  { to: '/especialidades', icon: Stethoscope, label: 'Especialidades', roles: ['administrador'] },
+];
+
+export function Sidebar() {
+  const { signOut, roles, user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/auth');
+  };
+
+  const filteredItems = menuItems.filter((item) =>
+    item.roles.some((role) => roles.includes(role as any))
+  );
+
+  return (
+    <aside className="flex h-screen w-64 flex-col border-r bg-card">
+      <div className="flex h-16 items-center gap-2 border-b px-4">
+        <Stethoscope className="h-6 w-6 text-primary" />
+        <span className="text-lg font-semibold">Sistema Clínico</span>
+      </div>
+      
+      <nav className="flex-1 space-y-1 overflow-y-auto p-4">
+        {filteredItems.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            className={({ isActive }) =>
+              cn(
+                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                isActive
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+              )
+            }
+          >
+            <item.icon className="h-4 w-4" />
+            {item.label}
+          </NavLink>
+        ))}
+      </nav>
+      
+      <div className="border-t p-4">
+        <div className="mb-3 text-sm">
+          <p className="font-medium truncate">{user?.email}</p>
+          <p className="text-xs text-muted-foreground capitalize">
+            {roles.join(', ') || 'Sem permissões'}
+          </p>
+        </div>
+        <Button variant="outline" className="w-full" onClick={handleSignOut}>
+          <LogOut className="mr-2 h-4 w-4" />
+          Sair
+        </Button>
+      </div>
+    </aside>
+  );
+}
