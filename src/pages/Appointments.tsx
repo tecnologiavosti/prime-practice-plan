@@ -204,7 +204,7 @@ export default function Appointments() {
     fetchAppointments();
   };
 
-  const handleStatusChange = async (appointmentId: string, newStatus: string) => {
+  const handleStatusChange = async (appointmentId: string, newStatus: 'agendado' | 'confirmado' | 'em_atendimento' | 'finalizado' | 'cancelado' | 'faltou') => {
     const { error } = await supabase
       .from('appointments')
       .update({ status: newStatus })
@@ -320,7 +320,7 @@ export default function Appointments() {
                   <Label>Tipo de Consulta *</Label>
                   <Select
                     value={formData.consultation_type}
-                    onValueChange={(v) => setFormData({ ...formData, consultation_type: v })}
+                    onValueChange={(v) => setFormData({ ...formData, consultation_type: v as 'particular' | 'convenio' | 'pacote' })}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -451,7 +451,7 @@ export default function Appointments() {
                   <TableCell>
                     <Select
                       value={apt.status}
-                      onValueChange={(v) => handleStatusChange(apt.id, v)}
+                      onValueChange={(v) => handleStatusChange(apt.id, v as 'agendado' | 'confirmado' | 'em_atendimento' | 'finalizado' | 'cancelado' | 'faltou')}
                     >
                       <SelectTrigger className={cn('w-[140px]', statusColors[apt.status])}>
                         <SelectValue />

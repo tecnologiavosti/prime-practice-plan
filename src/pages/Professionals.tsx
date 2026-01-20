@@ -58,7 +58,7 @@ interface Schedule {
   start_time: string;
   end_time: string;
   slot_duration_minutes: number;
-  service_type: string;
+  service_type: 'ambos' | 'particular' | 'convenio';
   active: boolean;
 }
 
@@ -84,7 +84,7 @@ const emptySchedule: Schedule = {
   start_time: '08:00',
   end_time: '18:00',
   slot_duration_minutes: 30,
-  service_type: 'ambos',
+  service_type: 'ambos' as 'ambos' | 'particular' | 'convenio',
   active: true,
 };
 
@@ -213,10 +213,10 @@ export default function Professionals() {
   const handleAddSchedule = async () => {
     if (!selectedProfessional) return;
 
-    const { error } = await supabase.from('professional_schedules').insert({
+    const { error } = await supabase.from('professional_schedules').insert([{
       ...newSchedule,
       professional_id: selectedProfessional.id,
-    });
+    }]);
 
     if (error) {
       toast({ variant: 'destructive', title: 'Erro', description: error.message });
@@ -247,7 +247,7 @@ export default function Professionals() {
       specialty_id: professional.specialty_id || '',
       council_number: professional.council_number || '',
       council_state: professional.council_state || '',
-      service_type: professional.service_type,
+      service_type: professional.service_type as 'ambos' | 'particular' | 'convenio',
       address: '',
       city: '',
       state: '',
@@ -353,7 +353,7 @@ export default function Professionals() {
                       <Label>Tipo de Atendimento</Label>
                       <Select
                         value={formData.service_type}
-                        onValueChange={(v) => setFormData({ ...formData, service_type: v })}
+                        onValueChange={(v) => setFormData({ ...formData, service_type: v as 'ambos' | 'particular' | 'convenio' })}
                       >
                         <SelectTrigger>
                           <SelectValue />
