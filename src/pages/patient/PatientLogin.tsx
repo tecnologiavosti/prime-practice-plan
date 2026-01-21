@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate, Link } from 'react-router-dom';
+import { usePatientAuth } from '@/contexts/PatientAuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
-import { Stethoscope } from 'lucide-react';
+import { Calendar, ArrowLeft } from 'lucide-react';
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -17,6 +17,7 @@ const loginSchema = z.object({
 
 const signupSchema = z.object({
   fullName: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
+  cpf: z.string().min(11, 'CPF inválido').max(14, 'CPF inválido'),
   email: z.string().email('Email inválido'),
   password: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres'),
   confirmPassword: z.string(),
@@ -25,15 +26,24 @@ const signupSchema = z.object({
   path: ['confirmPassword'],
 });
 
-export default function Auth() {
+export default function PatientLogin() {
   const [isLoading, setIsLoading] = useState(false);
   const [loginData, setLoginData] = useState({ email: '', password: '' });
-  const [signupData, setSignupData] = useState({ fullName: '', email: '', password: '', confirmPassword: '' });
+  const [signupData, setSignupData] = useState({ fullName: '', cpf: '', email: '', password: '', confirmPassword: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
   
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp } = usePatientAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const formatCPF = (value: string) => {
+    const numbers = value.replace(/\D/g, '');
+    return numbers
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d{1,2})/, '$1-$2')
+      .replace(/(-\d{2})\d+?$/, '$1');
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,7 +74,7 @@ export default function Auth() {
       return;
     }
 
-    navigate('/');
+    navigate('/paciente');
   };
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -82,7 +92,7 @@ export default function Auth() {
     }
 
     setIsLoading(true);
-    const { error } = await signUp(signupData.email, signupData.password, signupData.fullName);
+    const { error } = await signUp(signupData.email, signupData.password, signupData.fullName, signupData.cpf);
     setIsLoading(false);
 
     if (error) {
@@ -100,8 +110,10 @@ export default function Auth() {
 
     toast({
       title: 'Conta criada com sucesso!',
-      description: 'Entre em contato com o administrador para ter acesso ao sistema.',
+      description: 'Você já pode acessar o portal.',
     });
+    
+    navigate('/paciente');
   };
 
   return (
@@ -113,25 +125,24 @@ export default function Auth() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-primary/5 to-accent/5 rounded-full blur-3xl" />
       </div>
 
-      {/* Patient Portal Button */}
-      <a
-        href="/paciente/login"
-        className="absolute top-4 right-4 z-20 px-4 py-2 text-sm font-medium rounded-lg bg-accent hover:bg-accent/80 text-accent-foreground transition-colors"
-      >
-        Sou Paciente
-      </a>
-
       <Card className="w-full max-w-md relative z-10 border-0 shadow-2xl bg-card/80 backdrop-blur-xl">
         <CardHeader className="text-center space-y-4 pb-2">
+          <Link 
+            to="/auth" 
+            className="absolute left-4 top-4 text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 text-sm"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Área da Clínica
+          </Link>
           <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 shadow-lg shadow-primary/25 transition-transform hover:scale-105">
-            <Stethoscope className="h-10 w-10 text-primary-foreground" />
+            <Calendar className="h-10 w-10 text-primary-foreground" />
           </div>
           <div className="space-y-1">
             <CardTitle className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-              Sistema Clínico
+              Portal do Paciente
             </CardTitle>
             <CardDescription className="text-base">
-              Gestão inteligente de clínica e agenda médica
+              Agende consultas e acompanhe seu histórico
             </CardDescription>
           </div>
         </CardHeader>
@@ -201,6 +212,21 @@ export default function Auth() {
                     className="h-11 bg-background/50 border-muted-foreground/20 focus:border-primary transition-colors"
                   />
                   {errors.fullName && <p className="text-sm text-destructive">{errors.fullName}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-cpf" className="text-sm font-medium">
+                    CPF
+                  </Label>
+                  <Input
+                    id="signup-cpf"
+                    type="text"
+                    placeholder="000.000.000-00"
+                    value={signupData.cpf}
+                    onChange={(e) => setSignupData({ ...signupData, cpf: formatCPF(e.target.value) })}
+                    maxLength={14}
+                    className="h-11 bg-background/50 border-muted-foreground/20 focus:border-primary transition-colors"
+                  />
+                  {errors.cpf && <p className="text-sm text-destructive">{errors.cpf}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-email" className="text-sm font-medium">

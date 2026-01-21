@@ -712,6 +712,7 @@ export type Database = {
           rg: string | null
           state: string | null
           updated_at: string
+          user_id: string | null
           zip_code: string | null
         }
         Insert: {
@@ -741,6 +742,7 @@ export type Database = {
           rg?: string | null
           state?: string | null
           updated_at?: string
+          user_id?: string | null
           zip_code?: string | null
         }
         Update: {
@@ -770,6 +772,7 @@ export type Database = {
           rg?: string | null
           state?: string | null
           updated_at?: string
+          user_id?: string | null
           zip_code?: string | null
         }
         Relationships: [
@@ -1375,7 +1378,12 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "administrador" | "recepcao" | "profissional" | "financeiro"
+      app_role:
+        | "administrador"
+        | "recepcao"
+        | "profissional"
+        | "financeiro"
+        | "paciente"
       appointment_status:
         | "agendado"
         | "confirmado"
@@ -1512,7 +1520,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["administrador", "recepcao", "profissional", "financeiro"],
+      app_role: [
+        "administrador",
+        "recepcao",
+        "profissional",
+        "financeiro",
+        "paciente",
+      ],
       appointment_status: [
         "agendado",
         "confirmado",
