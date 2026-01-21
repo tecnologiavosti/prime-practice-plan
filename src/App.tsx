@@ -26,7 +26,8 @@ import FinancialReports from "./pages/FinancialReports";
 import PaymentMethods from "./pages/PaymentMethods";
 import NotFound from "./pages/NotFound";
 // Patient Portal
-import PatientLogin from "./pages/patient/PatientLogin";
+import LandingPage from "./pages/LandingPage";
+import PatientAuth from "./pages/patient/PatientAuth";
 import PatientDashboard from "./pages/patient/PatientDashboard";
 import PatientAppointments from "./pages/patient/PatientAppointments";
 import PatientBooking from "./pages/patient/PatientBooking";
@@ -42,8 +43,14 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          {/* Patient Portal Routes - Main Site */}
-          <Route path="/" element={<PatientAuthProvider><PatientLogin /></PatientAuthProvider>} />
+          {/* Public Landing Page */}
+          <Route path="/" element={<LandingPage />} />
+          
+          {/* Patient Auth Routes */}
+          <Route path="/login" element={<PatientAuthProvider><PatientAuth mode="login" /></PatientAuthProvider>} />
+          <Route path="/cadastro" element={<PatientAuthProvider><PatientAuth mode="signup" /></PatientAuthProvider>} />
+          
+          {/* Patient Portal Routes */}
           <Route element={<PatientAuthProvider><PatientLayout /></PatientAuthProvider>}>
             <Route path="/dashboard" element={<PatientDashboard />} />
             <Route path="/agendamentos" element={<PatientAppointments />} />
