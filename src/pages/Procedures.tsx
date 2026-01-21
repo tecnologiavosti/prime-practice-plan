@@ -43,6 +43,13 @@ interface InsurancePrice {
   price: number;
 }
 
+interface ProcedureInsurancePrice {
+  procedure_id: string;
+  health_insurance_id: string;
+  price: number;
+  health_insurance?: { name: string };
+}
+
 const emptyProcedure = {
   code: '',
   name: '',
@@ -60,6 +67,7 @@ export default function Procedures() {
   const [editingProcedure, setEditingProcedure] = useState<Procedure | null>(null);
   const [formData, setFormData] = useState(emptyProcedure);
   const [insurancePrices, setInsurancePrices] = useState<InsurancePrice[]>([]);
+  const [allProcedurePrices, setAllProcedurePrices] = useState<ProcedureInsurancePrice[]>([]);
   const [isParticular, setIsParticular] = useState(true);
   const [isConvenio, setIsConvenio] = useState(false);
   const { toast } = useToast();
@@ -67,6 +75,7 @@ export default function Procedures() {
   useEffect(() => {
     fetchProcedures();
     fetchInsurances();
+    fetchAllProcedurePrices();
   }, []);
 
   const fetchProcedures = async () => {
@@ -86,6 +95,13 @@ export default function Procedures() {
   const fetchInsurances = async () => {
     const { data } = await supabase.from('health_insurances').select('id, name').eq('active', true).order('name');
     setInsurances(data || []);
+  };
+
+  const fetchAllProcedurePrices = async () => {
+    const { data } = await supabase
+      .from('procedure_insurance_prices')
+      .select('procedure_id, health_insurance_id, price, health_insurance:health_insurances(name)');
+    setAllProcedurePrices((data as any) || []);
   };
 
   const fetchInsurancePrices = async (procedureId: string) => {
@@ -161,6 +177,16 @@ export default function Procedures() {
     setFormData(emptyProcedure);
     setInsurancePrices([]);
     fetchProcedures();
+    fetchAllProcedurePrices();
+  };
+
+  const getInsurancePricesForProcedure = (procedureId: string) => {
+    return allProcedurePrices
+      .filter((p) => p.procedure_id === procedureId && p.price > 0)
+      .map((p) => ({
+        name: p.health_insurance?.name || 'Convênio',
+        price: p.price,
+      }));
   };
   const openEdit = async (procedure: Procedure) => {
     setEditingProcedure(procedure);
@@ -370,39 +396,66 @@ export default function Procedures() {
               <TableHead>Código</TableHead>
               <TableHead>Nome</TableHead>
               <TableHead>Valor Particular</TableHead>
+              <TableHead>Valor Convênio</TableHead>
               <TableHead>Duração</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="w-[120px]">Ações</TableHead>
+              <TableHead className="w-[80px]">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center">Carregando...</TableCell>
+                <TableCell colSpan={7} className="text-center">Carregando...</TableCell>
               </TableRow>
             ) : filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center">Nenhum procedimento encontrado</TableCell>
+                <TableCell colSpan={7} className="text-center">Nenhum procedimento encontrado</TableCell>
               </TableRow>
             ) : (
-              filtered.map((proc) => (
-                <TableRow key={proc.id}>
-                  <TableCell className="font-mono">{proc.code}</TableCell>
-                  <TableCell className="font-medium">{proc.name}</TableCell>
-                  <TableCell>{formatCurrency(proc.private_price)}</TableCell>
-                  <TableCell>{proc.duration_minutes} min</TableCell>
-                  <TableCell>
-                    <span className={`rounded-full px-2 py-1 text-xs ${proc.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                      {proc.active ? 'Ativo' : 'Inativo'}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <Button variant="ghost" size="icon" onClick={() => openEdit(proc)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
+              filtered.map((proc) => {
+                const insurancePricesList = getInsurancePricesForProcedure(proc.id);
+                return (
+                  <TableRow key={proc.id}>
+                    <TableCell className="font-mono">{proc.code}</TableCell>
+                    <TableCell className="font-medium">{proc.name}</TableCell>
+                    <TableCell>
+                      {proc.private_price > 0 ? formatCurrency(proc.private_price) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {insurancePricesList.length > 0 ? (
+                        <div className="space-y-1">
+                          {insurancePricesList.slice(0, 2).map((ip, idx) => (
+                            <div key={idx} className="text-xs">
+                              <span className="text-muted-foreground">{ip.name}:</span>{' '}
+                              {formatCurrency(ip.price)}
+                            </div>
+                          ))}
+                          {insurancePricesList.length > 2 && (
+                            <span className="text-xs text-muted-foreground">
+                              +{insurancePricesList.length - 2} mais
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell>{proc.duration_minutes} min</TableCell>
+                    <TableCell>
+                      <span className={`rounded-full px-2 py-1 text-xs ${proc.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                        {proc.active ? 'Ativo' : 'Inativo'}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="icon" onClick={() => openEdit(proc)}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>
