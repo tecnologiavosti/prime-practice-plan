@@ -64,7 +64,7 @@ export default function Auth() {
       return;
     }
 
-    navigate('/');
+    navigate('/admin');
   };
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -115,7 +115,7 @@ export default function Auth() {
 
       {/* Patient Portal Button */}
       <a
-        href="/paciente/login"
+        href="/"
         className="absolute top-4 right-4 z-20 px-4 py-2 text-sm font-medium rounded-lg bg-accent hover:bg-accent/80 text-accent-foreground transition-colors"
       >
         Sou Paciente

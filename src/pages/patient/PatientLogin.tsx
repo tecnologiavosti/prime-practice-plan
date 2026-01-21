@@ -74,7 +74,7 @@ export default function PatientLogin() {
       return;
     }
 
-    navigate('/paciente');
+    navigate('/dashboard');
   };
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -113,7 +113,7 @@ export default function PatientLogin() {
       description: 'Você já pode acessar o portal.',
     });
     
-    navigate('/paciente');
+    navigate('/dashboard');
   };
 
   return (
@@ -128,7 +128,7 @@ export default function PatientLogin() {
       <Card className="w-full max-w-md relative z-10 border-0 shadow-2xl bg-card/80 backdrop-blur-xl">
         <CardHeader className="text-center space-y-4 pb-2">
           <Link 
-            to="/auth" 
+            to="/admin/auth" 
             className="absolute left-4 top-4 text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 text-sm"
           >
             <ArrowLeft className="h-4 w-4" />

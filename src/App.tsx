@@ -42,35 +42,35 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          {/* Staff Routes */}
-          <Route path="/auth" element={<AuthProvider><Auth /></AuthProvider>} />
-          <Route element={<AuthProvider><MainLayout /></AuthProvider>}>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/pacientes" element={<Patients />} />
-            <Route path="/profissionais" element={<Professionals />} />
-            <Route path="/procedimentos" element={<Procedures />} />
-            <Route path="/convenios" element={<HealthInsurances />} />
-            <Route path="/administradoras" element={<Administrators />} />
-            <Route path="/especialidades" element={<Specialties />} />
-            <Route path="/pacotes" element={<Packages />} />
-            <Route path="/agenda" element={<Schedule />} />
-            <Route path="/agendamentos" element={<Appointments />} />
-            <Route path="/financeiro" element={<FinancialTransactions />} />
-            <Route path="/guias" element={<MedicalGuides />} />
-            <Route path="/repasses" element={<ProfessionalPayouts />} />
-            <Route path="/lotes-faturamento" element={<BillingBatches />} />
-            <Route path="/relatorios-financeiros" element={<FinancialReports />} />
-            <Route path="/formas-pagamento" element={<PaymentMethods />} />
+          {/* Patient Portal Routes - Main Site */}
+          <Route path="/" element={<PatientAuthProvider><PatientLogin /></PatientAuthProvider>} />
+          <Route element={<PatientAuthProvider><PatientLayout /></PatientAuthProvider>}>
+            <Route path="/dashboard" element={<PatientDashboard />} />
+            <Route path="/agendamentos" element={<PatientAppointments />} />
+            <Route path="/agendar" element={<PatientBooking />} />
+            <Route path="/meus-dados" element={<PatientProfile />} />
+            <Route path="/historico" element={<PatientHistory />} />
           </Route>
           
-          {/* Patient Portal Routes */}
-          <Route path="/paciente/login" element={<PatientAuthProvider><PatientLogin /></PatientAuthProvider>} />
-          <Route element={<PatientAuthProvider><PatientLayout /></PatientAuthProvider>}>
-            <Route path="/paciente" element={<PatientDashboard />} />
-            <Route path="/paciente/agendamentos" element={<PatientAppointments />} />
-            <Route path="/paciente/agendar" element={<PatientBooking />} />
-            <Route path="/paciente/meus-dados" element={<PatientProfile />} />
-            <Route path="/paciente/historico" element={<PatientHistory />} />
+          {/* Staff/Admin Routes */}
+          <Route path="/admin/auth" element={<AuthProvider><Auth /></AuthProvider>} />
+          <Route element={<AuthProvider><MainLayout /></AuthProvider>}>
+            <Route path="/admin" element={<Dashboard />} />
+            <Route path="/admin/pacientes" element={<Patients />} />
+            <Route path="/admin/profissionais" element={<Professionals />} />
+            <Route path="/admin/procedimentos" element={<Procedures />} />
+            <Route path="/admin/convenios" element={<HealthInsurances />} />
+            <Route path="/admin/administradoras" element={<Administrators />} />
+            <Route path="/admin/especialidades" element={<Specialties />} />
+            <Route path="/admin/pacotes" element={<Packages />} />
+            <Route path="/admin/agenda" element={<Schedule />} />
+            <Route path="/admin/agendamentos" element={<Appointments />} />
+            <Route path="/admin/financeiro" element={<FinancialTransactions />} />
+            <Route path="/admin/guias" element={<MedicalGuides />} />
+            <Route path="/admin/repasses" element={<ProfessionalPayouts />} />
+            <Route path="/admin/lotes-faturamento" element={<BillingBatches />} />
+            <Route path="/admin/relatorios-financeiros" element={<FinancialReports />} />
+            <Route path="/admin/formas-pagamento" element={<PaymentMethods />} />
           </Route>
           
           <Route path="*" element={<NotFound />} />

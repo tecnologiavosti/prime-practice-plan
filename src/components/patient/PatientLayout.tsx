@@ -13,11 +13,11 @@ import {
 } from 'lucide-react';
 
 const menuItems = [
-  { to: '/paciente', icon: Home, label: 'Início', end: true },
-  { to: '/paciente/agendamentos', icon: Calendar, label: 'Meus Agendamentos' },
-  { to: '/paciente/agendar', icon: CalendarPlus, label: 'Agendar Consulta' },
-  { to: '/paciente/meus-dados', icon: User, label: 'Meus Dados' },
-  { to: '/paciente/historico', icon: FileText, label: 'Histórico Médico' },
+  { to: '/dashboard', icon: Home, label: 'Início', end: true },
+  { to: '/agendamentos', icon: Calendar, label: 'Meus Agendamentos' },
+  { to: '/agendar', icon: CalendarPlus, label: 'Agendar Consulta' },
+  { to: '/meus-dados', icon: User, label: 'Meus Dados' },
+  { to: '/historico', icon: FileText, label: 'Histórico Médico' },
 ];
 
 export function PatientLayout() {
@@ -36,7 +36,7 @@ export function PatientLayout() {
   }
 
   if (!user) {
-    return <Navigate to="/paciente/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   if (!isPatient) {
@@ -53,7 +53,7 @@ export function PatientLayout() {
             className="mt-4"
             onClick={() => {
               signOut();
-              navigate('/paciente/login');
+              navigate('/');
             }}
           >
             Voltar ao Login
@@ -65,7 +65,7 @@ export function PatientLayout() {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/paciente/login');
+    navigate('/');
   };
 
   return (
