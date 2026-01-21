@@ -239,6 +239,7 @@ export default function Professionals() {
 
   const openEdit = async (professional: Professional) => {
     setEditingProfessional(professional);
+    setSelectedProfessional(professional);
     setFormData({
       full_name: professional.full_name,
       cpf: professional.cpf || '',
@@ -255,6 +256,7 @@ export default function Professionals() {
     });
     const insIds = await fetchProfessionalInsurances(professional.id);
     setSelectedInsurances(insIds);
+    await fetchSchedules(professional.id);
     setDialogOpen(true);
   };
 
@@ -300,6 +302,9 @@ export default function Professionals() {
                 <TabsList className="w-full">
                   <TabsTrigger value="dados" className="flex-1">Dados</TabsTrigger>
                   <TabsTrigger value="convenios" className="flex-1">Convênios</TabsTrigger>
+                  {editingProfessional && (
+                    <TabsTrigger value="horarios" className="flex-1">Horários</TabsTrigger>
+                  )}
                 </TabsList>
                 <TabsContent value="dados" className="space-y-4">
                   <div className="grid gap-4 md:grid-cols-2">
@@ -402,6 +407,102 @@ export default function Professionals() {
                     ))}
                   </div>
                 </TabsContent>
+                {editingProfessional && (
+                  <TabsContent value="horarios" className="space-y-4">
+                    <p className="text-sm text-muted-foreground">Configure os horários de atendimento</p>
+                    <div className="grid gap-3 md:grid-cols-5 items-end">
+                      <div className="space-y-2">
+                        <Label>Dia da Semana</Label>
+                        <Select
+                          value={newSchedule.day_of_week.toString()}
+                          onValueChange={(v) => setNewSchedule({ ...newSchedule, day_of_week: parseInt(v) })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {dayNames.map((day, i) => (
+                              <SelectItem key={i} value={i.toString()}>{day}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Início</Label>
+                        <Input
+                          type="time"
+                          value={newSchedule.start_time}
+                          onChange={(e) => setNewSchedule({ ...newSchedule, start_time: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Fim</Label>
+                        <Input
+                          type="time"
+                          value={newSchedule.end_time}
+                          onChange={(e) => setNewSchedule({ ...newSchedule, end_time: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Duração (min)</Label>
+                        <Input
+                          type="number"
+                          value={newSchedule.slot_duration_minutes}
+                          onChange={(e) => setNewSchedule({ ...newSchedule, slot_duration_minutes: parseInt(e.target.value) })}
+                        />
+                      </div>
+                      <Button 
+                        type="button" 
+                        onClick={() => {
+                          setSelectedProfessional(editingProfessional);
+                          handleAddSchedule();
+                        }}
+                      >
+                        Adicionar
+                      </Button>
+                    </div>
+
+                    {schedules.length > 0 ? (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Dia</TableHead>
+                            <TableHead>Horário</TableHead>
+                            <TableHead>Duração</TableHead>
+                            <TableHead>Tipo</TableHead>
+                            <TableHead className="w-[100px]"></TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {schedules.map((sched: any) => (
+                            <TableRow key={sched.id}>
+                              <TableCell>{dayNames[sched.day_of_week]}</TableCell>
+                              <TableCell>{sched.start_time.slice(0, 5)} - {sched.end_time.slice(0, 5)}</TableCell>
+                              <TableCell>{sched.slot_duration_minutes} min</TableCell>
+                              <TableCell className="capitalize">{sched.service_type}</TableCell>
+                              <TableCell>
+                                <Button 
+                                  type="button" 
+                                  variant="destructive" 
+                                  size="sm" 
+                                  onClick={() => handleDeleteSchedule(sched.id)}
+                                >
+                                  Remover
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    ) : (
+                      <div className="text-center py-8 text-muted-foreground border rounded-lg border-dashed">
+                        <Calendar className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p>Nenhum horário cadastrado</p>
+                        <p className="text-sm">Adicione horários de atendimento acima</p>
+                      </div>
+                    )}
+                  </TabsContent>
+                )}
               </Tabs>
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
