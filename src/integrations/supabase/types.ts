@@ -501,6 +501,83 @@ export type Database = {
           },
         ]
       }
+      medical_guide_items: {
+        Row: {
+          appointment_id: string | null
+          created_at: string
+          id: string
+          medical_guide_id: string
+          notes: string | null
+          procedure_id: string | null
+          professional_id: string | null
+          quantity: number
+          service_date: string
+          status: string
+          total_value: number
+          unit_value: number
+          updated_at: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          created_at?: string
+          id?: string
+          medical_guide_id: string
+          notes?: string | null
+          procedure_id?: string | null
+          professional_id?: string | null
+          quantity?: number
+          service_date?: string
+          status?: string
+          total_value?: number
+          unit_value?: number
+          updated_at?: string
+        }
+        Update: {
+          appointment_id?: string | null
+          created_at?: string
+          id?: string
+          medical_guide_id?: string
+          notes?: string | null
+          procedure_id?: string | null
+          professional_id?: string | null
+          quantity?: number
+          service_date?: string
+          status?: string
+          total_value?: number
+          unit_value?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medical_guide_items_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medical_guide_items_medical_guide_id_fkey"
+            columns: ["medical_guide_id"]
+            isOneToOne: false
+            referencedRelation: "medical_guides"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medical_guide_items_procedure_id_fkey"
+            columns: ["procedure_id"]
+            isOneToOne: false
+            referencedRelation: "procedures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medical_guide_items_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       medical_guides: {
         Row: {
           appointment_id: string | null
@@ -518,6 +595,7 @@ export type Database = {
           total_value: number | null
           unit_value: number | null
           updated_at: string
+          validity_date: string | null
         }
         Insert: {
           appointment_id?: string | null
@@ -535,6 +613,7 @@ export type Database = {
           total_value?: number | null
           unit_value?: number | null
           updated_at?: string
+          validity_date?: string | null
         }
         Update: {
           appointment_id?: string | null
@@ -552,6 +631,7 @@ export type Database = {
           total_value?: number | null
           unit_value?: number | null
           updated_at?: string
+          validity_date?: string | null
         }
         Relationships: [
           {
