@@ -22,23 +22,23 @@ import {
 } from 'lucide-react';
 
 const menuItems = [
-  { to: '/', icon: LayoutDashboard, label: 'Dashboard', roles: ['administrador', 'recepcao', 'profissional', 'financeiro'] },
-  { to: '/agenda', icon: Calendar, label: 'Agenda', roles: ['administrador', 'recepcao', 'profissional'] },
-  { to: '/agendamentos', icon: ClipboardList, label: 'Agendamentos', roles: ['administrador', 'recepcao', 'profissional'] },
-  { to: '/pacientes', icon: Users, label: 'Pacientes', roles: ['administrador', 'recepcao', 'profissional'] },
-  { to: '/profissionais', icon: UserCog, label: 'Profissionais', roles: ['administrador'] },
-  { to: '/procedimentos', icon: FileText, label: 'Procedimentos', roles: ['administrador'] },
-  { to: '/convenios', icon: Building2, label: 'Convênios', roles: ['administrador'] },
-  { to: '/administradoras', icon: CreditCard, label: 'Administradoras', roles: ['administrador'] },
-  { to: '/pacotes', icon: Package, label: 'Pacotes', roles: ['administrador', 'recepcao'] },
-  { to: '/especialidades', icon: Stethoscope, label: 'Especialidades', roles: ['administrador'] },
+  { to: '/admin', icon: LayoutDashboard, label: 'Dashboard', roles: ['administrador', 'recepcao', 'profissional', 'financeiro'] },
+  { to: '/admin/agenda', icon: Calendar, label: 'Agenda', roles: ['administrador', 'recepcao', 'profissional'] },
+  { to: '/admin/agendamentos', icon: ClipboardList, label: 'Agendamentos', roles: ['administrador', 'recepcao', 'profissional'] },
+  { to: '/admin/pacientes', icon: Users, label: 'Pacientes', roles: ['administrador', 'recepcao', 'profissional'] },
+  { to: '/admin/profissionais', icon: UserCog, label: 'Profissionais', roles: ['administrador'] },
+  { to: '/admin/procedimentos', icon: FileText, label: 'Procedimentos', roles: ['administrador'] },
+  { to: '/admin/convenios', icon: Building2, label: 'Convênios', roles: ['administrador'] },
+  { to: '/admin/administradoras', icon: CreditCard, label: 'Administradoras', roles: ['administrador'] },
+  { to: '/admin/pacotes', icon: Package, label: 'Pacotes', roles: ['administrador', 'recepcao'] },
+  { to: '/admin/especialidades', icon: Stethoscope, label: 'Especialidades', roles: ['administrador'] },
   // Financeiro
-  { to: '/financeiro', icon: DollarSign, label: 'Financeiro', roles: ['administrador', 'financeiro'] },
-  { to: '/guias', icon: Receipt, label: 'Guias Médicas', roles: ['administrador', 'financeiro', 'recepcao'] },
-  { to: '/lotes-faturamento', icon: FileBarChart, label: 'Faturamento', roles: ['administrador', 'financeiro'] },
-  { to: '/repasses', icon: Wallet, label: 'Repasses', roles: ['administrador', 'financeiro'] },
-  { to: '/relatorios-financeiros', icon: FileBarChart, label: 'Relatórios', roles: ['administrador', 'financeiro'] },
-  { to: '/formas-pagamento', icon: Banknote, label: 'Formas Pgto', roles: ['administrador'] },
+  { to: '/admin/financeiro', icon: DollarSign, label: 'Financeiro', roles: ['administrador', 'financeiro'] },
+  { to: '/admin/guias', icon: Receipt, label: 'Guias Médicas', roles: ['administrador', 'financeiro', 'recepcao'] },
+  { to: '/admin/lotes-faturamento', icon: FileBarChart, label: 'Faturamento', roles: ['administrador', 'financeiro'] },
+  { to: '/admin/repasses', icon: Wallet, label: 'Repasses', roles: ['administrador', 'financeiro'] },
+  { to: '/admin/relatorios-financeiros', icon: FileBarChart, label: 'Relatórios', roles: ['administrador', 'financeiro'] },
+  { to: '/admin/formas-pagamento', icon: Banknote, label: 'Formas Pgto', roles: ['administrador'] },
 ];
 
 export function Sidebar() {
@@ -47,7 +47,7 @@ export function Sidebar() {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/auth');
+    navigate('/admin/auth');
   };
 
   const filteredItems = menuItems.filter((item) =>

@@ -151,7 +151,7 @@ export default function PatientAppointments() {
           </p>
         </div>
         <Button asChild>
-          <Link to="/paciente/agendar">
+          <Link to="/agendar">
             <CalendarPlus className="mr-2 h-4 w-4" />
             Nova Consulta
           </Link>
@@ -186,7 +186,7 @@ export default function PatientAppointments() {
                   Você não tem consultas marcadas para os próximos dias
                 </p>
                 <Button asChild>
-                  <Link to="/paciente/agendar">Agendar Consulta</Link>
+                  <Link to="/agendar">Agendar Consulta</Link>
                 </Button>
               </CardContent>
             </Card>

@@ -18,7 +18,7 @@ export function MainLayout() {
   }
 
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to="/admin/auth" replace />;
   }
 
   if (!hasAnyRole()) {

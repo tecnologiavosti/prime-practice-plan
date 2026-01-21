@@ -206,7 +206,7 @@ export default function PatientBooking() {
       description: 'Sua consulta foi agendada com sucesso.',
     });
 
-    navigate('/paciente/agendamentos');
+    navigate('/agendamentos');
   };
 
   const minDate = addDays(new Date(), 1);

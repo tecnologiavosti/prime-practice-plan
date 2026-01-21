@@ -100,7 +100,7 @@ export default function PatientDashboard() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card className="hover:shadow-lg transition-shadow">
           <CardContent className="p-6">
-            <Link to="/paciente/agendar" className="flex flex-col items-center gap-3 text-center">
+            <Link to="/agendar" className="flex flex-col items-center gap-3 text-center">
               <div className="p-3 bg-primary/10 rounded-full">
                 <CalendarPlus className="h-6 w-6 text-primary" />
               </div>
@@ -114,7 +114,7 @@ export default function PatientDashboard() {
 
         <Card className="hover:shadow-lg transition-shadow">
           <CardContent className="p-6">
-            <Link to="/paciente/agendamentos" className="flex flex-col items-center gap-3 text-center">
+            <Link to="/agendamentos" className="flex flex-col items-center gap-3 text-center">
               <div className="p-3 bg-blue-100 rounded-full">
                 <Calendar className="h-6 w-6 text-blue-600" />
               </div>
@@ -128,7 +128,7 @@ export default function PatientDashboard() {
 
         <Card className="hover:shadow-lg transition-shadow">
           <CardContent className="p-6">
-            <Link to="/paciente/meus-dados" className="flex flex-col items-center gap-3 text-center">
+            <Link to="/meus-dados" className="flex flex-col items-center gap-3 text-center">
               <div className="p-3 bg-green-100 rounded-full">
                 <User className="h-6 w-6 text-green-600" />
               </div>
@@ -142,7 +142,7 @@ export default function PatientDashboard() {
 
         <Card className="hover:shadow-lg transition-shadow">
           <CardContent className="p-6">
-            <Link to="/paciente/historico" className="flex flex-col items-center gap-3 text-center">
+            <Link to="/historico" className="flex flex-col items-center gap-3 text-center">
               <div className="p-3 bg-purple-100 rounded-full">
                 <Clock className="h-6 w-6 text-purple-600" />
               </div>
@@ -178,7 +178,7 @@ export default function PatientDashboard() {
               <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
               <p className="text-muted-foreground">Você não tem consultas agendadas</p>
               <Button asChild className="mt-4">
-                <Link to="/paciente/agendar">Agendar Consulta</Link>
+                <Link to="/agendar">Agendar Consulta</Link>
               </Button>
             </div>
           ) : (
@@ -215,7 +215,7 @@ export default function PatientDashboard() {
               
               <div className="pt-4 border-t">
                 <Button variant="outline" asChild className="w-full">
-                  <Link to="/paciente/agendamentos">Ver Todos os Agendamentos</Link>
+                  <Link to="/agendamentos">Ver Todos os Agendamentos</Link>
                 </Button>
               </div>
             </div>
