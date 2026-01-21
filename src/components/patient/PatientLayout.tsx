@@ -36,7 +36,7 @@ export function PatientLayout() {
   }
 
   if (!user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   if (!isPatient) {
@@ -53,7 +53,7 @@ export function PatientLayout() {
             className="mt-4"
             onClick={() => {
               signOut();
-              navigate('/');
+              navigate('/login');
             }}
           >
             Voltar ao Login
