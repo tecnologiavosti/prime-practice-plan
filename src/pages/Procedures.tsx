@@ -19,8 +19,9 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search, Edit, DollarSign } from 'lucide-react';
+import { Plus, Search, Edit } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Procedure {
   id: string;
@@ -56,9 +57,7 @@ export default function Procedures() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [priceDialogOpen, setPriceDialogOpen] = useState(false);
   const [editingProcedure, setEditingProcedure] = useState<Procedure | null>(null);
-  const [selectedProcedure, setSelectedProcedure] = useState<Procedure | null>(null);
   const [formData, setFormData] = useState(emptyProcedure);
   const [insurancePrices, setInsurancePrices] = useState<InsurancePrice[]>([]);
   const { toast } = useToast();
@@ -112,6 +111,8 @@ export default function Procedures() {
       duration_minutes: parseInt(formData.duration_minutes.toString()),
     };
 
+    let procedureId = editingProcedure?.id;
+
     if (editingProcedure) {
       const { error } = await supabase
         .from('procedures')
@@ -122,54 +123,44 @@ export default function Procedures() {
         toast({ variant: 'destructive', title: 'Erro', description: error.message });
         return;
       }
-      toast({ title: 'Procedimento atualizado com sucesso!' });
     } else {
-      const { error } = await supabase.from('procedures').insert(payload);
+      const { data, error } = await supabase.from('procedures').insert(payload).select().single();
 
       if (error) {
         toast({ variant: 'destructive', title: 'Erro', description: error.message });
         return;
       }
-      toast({ title: 'Procedimento cadastrado com sucesso!' });
+      procedureId = data.id;
     }
 
+    // Save insurance prices
+    if (procedureId) {
+      await supabase
+        .from('procedure_insurance_prices')
+        .delete()
+        .eq('procedure_id', procedureId);
+
+      const toInsert = insurancePrices
+        .filter((p) => p.price > 0)
+        .map((p) => ({
+          procedure_id: procedureId,
+          health_insurance_id: p.health_insurance_id,
+          price: p.price,
+        }));
+
+      if (toInsert.length > 0) {
+        await supabase.from('procedure_insurance_prices').insert(toInsert);
+      }
+    }
+
+    toast({ title: editingProcedure ? 'Procedimento atualizado!' : 'Procedimento cadastrado!' });
     setDialogOpen(false);
     setEditingProcedure(null);
     setFormData(emptyProcedure);
+    setInsurancePrices([]);
     fetchProcedures();
   };
-
-  const handleSavePrices = async () => {
-    if (!selectedProcedure) return;
-
-    // Delete existing prices
-    await supabase
-      .from('procedure_insurance_prices')
-      .delete()
-      .eq('procedure_id', selectedProcedure.id);
-
-    // Insert new prices
-    const toInsert = insurancePrices
-      .filter((p) => p.price > 0)
-      .map((p) => ({
-        procedure_id: selectedProcedure.id,
-        health_insurance_id: p.health_insurance_id,
-        price: p.price,
-      }));
-
-    if (toInsert.length > 0) {
-      const { error } = await supabase.from('procedure_insurance_prices').insert(toInsert);
-      if (error) {
-        toast({ variant: 'destructive', title: 'Erro', description: error.message });
-        return;
-      }
-    }
-
-    toast({ title: 'Valores salvos com sucesso!' });
-    setPriceDialogOpen(false);
-  };
-
-  const openEdit = (procedure: Procedure) => {
+  const openEdit = async (procedure: Procedure) => {
     setEditingProcedure(procedure);
     setFormData({
       code: procedure.code,
@@ -178,18 +169,18 @@ export default function Procedures() {
       private_price: procedure.private_price,
       duration_minutes: procedure.duration_minutes,
     });
-    setDialogOpen(true);
-  };
-
-  const openPrices = async (procedure: Procedure) => {
-    setSelectedProcedure(procedure);
     await fetchInsurancePrices(procedure.id);
-    setPriceDialogOpen(true);
+    setDialogOpen(true);
   };
 
   const openNew = () => {
     setEditingProcedure(null);
     setFormData(emptyProcedure);
+    // Initialize empty insurance prices
+    setInsurancePrices(insurances.map((ins) => ({
+      health_insurance_id: ins.id,
+      price: 0,
+    })));
     setDialogOpen(true);
   };
 
@@ -215,55 +206,102 @@ export default function Procedures() {
               Novo Procedimento
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>
                 {editingProcedure ? 'Editar Procedimento' : 'Novo Procedimento'}
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label>Código *</Label>
-                  <Input
-                    required
-                    value={formData.code}
-                    onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Nome *</Label>
-                  <Input
-                    required
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Valor Particular (R$)</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={formData.private_price}
-                    onChange={(e) => setFormData({ ...formData, private_price: parseFloat(e.target.value) || 0 })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Duração (minutos)</Label>
-                  <Input
-                    type="number"
-                    value={formData.duration_minutes}
-                    onChange={(e) => setFormData({ ...formData, duration_minutes: parseInt(e.target.value) || 30 })}
-                  />
-                </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label>Descrição</Label>
-                  <Textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  />
-                </div>
-              </div>
+              <Tabs defaultValue="dados">
+                <TabsList className="w-full">
+                  <TabsTrigger value="dados" className="flex-1">Dados</TabsTrigger>
+                  <TabsTrigger value="convenios" className="flex-1">Valores Convênios</TabsTrigger>
+                </TabsList>
+                <TabsContent value="dados" className="space-y-4 mt-4">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>Código *</Label>
+                      <Input
+                        required
+                        value={formData.code}
+                        onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Nome *</Label>
+                      <Input
+                        required
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Valor Particular (R$)</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={formData.private_price}
+                        onChange={(e) => setFormData({ ...formData, private_price: parseFloat(e.target.value) || 0 })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Duração (minutos)</Label>
+                      <Input
+                        type="number"
+                        value={formData.duration_minutes}
+                        onChange={(e) => setFormData({ ...formData, duration_minutes: parseInt(e.target.value) || 30 })}
+                      />
+                    </div>
+                    <div className="space-y-2 md:col-span-2">
+                      <Label>Descrição</Label>
+                      <Textarea
+                        value={formData.description}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </TabsContent>
+                <TabsContent value="convenios" className="space-y-4 mt-4">
+                  <p className="text-sm text-muted-foreground">
+                    Configure os valores para cada convênio. Deixe em branco ou 0 se não houver tabela específica.
+                  </p>
+                  {insurances.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground border rounded-lg border-dashed">
+                      <p>Nenhum convênio cadastrado</p>
+                      <p className="text-sm">Cadastre convênios em Planos de Saúde</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {insurances.map((ins) => {
+                        const priceObj = insurancePrices.find((p) => p.health_insurance_id === ins.id);
+                        return (
+                          <div key={ins.id} className="flex items-center gap-4">
+                            <Label className="w-48 shrink-0">{ins.name}</Label>
+                            <div className="flex items-center gap-2 flex-1">
+                              <span className="text-muted-foreground">R$</span>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                placeholder="0,00"
+                                value={priceObj?.price || ''}
+                                onChange={(e) => {
+                                  const newPrices = insurancePrices.map((p) =>
+                                    p.health_insurance_id === ins.id
+                                      ? { ...p, price: parseFloat(e.target.value) || 0 }
+                                      : p
+                                  );
+                                  setInsurancePrices(newPrices);
+                                }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                   Cancelar
@@ -275,44 +313,6 @@ export default function Procedures() {
         </Dialog>
       </div>
 
-      {/* Price Dialog */}
-      <Dialog open={priceDialogOpen} onOpenChange={setPriceDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Valores por Convênio - {selectedProcedure?.name}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            {insurances.map((ins) => {
-              const priceObj = insurancePrices.find((p) => p.health_insurance_id === ins.id);
-              return (
-                <div key={ins.id} className="flex items-center gap-4">
-                  <Label className="w-40">{ins.name}</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    className="flex-1"
-                    value={priceObj?.price || 0}
-                    onChange={(e) => {
-                      const newPrices = insurancePrices.map((p) =>
-                        p.health_insurance_id === ins.id
-                          ? { ...p, price: parseFloat(e.target.value) || 0 }
-                          : p
-                      );
-                      setInsurancePrices(newPrices);
-                    }}
-                  />
-                </div>
-              );
-            })}
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setPriceDialogOpen(false)}>
-                Cancelar
-              </Button>
-              <Button onClick={handleSavePrices}>Salvar Valores</Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       <div className="mb-4">
         <div className="relative max-w-sm">
@@ -360,14 +360,9 @@ export default function Procedures() {
                     </span>
                   </TableCell>
                   <TableCell>
-                    <div className="flex gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => openEdit(proc)}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => openPrices(proc)}>
-                        <DollarSign className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <Button variant="ghost" size="icon" onClick={() => openEdit(proc)}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))
