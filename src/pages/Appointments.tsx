@@ -61,11 +61,24 @@ interface Procedure {
   id: string;
   name: string;
   duration_minutes: number;
+  private_price: number;
 }
 
 interface HealthInsurance {
   id: string;
   name: string;
+}
+
+interface PrivatePackage {
+  id: string;
+  name: string;
+  total_price: number;
+}
+
+interface ProcedureInsurancePrice {
+  procedure_id: string;
+  health_insurance_id: string;
+  price: number;
 }
 
 const statusOptions = [
@@ -105,6 +118,8 @@ export default function Appointments() {
   const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [procedures, setProcedures] = useState<Procedure[]>([]);
   const [insurances, setInsurances] = useState<HealthInsurance[]>([]);
+  const [packages, setPackages] = useState<PrivatePackage[]>([]);
+  const [procedureInsurancePrices, setProcedureInsurancePrices] = useState<ProcedureInsurancePrice[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [dateFilter, setDateFilter] = useState(format(new Date(), 'yyyy-MM-dd'));
@@ -124,6 +139,8 @@ export default function Appointments() {
       fetchProfessionals(),
       fetchProcedures(),
       fetchInsurances(),
+      fetchPackages(),
+      fetchProcedureInsurancePrices(),
     ]);
     setLoading(false);
   };
@@ -165,13 +182,45 @@ export default function Appointments() {
   };
 
   const fetchProcedures = async () => {
-    const { data } = await supabase.from('procedures').select('id, name, duration_minutes').eq('active', true).order('name');
+    const { data } = await supabase.from('procedures').select('id, name, duration_minutes, private_price').eq('active', true).order('name');
     setProcedures(data || []);
   };
 
   const fetchInsurances = async () => {
     const { data } = await supabase.from('health_insurances').select('id, name').eq('active', true).order('name');
     setInsurances(data || []);
+  };
+
+  const fetchPackages = async () => {
+    const { data } = await supabase.from('private_packages').select('id, name, total_price').eq('active', true).order('name');
+    setPackages(data || []);
+  };
+
+  const fetchProcedureInsurancePrices = async () => {
+    const { data } = await supabase.from('procedure_insurance_prices').select('procedure_id, health_insurance_id, price');
+    setProcedureInsurancePrices(data || []);
+  };
+
+  const getProcedurePrice = (): number | null => {
+    if (!formData.procedure_id) return null;
+    
+    if (formData.consultation_type === 'particular') {
+      const procedure = procedures.find(p => p.id === formData.procedure_id);
+      return procedure?.private_price || null;
+    }
+    
+    if (formData.consultation_type === 'convenio' && formData.health_insurance_id) {
+      const insurancePrice = procedureInsurancePrices.find(
+        pip => pip.procedure_id === formData.procedure_id && pip.health_insurance_id === formData.health_insurance_id
+      );
+      return insurancePrice?.price || null;
+    }
+    
+    return null;
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -320,7 +369,7 @@ export default function Appointments() {
                   <Label>Tipo de Consulta *</Label>
                   <Select
                     value={formData.consultation_type}
-                    onValueChange={(v) => setFormData({ ...formData, consultation_type: v as 'particular' | 'convenio' | 'pacote' })}
+                    onValueChange={(v) => setFormData({ ...formData, consultation_type: v as 'particular' | 'convenio' | 'pacote', health_insurance_id: '' })}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -348,6 +397,38 @@ export default function Appointments() {
                         ))}
                       </SelectContent>
                     </Select>
+                  </div>
+                )}
+                {formData.consultation_type === 'pacote' && (
+                  <div className="space-y-2">
+                    <Label>Pacote</Label>
+                    <Select
+                      value={formData.health_insurance_id}
+                      onValueChange={(v) => setFormData({ ...formData, health_insurance_id: v })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o pacote" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {packages.length === 0 ? (
+                          <SelectItem value="none" disabled>Nenhum pacote cadastrado</SelectItem>
+                        ) : (
+                          packages.map((pkg) => (
+                            <SelectItem key={pkg.id} value={pkg.id}>
+                              {pkg.name} - {formatCurrency(pkg.total_price)}
+                            </SelectItem>
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                {formData.procedure_id && (formData.consultation_type === 'particular' || (formData.consultation_type === 'convenio' && formData.health_insurance_id)) && (
+                  <div className="space-y-2">
+                    <Label>Valor do Procedimento</Label>
+                    <div className="flex h-10 items-center rounded-md border bg-muted px-3 text-sm font-medium">
+                      {getProcedurePrice() !== null ? formatCurrency(getProcedurePrice()!) : 'Valor não cadastrado'}
+                    </div>
                   </div>
                 )}
                 <div className="space-y-2">
