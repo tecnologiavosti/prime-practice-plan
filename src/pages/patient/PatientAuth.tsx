@@ -41,17 +41,22 @@ export default function PatientAuth({ mode }: PatientAuthProps) {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   
-  const { signIn, signUp, user, isPatient } = usePatientAuth();
+  const { signIn, signUp, user, isPatient, isAdmin } = usePatientAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
 
-  // Redirect if already logged in
+  // Redirect based on user role
   useEffect(() => {
-    if (user && isPatient) {
-      navigate('/dashboard');
+    if (user) {
+      if (isAdmin && !isPatient) {
+        // Admin user trying to login via patient portal - redirect to admin
+        navigate('/admin');
+      } else if (isPatient) {
+        navigate('/dashboard');
+      }
     }
-  }, [user, isPatient, navigate]);
+  }, [user, isPatient, isAdmin, navigate]);
 
   const formatCPF = (value: string) => {
     const numbers = value.replace(/\D/g, '');

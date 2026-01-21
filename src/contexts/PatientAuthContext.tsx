@@ -21,6 +21,7 @@ interface PatientAuthContextType {
   signUp: (email: string, password: string, fullName: string, cpf: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   isPatient: boolean;
+  isAdmin: boolean;
 }
 
 const PatientAuthContext = createContext<PatientAuthContextType | undefined>(undefined);
@@ -31,19 +32,23 @@ export const PatientAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [loading, setLoading] = useState(true);
   const [patientProfile, setPatientProfile] = useState<PatientProfile | null>(null);
   const [isPatient, setIsPatient] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const fetchPatientProfile = async (userId: string) => {
-    // Check if user has patient role
-    const { data: roleData } = await supabase
+    // Check all user roles
+    const { data: rolesData } = await supabase
       .from('user_roles')
       .select('role')
-      .eq('user_id', userId)
-      .eq('role', 'paciente')
-      .single();
+      .eq('user_id', userId);
 
-    if (roleData) {
-      setIsPatient(true);
-      
+    const roles = rolesData?.map(r => r.role) || [];
+    const hasPatientRole = roles.includes('paciente');
+    const hasAdminRole = roles.includes('administrador') || roles.includes('recepcao') || roles.includes('profissional') || roles.includes('financeiro');
+
+    setIsAdmin(hasAdminRole);
+    setIsPatient(hasPatientRole);
+
+    if (hasPatientRole) {
       // Fetch patient profile
       const { data: patientData } = await supabase
         .from('patients')
@@ -55,7 +60,6 @@ export const PatientAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
         setPatientProfile(patientData);
       }
     } else {
-      setIsPatient(false);
       setPatientProfile(null);
     }
   };
@@ -72,6 +76,7 @@ export const PatientAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
           }, 0);
         } else {
           setIsPatient(false);
+          setIsAdmin(false);
           setPatientProfile(null);
         }
         
@@ -145,6 +150,7 @@ export const PatientAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
     setSession(null);
     setPatientProfile(null);
     setIsPatient(false);
+    setIsAdmin(false);
   };
 
   return (
@@ -158,6 +164,7 @@ export const PatientAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
         signUp,
         signOut,
         isPatient,
+        isAdmin,
       }}
     >
       {children}
