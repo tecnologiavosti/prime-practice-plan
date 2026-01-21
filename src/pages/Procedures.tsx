@@ -21,7 +21,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Search, Edit } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface Procedure {
   id: string;
@@ -60,6 +60,8 @@ export default function Procedures() {
   const [editingProcedure, setEditingProcedure] = useState<Procedure | null>(null);
   const [formData, setFormData] = useState(emptyProcedure);
   const [insurancePrices, setInsurancePrices] = useState<InsurancePrice[]>([]);
+  const [isParticular, setIsParticular] = useState(true);
+  const [isConvenio, setIsConvenio] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -170,12 +172,17 @@ export default function Procedures() {
       duration_minutes: procedure.duration_minutes,
     });
     await fetchInsurancePrices(procedure.id);
+    // Determine if has private or insurance prices
+    setIsParticular(procedure.private_price > 0);
+    setIsConvenio(true); // Show insurance prices if editing
     setDialogOpen(true);
   };
 
   const openNew = () => {
     setEditingProcedure(null);
     setFormData(emptyProcedure);
+    setIsParticular(true);
+    setIsConvenio(false);
     // Initialize empty insurance prices
     setInsurancePrices(insurances.map((ins) => ({
       health_insurance_id: ins.id,
@@ -213,96 +220,126 @@ export default function Procedures() {
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <Tabs defaultValue="dados">
-                <TabsList className="w-full">
-                  <TabsTrigger value="dados" className="flex-1">Dados</TabsTrigger>
-                  <TabsTrigger value="convenios" className="flex-1">Valores Convênios</TabsTrigger>
-                </TabsList>
-                <TabsContent value="dados" className="space-y-4 mt-4">
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label>Código *</Label>
-                      <Input
-                        required
-                        value={formData.code}
-                        onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Nome *</Label>
-                      <Input
-                        required
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Valor Particular (R$)</Label>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Código *</Label>
+                  <Input
+                    required
+                    value={formData.code}
+                    onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Nome *</Label>
+                  <Input
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Duração (minutos)</Label>
+                  <Input
+                    type="number"
+                    value={formData.duration_minutes}
+                    onChange={(e) => setFormData({ ...formData, duration_minutes: parseInt(e.target.value) || 30 })}
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label>Descrição</Label>
+                  <Textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              {/* Tipo de Atendimento */}
+              <div className="space-y-4 pt-4 border-t">
+                <Label className="text-base font-semibold">Tipo de Atendimento</Label>
+                <div className="flex gap-6">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="particular"
+                      checked={isParticular}
+                      onCheckedChange={(checked) => setIsParticular(!!checked)}
+                    />
+                    <label htmlFor="particular" className="text-sm font-medium cursor-pointer">
+                      Particular
+                    </label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="convenio"
+                      checked={isConvenio}
+                      onCheckedChange={(checked) => setIsConvenio(!!checked)}
+                    />
+                    <label htmlFor="convenio" className="text-sm font-medium cursor-pointer">
+                      Convênio
+                    </label>
+                  </div>
+                </div>
+
+                {/* Valor Particular */}
+                {isParticular && (
+                  <div className="p-4 rounded-lg border bg-muted/30 space-y-3">
+                    <Label className="font-medium">Valor Particular</Label>
+                    <div className="flex items-center gap-2 max-w-xs">
+                      <span className="text-muted-foreground">R$</span>
                       <Input
                         type="number"
                         step="0.01"
-                        value={formData.private_price}
+                        placeholder="0,00"
+                        value={formData.private_price || ''}
                         onChange={(e) => setFormData({ ...formData, private_price: parseFloat(e.target.value) || 0 })}
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label>Duração (minutos)</Label>
-                      <Input
-                        type="number"
-                        value={formData.duration_minutes}
-                        onChange={(e) => setFormData({ ...formData, duration_minutes: parseInt(e.target.value) || 30 })}
-                      />
-                    </div>
-                    <div className="space-y-2 md:col-span-2">
-                      <Label>Descrição</Label>
-                      <Textarea
-                        value={formData.description}
-                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      />
-                    </div>
                   </div>
-                </TabsContent>
-                <TabsContent value="convenios" className="space-y-4 mt-4">
-                  <p className="text-sm text-muted-foreground">
-                    Configure os valores para cada convênio. Deixe em branco ou 0 se não houver tabela específica.
-                  </p>
-                  {insurances.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground border rounded-lg border-dashed">
-                      <p>Nenhum convênio cadastrado</p>
-                      <p className="text-sm">Cadastre convênios em Planos de Saúde</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {insurances.map((ins) => {
-                        const priceObj = insurancePrices.find((p) => p.health_insurance_id === ins.id);
-                        return (
-                          <div key={ins.id} className="flex items-center gap-4">
-                            <Label className="w-48 shrink-0">{ins.name}</Label>
-                            <div className="flex items-center gap-2 flex-1">
-                              <span className="text-muted-foreground">R$</span>
-                              <Input
-                                type="number"
-                                step="0.01"
-                                placeholder="0,00"
-                                value={priceObj?.price || ''}
-                                onChange={(e) => {
-                                  const newPrices = insurancePrices.map((p) =>
-                                    p.health_insurance_id === ins.id
-                                      ? { ...p, price: parseFloat(e.target.value) || 0 }
-                                      : p
-                                  );
-                                  setInsurancePrices(newPrices);
-                                }}
-                              />
+                )}
+
+                {/* Valores por Convênio */}
+                {isConvenio && (
+                  <div className="p-4 rounded-lg border bg-muted/30 space-y-3">
+                    <Label className="font-medium">Valores por Convênio</Label>
+                    {insurances.length === 0 ? (
+                      <div className="text-center py-4 text-muted-foreground">
+                        <p>Nenhum convênio cadastrado</p>
+                        <p className="text-sm">Cadastre convênios em Planos de Saúde</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {insurances.map((ins) => {
+                          const priceObj = insurancePrices.find((p) => p.health_insurance_id === ins.id);
+                          return (
+                            <div key={ins.id} className="flex items-center gap-4">
+                              <Label className="w-40 shrink-0 text-sm">{ins.name}</Label>
+                              <div className="flex items-center gap-2 flex-1 max-w-xs">
+                                <span className="text-muted-foreground text-sm">R$</span>
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  placeholder="0,00"
+                                  value={priceObj?.price || ''}
+                                  onChange={(e) => {
+                                    const newPrices = insurancePrices.map((p) =>
+                                      p.health_insurance_id === ins.id
+                                        ? { ...p, price: parseFloat(e.target.value) || 0 }
+                                        : p
+                                    );
+                                    setInsurancePrices(newPrices);
+                                  }}
+                                />
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </TabsContent>
-              </Tabs>
-              <div className="flex justify-end gap-2">
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4">
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                   Cancelar
                 </Button>
