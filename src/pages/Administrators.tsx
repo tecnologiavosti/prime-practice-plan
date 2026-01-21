@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Table,
   TableBody,
@@ -19,7 +21,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search, Edit } from 'lucide-react';
+import { Plus, Search, Edit, Building2, Link2 } from 'lucide-react';
 
 interface Administrator {
   id: string;
@@ -28,6 +30,14 @@ interface Administrator {
   contact_name: string | null;
   contact_phone: string | null;
   contact_email: string | null;
+  active: boolean;
+}
+
+interface HealthInsurance {
+  id: string;
+  name: string;
+  code: string | null;
+  administrator_id: string | null;
   active: boolean;
 }
 
@@ -41,16 +51,25 @@ const emptyAdministrator = {
 
 export default function Administrators() {
   const [administrators, setAdministrators] = useState<Administrator[]>([]);
+  const [healthInsurances, setHealthInsurances] = useState<HealthInsurance[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [insuranceDialogOpen, setInsuranceDialogOpen] = useState(false);
   const [editingAdmin, setEditingAdmin] = useState<Administrator | null>(null);
+  const [selectedAdmin, setSelectedAdmin] = useState<Administrator | null>(null);
+  const [selectedInsurances, setSelectedInsurances] = useState<string[]>([]);
   const [formData, setFormData] = useState(emptyAdministrator);
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchAdministrators();
+    fetchData();
   }, []);
+
+  const fetchData = async () => {
+    await Promise.all([fetchAdministrators(), fetchHealthInsurances()]);
+    setLoading(false);
+  };
 
   const fetchAdministrators = async () => {
     const { data, error } = await supabase
@@ -63,7 +82,20 @@ export default function Administrators() {
       return;
     }
     setAdministrators(data || []);
-    setLoading(false);
+  };
+
+  const fetchHealthInsurances = async () => {
+    const { data, error } = await supabase
+      .from('health_insurances')
+      .select('id, name, code, administrator_id, active')
+      .eq('active', true)
+      .order('name');
+
+    if (error) {
+      toast({ variant: 'destructive', title: 'Erro', description: error.message });
+      return;
+    }
+    setHealthInsurances(data || []);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -93,7 +125,7 @@ export default function Administrators() {
     setDialogOpen(false);
     setEditingAdmin(null);
     setFormData(emptyAdministrator);
-    fetchAdministrators();
+    fetchData();
   };
 
   const openEdit = (admin: Administrator) => {
@@ -112,6 +144,61 @@ export default function Administrators() {
     setEditingAdmin(null);
     setFormData(emptyAdministrator);
     setDialogOpen(true);
+  };
+
+  const openInsuranceDialog = (admin: Administrator) => {
+    setSelectedAdmin(admin);
+    // Get currently linked insurances
+    const linkedInsurances = healthInsurances
+      .filter(ins => ins.administrator_id === admin.id)
+      .map(ins => ins.id);
+    setSelectedInsurances(linkedInsurances);
+    setInsuranceDialogOpen(true);
+  };
+
+  const toggleInsurance = (insuranceId: string) => {
+    setSelectedInsurances(prev => 
+      prev.includes(insuranceId)
+        ? prev.filter(id => id !== insuranceId)
+        : [...prev, insuranceId]
+    );
+  };
+
+  const handleSaveInsurances = async () => {
+    if (!selectedAdmin) return;
+
+    // First, unlink all insurances from this admin
+    const { error: unlinkError } = await supabase
+      .from('health_insurances')
+      .update({ administrator_id: null })
+      .eq('administrator_id', selectedAdmin.id);
+
+    if (unlinkError) {
+      toast({ variant: 'destructive', title: 'Erro', description: unlinkError.message });
+      return;
+    }
+
+    // Then, link the selected insurances
+    if (selectedInsurances.length > 0) {
+      const { error: linkError } = await supabase
+        .from('health_insurances')
+        .update({ administrator_id: selectedAdmin.id })
+        .in('id', selectedInsurances);
+
+      if (linkError) {
+        toast({ variant: 'destructive', title: 'Erro', description: linkError.message });
+        return;
+      }
+    }
+
+    toast({ title: 'Convênios vinculados com sucesso!' });
+    setInsuranceDialogOpen(false);
+    setSelectedAdmin(null);
+    fetchHealthInsurances();
+  };
+
+  const getLinkedInsurances = (adminId: string) => {
+    return healthInsurances.filter(ins => ins.administrator_id === adminId);
   };
 
   const filtered = administrators.filter((a) =>
@@ -207,10 +294,10 @@ export default function Administrators() {
             <TableRow>
               <TableHead>Nome</TableHead>
               <TableHead>CNPJ</TableHead>
+              <TableHead>Convênios Vinculados</TableHead>
               <TableHead>Contato</TableHead>
-              <TableHead>Telefone</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="w-[80px]">Ações</TableHead>
+              <TableHead className="w-[120px]">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -223,28 +310,159 @@ export default function Administrators() {
                 <TableCell colSpan={6} className="text-center">Nenhuma administradora encontrada</TableCell>
               </TableRow>
             ) : (
-              filtered.map((admin) => (
-                <TableRow key={admin.id}>
-                  <TableCell className="font-medium">{admin.name}</TableCell>
-                  <TableCell>{admin.cnpj || '-'}</TableCell>
-                  <TableCell>{admin.contact_name || '-'}</TableCell>
-                  <TableCell>{admin.contact_phone || '-'}</TableCell>
-                  <TableCell>
-                    <span className={`rounded-full px-2 py-1 text-xs ${admin.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                      {admin.active ? 'Ativo' : 'Inativo'}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <Button variant="ghost" size="icon" onClick={() => openEdit(admin)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
+              filtered.map((admin) => {
+                const linkedInsurances = getLinkedInsurances(admin.id);
+                return (
+                  <TableRow key={admin.id}>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <Building2 className="h-4 w-4 text-muted-foreground" />
+                        {admin.name}
+                      </div>
+                    </TableCell>
+                    <TableCell>{admin.cnpj || '-'}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1 max-w-[300px]">
+                        {linkedInsurances.length === 0 ? (
+                          <span className="text-muted-foreground text-sm">Nenhum convênio</span>
+                        ) : (
+                          linkedInsurances.slice(0, 3).map(ins => (
+                            <Badge key={ins.id} variant="secondary" className="text-xs">
+                              {ins.name}
+                            </Badge>
+                          ))
+                        )}
+                        {linkedInsurances.length > 3 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{linkedInsurances.length - 3}
+                          </Badge>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm">
+                        <p>{admin.contact_name || '-'}</p>
+                        {admin.contact_phone && (
+                          <p className="text-muted-foreground">{admin.contact_phone}</p>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={admin.active ? 'default' : 'destructive'}>
+                        {admin.active ? 'Ativo' : 'Inativo'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => openInsuranceDialog(admin)}
+                          title="Gerenciar Convênios"
+                        >
+                          <Link2 className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => openEdit(admin)}
+                          title="Editar"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>
       </div>
+
+      {/* Dialog para gerenciar convênios */}
+      <Dialog open={insuranceDialogOpen} onOpenChange={setInsuranceDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Link2 className="h-5 w-5" />
+              Convênios - {selectedAdmin?.name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Selecione os convênios que fazem parte desta administradora:
+            </p>
+            <div className="max-h-[400px] overflow-y-auto space-y-2 border rounded-lg p-3">
+              {healthInsurances.length === 0 ? (
+                <p className="text-center text-muted-foreground py-4">
+                  Nenhum convênio cadastrado
+                </p>
+              ) : (
+                healthInsurances.map(insurance => {
+                  const isLinkedToOther = insurance.administrator_id && 
+                    insurance.administrator_id !== selectedAdmin?.id;
+                  const otherAdmin = isLinkedToOther 
+                    ? administrators.find(a => a.id === insurance.administrator_id)
+                    : null;
+
+                  return (
+                    <div
+                      key={insurance.id}
+                      className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
+                        selectedInsurances.includes(insurance.id)
+                          ? 'bg-primary/5 border-primary/30'
+                          : 'hover:bg-muted/50'
+                      } ${isLinkedToOther ? 'opacity-60' : ''}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Checkbox
+                          id={insurance.id}
+                          checked={selectedInsurances.includes(insurance.id)}
+                          onCheckedChange={() => toggleInsurance(insurance.id)}
+                        />
+                        <label 
+                          htmlFor={insurance.id}
+                          className="cursor-pointer flex-1"
+                        >
+                          <p className="font-medium">{insurance.name}</p>
+                          {insurance.code && (
+                            <p className="text-xs text-muted-foreground">
+                              Código: {insurance.code}
+                            </p>
+                          )}
+                        </label>
+                      </div>
+                      {isLinkedToOther && (
+                        <Badge variant="outline" className="text-xs">
+                          {otherAdmin?.name}
+                        </Badge>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+            <div className="flex items-center justify-between pt-2">
+              <p className="text-sm text-muted-foreground">
+                {selectedInsurances.length} convênio(s) selecionado(s)
+              </p>
+              <div className="flex gap-2">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setInsuranceDialogOpen(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button onClick={handleSaveInsurances}>
+                  Salvar Vínculos
+                </Button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
