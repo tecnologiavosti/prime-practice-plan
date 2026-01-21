@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import {
   Table,
   TableBody,
@@ -25,15 +26,35 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search } from 'lucide-react';
-import { format } from 'date-fns';
+import { Plus, Search, Trash2, FileText, Calendar, AlertTriangle } from 'lucide-react';
+import { format, addDays, isAfter, isBefore } from 'date-fns';
 import { cn } from '@/lib/utils';
+
+interface GuideItem {
+  id?: string;
+  procedure_id: string;
+  professional_id: string;
+  service_date: string;
+  quantity: number;
+  unit_value: number;
+  total_value: number;
+  status: string;
+  procedure?: { id: string; name: string; code: string } | null;
+  professional?: { id: string; full_name: string } | null;
+}
 
 interface MedicalGuide {
   id: string;
   guide_number: string;
   guide_date: string;
+  validity_date: string | null;
   quantity: number;
   unit_value: number;
   total_value: number;
@@ -42,6 +63,7 @@ interface MedicalGuide {
   health_insurance: { id: string; name: string } | null;
   procedure: { id: string; name: string } | null;
   professional: { id: string; full_name: string } | null;
+  items?: GuideItem[];
 }
 
 interface Patient {
@@ -67,20 +89,36 @@ interface Procedure {
 
 const statusColors: Record<string, string> = {
   pendente: 'bg-yellow-100 text-yellow-800',
-  faturado: 'bg-blue-100 text-blue-800',
-  recebido: 'bg-green-100 text-green-800',
-  glosado: 'bg-red-100 text-red-800',
+  autorizada: 'bg-green-100 text-green-800',
+  faturada: 'bg-blue-100 text-blue-800',
+  recebida: 'bg-emerald-100 text-emerald-800',
+  glosada: 'bg-red-100 text-red-800',
+};
+
+const statusLabels: Record<string, string> = {
+  pendente: 'Pendente',
+  autorizada: 'Autorizada',
+  faturada: 'Faturada',
+  recebida: 'Recebida',
+  glosada: 'Glosada',
 };
 
 const emptyForm = {
   guide_number: '',
   patient_id: '',
   health_insurance_id: '',
+  guide_date: format(new Date(), 'yyyy-MM-dd'),
+  validity_date: format(addDays(new Date(), 30), 'yyyy-MM-dd'),
+};
+
+const emptyItem: Omit<GuideItem, 'id' | 'procedure' | 'professional'> = {
   procedure_id: '',
   professional_id: '',
-  guide_date: format(new Date(), 'yyyy-MM-dd'),
+  service_date: format(new Date(), 'yyyy-MM-dd'),
   quantity: 1,
   unit_value: 0,
+  total_value: 0,
+  status: 'pendente',
 };
 
 export default function MedicalGuides() {
@@ -94,6 +132,8 @@ export default function MedicalGuides() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formData, setFormData] = useState(emptyForm);
+  const [items, setItems] = useState<Omit<GuideItem, 'id' | 'procedure' | 'professional'>[]>([{ ...emptyItem }]);
+  const [expandedGuide, setExpandedGuide] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -135,6 +175,37 @@ export default function MedicalGuides() {
     setGuides((data as any) || []);
   };
 
+  const fetchGuideItems = async (guideId: string) => {
+    const { data, error } = await supabase
+      .from('medical_guide_items')
+      .select(`
+        *,
+        procedure:procedures(id, name, code),
+        professional:professionals(id, full_name)
+      `)
+      .eq('medical_guide_id', guideId)
+      .order('service_date', { ascending: true });
+
+    if (error) {
+      toast({ variant: 'destructive', title: 'Erro', description: error.message });
+      return [];
+    }
+    return data || [];
+  };
+
+  const handleExpandGuide = async (guideId: string) => {
+    if (expandedGuide === guideId) {
+      setExpandedGuide(null);
+      return;
+    }
+    
+    const items = await fetchGuideItems(guideId);
+    setGuides(prev => prev.map(g => 
+      g.id === guideId ? { ...g, items: items as GuideItem[] } : g
+    ));
+    setExpandedGuide(guideId);
+  };
+
   const fetchPatients = async () => {
     const { data } = await supabase.from('patients').select('id, full_name').eq('active', true).order('full_name');
     setPatients(data || []);
@@ -161,39 +232,100 @@ export default function MedicalGuides() {
     return `G${timestamp}${random}`;
   };
 
+  const addItem = () => {
+    setItems([...items, { ...emptyItem }]);
+  };
+
+  const removeItem = (index: number) => {
+    if (items.length > 1) {
+      setItems(items.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateItem = (index: number, field: keyof typeof emptyItem, value: any) => {
+    const newItems = [...items];
+    newItems[index] = { ...newItems[index], [field]: value };
+    
+    // Recalculate total
+    if (field === 'quantity' || field === 'unit_value') {
+      newItems[index].total_value = newItems[index].quantity * newItems[index].unit_value;
+    }
+    
+    setItems(newItems);
+  };
+
+  const getTotalValue = () => {
+    return items.reduce((sum, item) => sum + item.total_value, 0);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const totalValue = formData.quantity * formData.unit_value;
+    if (!formData.patient_id || !formData.health_insurance_id) {
+      toast({ variant: 'destructive', title: 'Erro', description: 'Preencha paciente e convênio' });
+      return;
+    }
 
+    if (items.every(item => !item.procedure_id)) {
+      toast({ variant: 'destructive', title: 'Erro', description: 'Adicione pelo menos um procedimento' });
+      return;
+    }
+
+    const totalValue = getTotalValue();
+
+    // Create the guide
     const payload = {
       guide_number: formData.guide_number || generateGuideNumber(),
       patient_id: formData.patient_id,
-      health_insurance_id: formData.health_insurance_id || null,
-      procedure_id: formData.procedure_id || null,
-      professional_id: formData.professional_id || null,
+      health_insurance_id: formData.health_insurance_id,
       guide_date: formData.guide_date,
-      quantity: formData.quantity,
-      unit_value: formData.unit_value,
+      validity_date: formData.validity_date,
+      quantity: items.reduce((sum, i) => sum + i.quantity, 0),
+      unit_value: 0,
       total_value: totalValue,
       status: 'pendente',
     };
 
-    const { data: guideData, error } = await supabase.from('medical_guides').insert([payload]).select().single();
+    const { data: guideData, error } = await supabase
+      .from('medical_guides')
+      .insert([payload])
+      .select()
+      .single();
 
     if (error) {
       toast({ variant: 'destructive', title: 'Erro', description: error.message });
       return;
     }
 
-    // Criar lançamento financeiro automaticamente
+    // Create guide items
+    const validItems = items.filter(item => item.procedure_id);
+    if (validItems.length > 0 && guideData) {
+      const itemsPayload = validItems.map(item => ({
+        medical_guide_id: guideData.id,
+        procedure_id: item.procedure_id,
+        professional_id: item.professional_id || null,
+        service_date: item.service_date,
+        quantity: item.quantity,
+        unit_value: item.unit_value,
+        total_value: item.total_value,
+        status: 'pendente',
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('medical_guide_items')
+        .insert(itemsPayload);
+
+      if (itemsError) {
+        toast({ variant: 'destructive', title: 'Erro ao salvar itens', description: itemsError.message });
+      }
+    }
+
+    // Create financial transaction
     if (guideData) {
       await supabase.from('financial_transactions').insert([{
         transaction_type: 'convenio',
         patient_id: formData.patient_id,
-        professional_id: formData.professional_id || null,
-        health_insurance_id: formData.health_insurance_id || null,
-        procedure_id: formData.procedure_id || null,
+        health_insurance_id: formData.health_insurance_id,
         medical_guide_id: guideData.id,
         amount: totalValue,
         due_date: formData.guide_date,
@@ -204,6 +336,7 @@ export default function MedicalGuides() {
     toast({ title: 'Guia criada com sucesso!' });
     setDialogOpen(false);
     setFormData(emptyForm);
+    setItems([{ ...emptyItem }]);
     fetchGuides();
   };
 
@@ -215,12 +348,12 @@ export default function MedicalGuides() {
       return;
     }
 
-    // Atualizar status do lançamento financeiro correspondente
-    if (newStatus === 'recebido') {
+    // Update financial transaction status
+    if (newStatus === 'recebida') {
       await supabase.from('financial_transactions')
         .update({ status: 'pago', payment_date: format(new Date(), 'yyyy-MM-dd') })
         .eq('medical_guide_id', id);
-    } else if (newStatus === 'glosado') {
+    } else if (newStatus === 'glosada') {
       await supabase.from('financial_transactions')
         .update({ status: 'cancelado' })
         .eq('medical_guide_id', id);
@@ -232,6 +365,7 @@ export default function MedicalGuides() {
 
   const openNew = () => {
     setFormData({ ...emptyForm, guide_number: generateGuideNumber() });
+    setItems([{ ...emptyItem }]);
     setDialogOpen(true);
   };
 
@@ -244,12 +378,25 @@ export default function MedicalGuides() {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
   };
 
+  const isExpired = (validityDate: string | null) => {
+    if (!validityDate) return false;
+    return isBefore(new Date(validityDate), new Date());
+  };
+
+  const isExpiringSoon = (validityDate: string | null) => {
+    if (!validityDate) return false;
+    const validity = new Date(validityDate);
+    const today = new Date();
+    const fiveDaysFromNow = addDays(today, 5);
+    return isAfter(validity, today) && isBefore(validity, fiveDaysFromNow);
+  };
+
   return (
     <div className="p-6">
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Guias</h1>
-          <p className="text-muted-foreground">Gerencie as guias de atendimento</p>
+          <p className="text-muted-foreground">Gerencie as guias de atendimento com múltiplos procedimentos</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
@@ -258,18 +405,37 @@ export default function MedicalGuides() {
               Nova Guia
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Nova Guia</DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label>Nº da Guia</Label>
-                <Input
-                  value={formData.guide_number}
-                  onChange={(e) => setFormData({ ...formData, guide_number: e.target.value })}
-                  placeholder="Gerado automaticamente"
-                />
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Header da Guia */}
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <div className="space-y-2">
+                  <Label>Nº da Guia</Label>
+                  <Input
+                    value={formData.guide_number}
+                    onChange={(e) => setFormData({ ...formData, guide_number: e.target.value })}
+                    placeholder="Gerado automaticamente"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Data da Guia *</Label>
+                  <Input
+                    type="date"
+                    value={formData.guide_date}
+                    onChange={(e) => setFormData({ ...formData, guide_date: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Validade da Guia</Label>
+                  <Input
+                    type="date"
+                    value={formData.validity_date}
+                    onChange={(e) => setFormData({ ...formData, validity_date: e.target.value })}
+                  />
+                </div>
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
@@ -280,7 +446,7 @@ export default function MedicalGuides() {
                     onValueChange={(v) => setFormData({ ...formData, patient_id: v })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecione" />
+                      <SelectValue placeholder="Selecione o paciente" />
                     </SelectTrigger>
                     <SelectContent>
                       {patients.map((p) => (
@@ -296,7 +462,7 @@ export default function MedicalGuides() {
                     onValueChange={(v) => setFormData({ ...formData, health_insurance_id: v })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecione" />
+                      <SelectValue placeholder="Selecione o convênio" />
                     </SelectTrigger>
                     <SelectContent>
                       {insurances.map((i) => (
@@ -307,67 +473,118 @@ export default function MedicalGuides() {
                 </div>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label>Procedimento</Label>
-                  <Select
-                    value={formData.procedure_id}
-                    onValueChange={(v) => setFormData({ ...formData, procedure_id: v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {procedures.map((p) => (
-                        <SelectItem key={p.id} value={p.id}>{p.code} - {p.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+              {/* Itens/Atendimentos */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label className="text-base font-semibold">Atendimentos / Procedimentos</Label>
+                  <Button type="button" variant="outline" size="sm" onClick={addItem}>
+                    <Plus className="mr-1 h-4 w-4" />
+                    Adicionar
+                  </Button>
                 </div>
-                <div className="space-y-2">
-                  <Label>Profissional</Label>
-                  <Select
-                    value={formData.professional_id}
-                    onValueChange={(v) => setFormData({ ...formData, professional_id: v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {professionals.map((p) => (
-                        <SelectItem key={p.id} value={p.id}>{p.full_name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
 
-              <div className="grid gap-4 md:grid-cols-3">
-                <div className="space-y-2">
-                  <Label>Data</Label>
-                  <Input
-                    type="date"
-                    value={formData.guide_date}
-                    onChange={(e) => setFormData({ ...formData, guide_date: e.target.value })}
-                  />
+                <div className="space-y-3">
+                  {items.map((item, index) => (
+                    <div key={index} className="p-4 border rounded-lg bg-muted/30 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Atendimento {index + 1}</span>
+                        {items.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeItem(index)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        )}
+                      </div>
+                      
+                      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+                        <div className="space-y-1">
+                          <Label className="text-xs">Procedimento *</Label>
+                          <Select
+                            value={item.procedure_id}
+                            onValueChange={(v) => updateItem(index, 'procedure_id', v)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {procedures.map((p) => (
+                                <SelectItem key={p.id} value={p.id}>
+                                  {p.code} - {p.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <div className="space-y-1">
+                          <Label className="text-xs">Profissional</Label>
+                          <Select
+                            value={item.professional_id}
+                            onValueChange={(v) => updateItem(index, 'professional_id', v)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {professionals.map((p) => (
+                                <SelectItem key={p.id} value={p.id}>{p.full_name}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-1">
+                          <Label className="text-xs">Data Atendimento</Label>
+                          <Input
+                            type="date"
+                            value={item.service_date}
+                            onChange={(e) => updateItem(index, 'service_date', e.target.value)}
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-2">
+                          <div className="space-y-1">
+                            <Label className="text-xs">Qtd</Label>
+                            <Input
+                              type="number"
+                              min="1"
+                              value={item.quantity}
+                              onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 1)}
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">Valor</Label>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={item.unit_value}
+                              onChange={(e) => updateItem(index, 'unit_value', parseFloat(e.target.value) || 0)}
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">Total</Label>
+                            <Input
+                              type="text"
+                              value={formatCurrency(item.total_value)}
+                              disabled
+                              className="bg-muted"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div className="space-y-2">
-                  <Label>Quantidade</Label>
-                  <Input
-                    type="number"
-                    min="1"
-                    value={formData.quantity}
-                    onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) || 1 })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Valor Unit. (R$)</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={formData.unit_value}
-                    onChange={(e) => setFormData({ ...formData, unit_value: parseFloat(e.target.value) || 0 })}
-                  />
+
+                <div className="flex justify-end p-3 bg-muted rounded-lg">
+                  <div className="text-right">
+                    <p className="text-sm text-muted-foreground">Total da Guia</p>
+                    <p className="text-xl font-bold">{formatCurrency(getTotalValue())}</p>
+                  </div>
                 </div>
               </div>
 
@@ -375,7 +592,7 @@ export default function MedicalGuides() {
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                   Cancelar
                 </Button>
-                <Button type="submit">Salvar</Button>
+                <Button type="submit">Salvar Guia</Button>
               </div>
             </form>
           </DialogContent>
@@ -399,9 +616,10 @@ export default function MedicalGuides() {
           <SelectContent>
             <SelectItem value="all">Todos</SelectItem>
             <SelectItem value="pendente">Pendente</SelectItem>
-            <SelectItem value="faturado">Faturado</SelectItem>
-            <SelectItem value="recebido">Recebido</SelectItem>
-            <SelectItem value="glosado">Glosado</SelectItem>
+            <SelectItem value="autorizada">Autorizada</SelectItem>
+            <SelectItem value="faturada">Faturada</SelectItem>
+            <SelectItem value="recebida">Recebida</SelectItem>
+            <SelectItem value="glosada">Glosada</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -410,12 +628,13 @@ export default function MedicalGuides() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[40px]"></TableHead>
               <TableHead>Nº Guia</TableHead>
               <TableHead>Data</TableHead>
+              <TableHead>Validade</TableHead>
               <TableHead>Paciente</TableHead>
               <TableHead>Convênio</TableHead>
-              <TableHead>Procedimento</TableHead>
-              <TableHead>Valor</TableHead>
+              <TableHead>Valor Total</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Ações</TableHead>
             </TableRow>
@@ -423,40 +642,115 @@ export default function MedicalGuides() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center">Carregando...</TableCell>
+                <TableCell colSpan={9} className="text-center">Carregando...</TableCell>
               </TableRow>
             ) : filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center">Nenhuma guia encontrada</TableCell>
+                <TableCell colSpan={9} className="text-center">Nenhuma guia encontrada</TableCell>
               </TableRow>
             ) : (
               filtered.map((g) => (
-                <TableRow key={g.id}>
-                  <TableCell className="font-mono font-medium">{g.guide_number}</TableCell>
-                  <TableCell>{format(new Date(g.guide_date), 'dd/MM/yyyy')}</TableCell>
-                  <TableCell>{g.patient?.full_name || '-'}</TableCell>
-                  <TableCell>{g.health_insurance?.name || '-'}</TableCell>
-                  <TableCell>{g.procedure?.name || '-'}</TableCell>
-                  <TableCell className="font-medium">{formatCurrency(Number(g.total_value))}</TableCell>
-                  <TableCell>
-                    <span className={cn('rounded-full px-2 py-1 text-xs capitalize', statusColors[g.status])}>
-                      {g.status}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <Select value={g.status} onValueChange={(v) => handleStatusChange(g.id, v)}>
-                      <SelectTrigger className="w-[120px]">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pendente">Pendente</SelectItem>
-                        <SelectItem value="faturado">Faturado</SelectItem>
-                        <SelectItem value="recebido">Recebido</SelectItem>
-                        <SelectItem value="glosado">Glosado</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                </TableRow>
+                <>
+                  <TableRow key={g.id} className="cursor-pointer" onClick={() => handleExpandGuide(g.id)}>
+                    <TableCell>
+                      <FileText className="h-4 w-4 text-muted-foreground" />
+                    </TableCell>
+                    <TableCell className="font-mono font-medium">{g.guide_number}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3 text-muted-foreground" />
+                        {format(new Date(g.guide_date), 'dd/MM/yyyy')}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {g.validity_date ? (
+                        <div className={cn(
+                          "flex items-center gap-1",
+                          isExpired(g.validity_date) && "text-destructive",
+                          isExpiringSoon(g.validity_date) && "text-amber-600"
+                        )}>
+                          {(isExpired(g.validity_date) || isExpiringSoon(g.validity_date)) && (
+                            <AlertTriangle className="h-3 w-3" />
+                          )}
+                          {format(new Date(g.validity_date), 'dd/MM/yyyy')}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell>{g.patient?.full_name || '-'}</TableCell>
+                    <TableCell>{g.health_insurance?.name || '-'}</TableCell>
+                    <TableCell className="font-medium">{formatCurrency(Number(g.total_value))}</TableCell>
+                    <TableCell>
+                      <Badge className={cn(statusColors[g.status])}>
+                        {statusLabels[g.status] || g.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <Select value={g.status} onValueChange={(v) => handleStatusChange(g.id, v)}>
+                        <SelectTrigger className="w-[120px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pendente">Pendente</SelectItem>
+                          <SelectItem value="autorizada">Autorizada</SelectItem>
+                          <SelectItem value="faturada">Faturada</SelectItem>
+                          <SelectItem value="recebida">Recebida</SelectItem>
+                          <SelectItem value="glosada">Glosada</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                  </TableRow>
+                  {/* Expanded items */}
+                  {expandedGuide === g.id && g.items && g.items.length > 0 && (
+                    <TableRow>
+                      <TableCell colSpan={9} className="bg-muted/30 p-0">
+                        <div className="p-4">
+                          <p className="text-sm font-medium mb-2">Atendimentos da Guia</p>
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Procedimento</TableHead>
+                                <TableHead>Profissional</TableHead>
+                                <TableHead>Data</TableHead>
+                                <TableHead>Qtd</TableHead>
+                                <TableHead>Valor Unit.</TableHead>
+                                <TableHead>Total</TableHead>
+                                <TableHead>Status</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {g.items.map((item) => (
+                                <TableRow key={item.id}>
+                                  <TableCell>
+                                    {item.procedure?.code} - {item.procedure?.name || '-'}
+                                  </TableCell>
+                                  <TableCell>{item.professional?.full_name || '-'}</TableCell>
+                                  <TableCell>{format(new Date(item.service_date), 'dd/MM/yyyy')}</TableCell>
+                                  <TableCell>{item.quantity}</TableCell>
+                                  <TableCell>{formatCurrency(Number(item.unit_value))}</TableCell>
+                                  <TableCell className="font-medium">{formatCurrency(Number(item.total_value))}</TableCell>
+                                  <TableCell>
+                                    <Badge className={cn(statusColors[item.status])}>
+                                      {statusLabels[item.status] || item.status}
+                                    </Badge>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  {expandedGuide === g.id && (!g.items || g.items.length === 0) && (
+                    <TableRow>
+                      <TableCell colSpan={9} className="bg-muted/30 text-center py-4 text-muted-foreground">
+                        Nenhum atendimento registrado nesta guia
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </>
               ))
             )}
           </TableBody>
