@@ -137,6 +137,14 @@ export default function Schedule() {
 
   const hours = Array.from({ length: 12 }, (_, i) => i + 7); // 7:00 to 18:00
 
+  if (loading) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-[400px]">
+        <div className="text-muted-foreground">Carregando...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6">
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -147,14 +155,20 @@ export default function Schedule() {
         <div className="flex flex-wrap gap-3">
           <Select value={selectedProfessional} onValueChange={setSelectedProfessional}>
             <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Selecione" />
+              <SelectValue placeholder="Selecione um profissional" />
             </SelectTrigger>
             <SelectContent>
-              {professionals.map((prof) => (
-                <SelectItem key={prof.id} value={prof.id}>
-                  {prof.full_name}
+              {professionals.length === 0 ? (
+                <SelectItem value="none" disabled>
+                  Nenhum profissional cadastrado
                 </SelectItem>
-              ))}
+              ) : (
+                professionals.map((prof) => (
+                  <SelectItem key={prof.id} value={prof.id}>
+                    {prof.full_name}
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
           <Select value={viewType} onValueChange={(v) => setViewType(v as ViewType)}>
@@ -189,8 +203,26 @@ export default function Schedule() {
         </Button>
       </div>
 
+      {/* Empty State - No professionals */}
+      {professionals.length === 0 && (
+        <Card className="border-dashed">
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-4">
+              <Plus className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-semibold mb-1">Nenhum profissional cadastrado</h3>
+            <p className="text-muted-foreground text-center mb-4">
+              Cadastre profissionais para visualizar e gerenciar a agenda.
+            </p>
+            <Button onClick={() => navigate('/profissionais')}>
+              Cadastrar Profissional
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Day View */}
-      {viewType === 'day' && (
+      {professionals.length > 0 && viewType === 'day' && (
         <Card>
           <CardContent className="p-4">
             <div className="space-y-2">
@@ -204,20 +236,24 @@ export default function Schedule() {
                       {hour.toString().padStart(2, '0')}:00
                     </div>
                     <div className="flex-1 space-y-1">
-                      {hourAppts.map((apt) => (
-                        <div
-                          key={apt.id}
-                          className={cn(
-                            'rounded border p-2 text-sm',
-                            statusColors[apt.status]
-                          )}
-                        >
-                          <div className="font-medium">{apt.patient?.full_name}</div>
-                          <div className="text-xs">
-                            {apt.start_time.slice(0, 5)} - {apt.end_time.slice(0, 5)} | {apt.procedure?.name}
+                      {hourAppts.length === 0 ? (
+                        <div className="h-8 rounded border border-dashed border-muted-foreground/30" />
+                      ) : (
+                        hourAppts.map((apt) => (
+                          <div
+                            key={apt.id}
+                            className={cn(
+                              'rounded border p-2 text-sm',
+                              statusColors[apt.status]
+                            )}
+                          >
+                            <div className="font-medium">{apt.patient?.full_name}</div>
+                            <div className="text-xs">
+                              {apt.start_time.slice(0, 5)} - {apt.end_time.slice(0, 5)} | {apt.procedure?.name}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        ))
+                      )}
                     </div>
                   </div>
                 );
@@ -228,7 +264,7 @@ export default function Schedule() {
       )}
 
       {/* Week View */}
-      {viewType === 'week' && (
+      {professionals.length > 0 && viewType === 'week' && (
         <div className="grid grid-cols-7 gap-2">
           {weekDays.map((day) => (
             <Card key={day.toISOString()} className={cn(isSameDay(day, new Date()) && 'ring-2 ring-primary')}>
@@ -238,19 +274,25 @@ export default function Schedule() {
                   <div className="text-lg">{format(day, 'd')}</div>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="max-h-64 space-y-1 overflow-y-auto p-2">
-                {getAppointmentsForDate(day).map((apt) => (
-                  <div
-                    key={apt.id}
-                    className={cn(
-                      'rounded border p-1 text-xs',
-                      statusColors[apt.status]
-                    )}
-                  >
-                    <div className="font-medium truncate">{apt.patient?.full_name}</div>
-                    <div>{apt.start_time.slice(0, 5)}</div>
+              <CardContent className="min-h-[200px] max-h-64 space-y-1 overflow-y-auto p-2">
+                {getAppointmentsForDate(day).length === 0 ? (
+                  <div className="h-full flex items-center justify-center text-xs text-muted-foreground">
+                    Sem consultas
                   </div>
-                ))}
+                ) : (
+                  getAppointmentsForDate(day).map((apt) => (
+                    <div
+                      key={apt.id}
+                      className={cn(
+                        'rounded border p-1 text-xs',
+                        statusColors[apt.status]
+                      )}
+                    >
+                      <div className="font-medium truncate">{apt.patient?.full_name}</div>
+                      <div>{apt.start_time.slice(0, 5)}</div>
+                    </div>
+                  ))
+                )}
               </CardContent>
             </Card>
           ))}
@@ -258,7 +300,7 @@ export default function Schedule() {
       )}
 
       {/* Month View */}
-      {viewType === 'month' && (
+      {professionals.length > 0 && viewType === 'month' && (
         <div className="grid grid-cols-7 gap-1">
           {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((d) => (
             <div key={d} className="p-2 text-center text-sm font-medium text-muted-foreground">
