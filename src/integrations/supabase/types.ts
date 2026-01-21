@@ -456,6 +456,7 @@ export type Database = {
           active: boolean
           administrator_id: string | null
           ans_registration: string | null
+          billing_rate: number | null
           code: string | null
           contact_email: string | null
           contact_phone: string | null
@@ -469,6 +470,7 @@ export type Database = {
           active?: boolean
           administrator_id?: string | null
           ans_registration?: string | null
+          billing_rate?: number | null
           code?: string | null
           contact_email?: string | null
           contact_phone?: string | null
@@ -482,6 +484,7 @@ export type Database = {
           active?: boolean
           administrator_id?: string | null
           ans_registration?: string | null
+          billing_rate?: number | null
           code?: string | null
           contact_email?: string | null
           contact_phone?: string | null

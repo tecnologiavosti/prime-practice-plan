@@ -21,7 +21,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search, Edit, Building2, Link2 } from 'lucide-react';
+import { Plus, Search, Edit, Building2, Link2, DollarSign } from 'lucide-react';
 
 interface Administrator {
   id: string;
@@ -38,7 +38,14 @@ interface HealthInsurance {
   name: string;
   code: string | null;
   administrator_id: string | null;
+  billing_rate: number | null;
   active: boolean;
+}
+
+interface InsuranceWithValue {
+  id: string;
+  selected: boolean;
+  billing_rate: number;
 }
 
 const emptyAdministrator = {
@@ -58,7 +65,7 @@ export default function Administrators() {
   const [insuranceDialogOpen, setInsuranceDialogOpen] = useState(false);
   const [editingAdmin, setEditingAdmin] = useState<Administrator | null>(null);
   const [selectedAdmin, setSelectedAdmin] = useState<Administrator | null>(null);
-  const [selectedInsurances, setSelectedInsurances] = useState<string[]>([]);
+  const [insuranceSettings, setInsuranceSettings] = useState<Map<string, InsuranceWithValue>>(new Map());
   const [formData, setFormData] = useState(emptyAdministrator);
   const { toast } = useToast();
 
@@ -87,7 +94,7 @@ export default function Administrators() {
   const fetchHealthInsurances = async () => {
     const { data, error } = await supabase
       .from('health_insurances')
-      .select('id, name, code, administrator_id, active')
+      .select('id, name, code, administrator_id, billing_rate, active')
       .eq('active', true)
       .order('name');
 
@@ -148,20 +155,46 @@ export default function Administrators() {
 
   const openInsuranceDialog = (admin: Administrator) => {
     setSelectedAdmin(admin);
-    // Get currently linked insurances
-    const linkedInsurances = healthInsurances
-      .filter(ins => ins.administrator_id === admin.id)
-      .map(ins => ins.id);
-    setSelectedInsurances(linkedInsurances);
+    
+    // Initialize settings for all insurances
+    const settings = new Map<string, InsuranceWithValue>();
+    healthInsurances.forEach(ins => {
+      settings.set(ins.id, {
+        id: ins.id,
+        selected: ins.administrator_id === admin.id,
+        billing_rate: ins.administrator_id === admin.id ? Number(ins.billing_rate || 0) : 0,
+      });
+    });
+    setInsuranceSettings(settings);
     setInsuranceDialogOpen(true);
   };
 
   const toggleInsurance = (insuranceId: string) => {
-    setSelectedInsurances(prev => 
-      prev.includes(insuranceId)
-        ? prev.filter(id => id !== insuranceId)
-        : [...prev, insuranceId]
-    );
+    setInsuranceSettings(prev => {
+      const newSettings = new Map(prev);
+      const current = newSettings.get(insuranceId);
+      if (current) {
+        newSettings.set(insuranceId, {
+          ...current,
+          selected: !current.selected,
+        });
+      }
+      return newSettings;
+    });
+  };
+
+  const updateBillingRate = (insuranceId: string, value: number) => {
+    setInsuranceSettings(prev => {
+      const newSettings = new Map(prev);
+      const current = newSettings.get(insuranceId);
+      if (current) {
+        newSettings.set(insuranceId, {
+          ...current,
+          billing_rate: value,
+        });
+      }
+      return newSettings;
+    });
   };
 
   const handleSaveInsurances = async () => {
@@ -170,7 +203,7 @@ export default function Administrators() {
     // First, unlink all insurances from this admin
     const { error: unlinkError } = await supabase
       .from('health_insurances')
-      .update({ administrator_id: null })
+      .update({ administrator_id: null, billing_rate: 0 })
       .eq('administrator_id', selectedAdmin.id);
 
     if (unlinkError) {
@@ -178,20 +211,26 @@ export default function Administrators() {
       return;
     }
 
-    // Then, link the selected insurances
-    if (selectedInsurances.length > 0) {
-      const { error: linkError } = await supabase
-        .from('health_insurances')
-        .update({ administrator_id: selectedAdmin.id })
-        .in('id', selectedInsurances);
+    // Then, update each selected insurance with its billing rate
+    const selectedInsurances = Array.from(insuranceSettings.entries())
+      .filter(([_, settings]) => settings.selected);
 
-      if (linkError) {
-        toast({ variant: 'destructive', title: 'Erro', description: linkError.message });
+    for (const [insuranceId, settings] of selectedInsurances) {
+      const { error } = await supabase
+        .from('health_insurances')
+        .update({ 
+          administrator_id: selectedAdmin.id,
+          billing_rate: settings.billing_rate 
+        })
+        .eq('id', insuranceId);
+
+      if (error) {
+        toast({ variant: 'destructive', title: 'Erro', description: error.message });
         return;
       }
     }
 
-    toast({ title: 'Convênios vinculados com sucesso!' });
+    toast({ title: 'Convênios e valores salvos com sucesso!' });
     setInsuranceDialogOpen(false);
     setSelectedAdmin(null);
     fetchHealthInsurances();
@@ -201,9 +240,17 @@ export default function Administrators() {
     return healthInsurances.filter(ins => ins.administrator_id === adminId);
   };
 
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+  };
+
   const filtered = administrators.filter((a) =>
     a.name.toLowerCase().includes(search.toLowerCase()) || a.cnpj?.includes(search)
   );
+
+  const getSelectedCount = () => {
+    return Array.from(insuranceSettings.values()).filter(s => s.selected).length;
+  };
 
   return (
     <div className="p-6">
@@ -329,6 +376,11 @@ export default function Administrators() {
                           linkedInsurances.slice(0, 3).map(ins => (
                             <Badge key={ins.id} variant="secondary" className="text-xs">
                               {ins.name}
+                              {ins.billing_rate && Number(ins.billing_rate) > 0 && (
+                                <span className="ml-1 text-muted-foreground">
+                                  ({formatCurrency(Number(ins.billing_rate))})
+                                </span>
+                              )}
                             </Badge>
                           ))
                         )}
@@ -358,7 +410,7 @@ export default function Administrators() {
                           variant="ghost" 
                           size="icon" 
                           onClick={() => openInsuranceDialog(admin)}
-                          title="Gerenciar Convênios"
+                          title="Gerenciar Convênios e Valores"
                         >
                           <Link2 className="h-4 w-4" />
                         </Button>
@@ -380,18 +432,18 @@ export default function Administrators() {
         </Table>
       </div>
 
-      {/* Dialog para gerenciar convênios */}
+      {/* Dialog para gerenciar convênios e valores */}
       <Dialog open={insuranceDialogOpen} onOpenChange={setInsuranceDialogOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Link2 className="h-5 w-5" />
-              Convênios - {selectedAdmin?.name}
+              Convênios e Valores - {selectedAdmin?.name}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Selecione os convênios que fazem parte desta administradora:
+              Selecione os convênios e defina o valor de referência para cada um:
             </p>
             <div className="max-h-[400px] overflow-y-auto space-y-2 border rounded-lg p-3">
               {healthInsurances.length === 0 ? (
@@ -400,6 +452,7 @@ export default function Administrators() {
                 </p>
               ) : (
                 healthInsurances.map(insurance => {
+                  const settings = insuranceSettings.get(insurance.id);
                   const isLinkedToOther = insurance.administrator_id && 
                     insurance.administrator_id !== selectedAdmin?.id;
                   const otherAdmin = isLinkedToOther 
@@ -409,35 +462,58 @@ export default function Administrators() {
                   return (
                     <div
                       key={insurance.id}
-                      className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
-                        selectedInsurances.includes(insurance.id)
+                      className={`p-4 rounded-lg border transition-colors ${
+                        settings?.selected
                           ? 'bg-primary/5 border-primary/30'
                           : 'hover:bg-muted/50'
                       } ${isLinkedToOther ? 'opacity-60' : ''}`}
                     >
-                      <div className="flex items-center gap-3">
-                        <Checkbox
-                          id={insurance.id}
-                          checked={selectedInsurances.includes(insurance.id)}
-                          onCheckedChange={() => toggleInsurance(insurance.id)}
-                        />
-                        <label 
-                          htmlFor={insurance.id}
-                          className="cursor-pointer flex-1"
-                        >
-                          <p className="font-medium">{insurance.name}</p>
-                          {insurance.code && (
-                            <p className="text-xs text-muted-foreground">
-                              Código: {insurance.code}
-                            </p>
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-start gap-3 flex-1">
+                          <Checkbox
+                            id={insurance.id}
+                            checked={settings?.selected || false}
+                            onCheckedChange={() => toggleInsurance(insurance.id)}
+                            className="mt-1"
+                          />
+                          <div className="flex-1">
+                            <label 
+                              htmlFor={insurance.id}
+                              className="cursor-pointer block"
+                            >
+                              <p className="font-medium">{insurance.name}</p>
+                              {insurance.code && (
+                                <p className="text-xs text-muted-foreground">
+                                  Código: {insurance.code}
+                                </p>
+                              )}
+                            </label>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          {isLinkedToOther && (
+                            <Badge variant="outline" className="text-xs">
+                              {otherAdmin?.name}
+                            </Badge>
                           )}
-                        </label>
+                          
+                          {settings?.selected && (
+                            <div className="flex items-center gap-2">
+                              <DollarSign className="h-4 w-4 text-muted-foreground" />
+                              <Input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                placeholder="Valor"
+                                value={settings.billing_rate || ''}
+                                onChange={(e) => updateBillingRate(insurance.id, parseFloat(e.target.value) || 0)}
+                                className="w-28 h-8"
+                              />
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      {isLinkedToOther && (
-                        <Badge variant="outline" className="text-xs">
-                          {otherAdmin?.name}
-                        </Badge>
-                      )}
                     </div>
                   );
                 })
@@ -445,7 +521,7 @@ export default function Administrators() {
             </div>
             <div className="flex items-center justify-between pt-2">
               <p className="text-sm text-muted-foreground">
-                {selectedInsurances.length} convênio(s) selecionado(s)
+                {getSelectedCount()} convênio(s) selecionado(s)
               </p>
               <div className="flex gap-2">
                 <Button 
@@ -456,7 +532,7 @@ export default function Administrators() {
                   Cancelar
                 </Button>
                 <Button onClick={handleSaveInsurances}>
-                  Salvar Vínculos
+                  Salvar Convênios e Valores
                 </Button>
               </div>
             </div>
