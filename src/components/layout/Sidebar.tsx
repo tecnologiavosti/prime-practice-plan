@@ -37,6 +37,7 @@ const menuItems = [
   { to: '/admin/guias', icon: Receipt, label: 'Guias Médicas', roles: ['administrador', 'financeiro', 'recepcao'] },
   { to: '/admin/lotes-faturamento', icon: FileBarChart, label: 'Faturamento', roles: ['administrador', 'financeiro'] },
   { to: '/admin/repasses', icon: Wallet, label: 'Repasses', roles: ['administrador', 'financeiro'] },
+  { to: '/admin/repasse-convenios', icon: Banknote, label: 'Rep. Convênios', roles: ['administrador', 'financeiro'] },
   { to: '/admin/relatorios-financeiros', icon: FileBarChart, label: 'Relatórios', roles: ['administrador', 'financeiro'] },
   { to: '/admin/formas-pagamento', icon: Banknote, label: 'Formas Pgto', roles: ['administrador'] },
 ];

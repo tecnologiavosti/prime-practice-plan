@@ -87,6 +87,12 @@ interface Procedure {
   code: string;
 }
 
+interface ProcedureInsurancePrice {
+  procedure_id: string;
+  health_insurance_id: string;
+  price: number;
+}
+
 const statusColors: Record<string, string> = {
   pendente: 'bg-yellow-100 text-yellow-800',
   autorizada: 'bg-green-100 text-green-800',
@@ -127,6 +133,7 @@ export default function MedicalGuides() {
   const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [insurances, setInsurances] = useState<HealthInsurance[]>([]);
   const [procedures, setProcedures] = useState<Procedure[]>([]);
+  const [procedureInsurancePrices, setProcedureInsurancePrices] = useState<ProcedureInsurancePrice[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -147,6 +154,7 @@ export default function MedicalGuides() {
       fetchProfessionals(),
       fetchInsurances(),
       fetchProcedures(),
+      fetchProcedureInsurancePrices(),
     ]);
     setLoading(false);
   };
@@ -226,6 +234,11 @@ export default function MedicalGuides() {
     setProcedures(data || []);
   };
 
+  const fetchProcedureInsurancePrices = async () => {
+    const { data } = await supabase.from('procedure_insurance_prices').select('procedure_id, health_insurance_id, price');
+    setProcedureInsurancePrices(data || []);
+  };
+
   const generateGuideNumber = () => {
     const timestamp = Date.now().toString().slice(-8);
     const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
@@ -245,6 +258,17 @@ export default function MedicalGuides() {
   const updateItem = (index: number, field: keyof typeof emptyItem, value: any) => {
     const newItems = [...items];
     newItems[index] = { ...newItems[index], [field]: value };
+    
+    // Auto-fill unit_value when procedure is selected
+    if (field === 'procedure_id' && formData.health_insurance_id) {
+      const insurancePrice = procedureInsurancePrices.find(
+        pip => pip.procedure_id === value && pip.health_insurance_id === formData.health_insurance_id
+      );
+      if (insurancePrice) {
+        newItems[index].unit_value = insurancePrice.price;
+        newItems[index].total_value = newItems[index].quantity * insurancePrice.price;
+      }
+    }
     
     // Recalculate total
     if (field === 'quantity' || field === 'unit_value') {
