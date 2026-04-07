@@ -237,7 +237,7 @@ export default function Appointments() {
       const apt = appointments.find(a => a.id === appointmentId);
       if (apt) {
         setFinalizingAppointment(apt);
-        const price = apt.procedure?.private_price;
+        const price = (apt.procedure as any)?.private_price;
         setFinalizeAmount(price ? Number(price) : 0);
         setFinalizePaymentMethodId('');
         setFinalizeNotes('');
@@ -246,7 +246,7 @@ export default function Appointments() {
       }
     }
 
-    const { error } = await supabase.from('appointments').update({ status: newStatus }).eq('id', appointmentId);
+    const { error } = await supabase.from('appointments').update({ status: newStatus as any }).eq('id', appointmentId);
     if (error) { toast({ variant: 'destructive', title: 'Erro', description: error.message }); return; }
     toast({ title: 'Status atualizado!' });
     fetchAppointments();
