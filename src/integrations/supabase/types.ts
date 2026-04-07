@@ -504,6 +504,88 @@ export type Database = {
           },
         ]
       }
+      insurance_reimbursements: {
+        Row: {
+          created_at: string
+          expected_amount: number
+          health_insurance_id: string | null
+          id: string
+          notes: string | null
+          receipt_file_path: string | null
+          received_amount: number
+          reference_month: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          expected_amount?: number
+          health_insurance_id?: string | null
+          id?: string
+          notes?: string | null
+          receipt_file_path?: string | null
+          received_amount?: number
+          reference_month: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          expected_amount?: number
+          health_insurance_id?: string | null
+          id?: string
+          notes?: string | null
+          receipt_file_path?: string | null
+          received_amount?: number
+          reference_month?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "insurance_reimbursements_health_insurance_id_fkey"
+            columns: ["health_insurance_id"]
+            isOneToOne: false
+            referencedRelation: "health_insurances"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      medical_guide_documents: {
+        Row: {
+          file_name: string
+          file_path: string
+          file_type: string | null
+          id: string
+          medical_guide_id: string
+          uploaded_at: string
+        }
+        Insert: {
+          file_name: string
+          file_path: string
+          file_type?: string | null
+          id?: string
+          medical_guide_id: string
+          uploaded_at?: string
+        }
+        Update: {
+          file_name?: string
+          file_path?: string
+          file_type?: string | null
+          id?: string
+          medical_guide_id?: string
+          uploaded_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medical_guide_documents_medical_guide_id_fkey"
+            columns: ["medical_guide_id"]
+            isOneToOne: false
+            referencedRelation: "medical_guides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       medical_guide_items: {
         Row: {
           appointment_id: string | null
@@ -709,6 +791,41 @@ export type Database = {
             columns: ["procedure_id"]
             isOneToOne: false
             referencedRelation: "procedures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patient_documents: {
+        Row: {
+          file_name: string
+          file_path: string
+          file_type: string | null
+          id: string
+          patient_id: string
+          uploaded_at: string
+        }
+        Insert: {
+          file_name: string
+          file_path: string
+          file_type?: string | null
+          id?: string
+          patient_id: string
+          uploaded_at?: string
+        }
+        Update: {
+          file_name?: string
+          file_path?: string
+          file_type?: string | null
+          id?: string
+          patient_id?: string
+          uploaded_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_documents_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
             referencedColumns: ["id"]
           },
         ]
