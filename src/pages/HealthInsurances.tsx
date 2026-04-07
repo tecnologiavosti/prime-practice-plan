@@ -28,6 +28,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Search, Edit } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 
 interface HealthInsurance {
   id: string;
@@ -54,6 +55,7 @@ const emptyInsurance = {
   contact_phone: '',
   contact_email: '',
   notes: '',
+  active: true,
 };
 
 export default function HealthInsurances() {
@@ -96,6 +98,7 @@ export default function HealthInsurances() {
     const payload = {
       ...formData,
       administrator_id: formData.administrator_id || null,
+      active: formData.active,
     };
 
     if (editingInsurance) {
@@ -135,6 +138,7 @@ export default function HealthInsurances() {
       contact_phone: insurance.contact_phone || '',
       contact_email: insurance.contact_email || '',
       notes: insurance.notes || '',
+      active: insurance.active,
     });
     setDialogOpen(true);
   };
@@ -230,6 +234,13 @@ export default function HealthInsurances() {
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   />
+                </div>
+                <div className="flex items-center gap-3 md:col-span-2">
+                  <Switch
+                    checked={formData.active}
+                    onCheckedChange={(v) => setFormData({ ...formData, active: v })}
+                  />
+                  <Label>{formData.active ? 'Ativo' : 'Inativo'}</Label>
                 </div>
               </div>
               <div className="flex justify-end gap-2">
