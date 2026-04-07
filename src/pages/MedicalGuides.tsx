@@ -234,6 +234,11 @@ export default function MedicalGuides() {
     setProcedures(data || []);
   };
 
+  const fetchProcedureInsurancePrices = async () => {
+    const { data } = await supabase.from('procedure_insurance_prices').select('procedure_id, health_insurance_id, price');
+    setProcedureInsurancePrices(data || []);
+  };
+
   const generateGuideNumber = () => {
     const timestamp = Date.now().toString().slice(-8);
     const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
@@ -253,6 +258,17 @@ export default function MedicalGuides() {
   const updateItem = (index: number, field: keyof typeof emptyItem, value: any) => {
     const newItems = [...items];
     newItems[index] = { ...newItems[index], [field]: value };
+    
+    // Auto-fill unit_value when procedure is selected
+    if (field === 'procedure_id' && formData.health_insurance_id) {
+      const insurancePrice = procedureInsurancePrices.find(
+        pip => pip.procedure_id === value && pip.health_insurance_id === formData.health_insurance_id
+      );
+      if (insurancePrice) {
+        newItems[index].unit_value = insurancePrice.price;
+        newItems[index].total_value = newItems[index].quantity * insurancePrice.price;
+      }
+    }
     
     // Recalculate total
     if (field === 'quantity' || field === 'unit_value') {
