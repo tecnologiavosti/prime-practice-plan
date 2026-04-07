@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { PatientAuthProvider } from "@/contexts/PatientAuthContext";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PatientLayout } from "@/components/patient/PatientLayout";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Patients from "./pages/Patients";
@@ -24,6 +25,7 @@ import ProfessionalPayouts from "./pages/ProfessionalPayouts";
 import BillingBatches from "./pages/BillingBatches";
 import FinancialReports from "./pages/FinancialReports";
 import PaymentMethods from "./pages/PaymentMethods";
+import InsuranceReimbursements from "./pages/InsuranceReimbursements";
 import NotFound from "./pages/NotFound";
 // Patient Portal
 import LandingPage from "./pages/LandingPage";
@@ -41,48 +43,51 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Routes>
-          {/* Public Landing Page */}
-          <Route path="/" element={<LandingPage />} />
-          
-          {/* Patient Auth Routes */}
-          <Route path="/login" element={<PatientAuthProvider><PatientAuth mode="login" /></PatientAuthProvider>} />
-          <Route path="/cadastro" element={<PatientAuthProvider><PatientAuth mode="signup" /></PatientAuthProvider>} />
-          
-          {/* Patient Portal Routes */}
-          <Route element={<PatientAuthProvider><PatientLayout /></PatientAuthProvider>}>
-            <Route path="/dashboard" element={<PatientDashboard />} />
-            <Route path="/agendamentos" element={<PatientAppointments />} />
-            <Route path="/agendar" element={<PatientBooking />} />
-            <Route path="/meus-dados" element={<PatientProfile />} />
-            <Route path="/historico" element={<PatientHistory />} />
-          </Route>
-          
-          {/* Staff/Admin Routes */}
-          <Route path="/admin/auth" element={<AuthProvider><Auth /></AuthProvider>} />
-          <Route element={<AuthProvider><MainLayout /></AuthProvider>}>
-            <Route path="/admin" element={<Dashboard />} />
-            <Route path="/admin/pacientes" element={<Patients />} />
-            <Route path="/admin/profissionais" element={<Professionals />} />
-            <Route path="/admin/procedimentos" element={<Procedures />} />
-            <Route path="/admin/convenios" element={<HealthInsurances />} />
-            <Route path="/admin/administradoras" element={<Administrators />} />
-            <Route path="/admin/especialidades" element={<Specialties />} />
-            <Route path="/admin/pacotes" element={<Packages />} />
-            <Route path="/admin/agenda" element={<Schedule />} />
-            <Route path="/admin/agendamentos" element={<Appointments />} />
-            <Route path="/admin/financeiro" element={<FinancialTransactions />} />
-            <Route path="/admin/guias" element={<MedicalGuides />} />
-            <Route path="/admin/repasses" element={<ProfessionalPayouts />} />
-            <Route path="/admin/lotes-faturamento" element={<BillingBatches />} />
-            <Route path="/admin/relatorios-financeiros" element={<FinancialReports />} />
-            <Route path="/admin/formas-pagamento" element={<PaymentMethods />} />
-          </Route>
-          
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <ErrorBoundary>
+        <BrowserRouter>
+          <Routes>
+            {/* Public Landing Page */}
+            <Route path="/" element={<LandingPage />} />
+            
+            {/* Patient Auth Routes */}
+            <Route path="/login" element={<PatientAuthProvider><PatientAuth mode="login" /></PatientAuthProvider>} />
+            <Route path="/cadastro" element={<PatientAuthProvider><PatientAuth mode="signup" /></PatientAuthProvider>} />
+            
+            {/* Patient Portal Routes */}
+            <Route element={<PatientAuthProvider><PatientLayout /></PatientAuthProvider>}>
+              <Route path="/dashboard" element={<PatientDashboard />} />
+              <Route path="/agendamentos" element={<PatientAppointments />} />
+              <Route path="/agendar" element={<PatientBooking />} />
+              <Route path="/meus-dados" element={<PatientProfile />} />
+              <Route path="/historico" element={<PatientHistory />} />
+            </Route>
+            
+            {/* Staff/Admin Routes */}
+            <Route path="/admin/auth" element={<AuthProvider><Auth /></AuthProvider>} />
+            <Route element={<AuthProvider><MainLayout /></AuthProvider>}>
+              <Route path="/admin" element={<Dashboard />} />
+              <Route path="/admin/pacientes" element={<Patients />} />
+              <Route path="/admin/profissionais" element={<Professionals />} />
+              <Route path="/admin/procedimentos" element={<Procedures />} />
+              <Route path="/admin/convenios" element={<HealthInsurances />} />
+              <Route path="/admin/administradoras" element={<Administrators />} />
+              <Route path="/admin/especialidades" element={<Specialties />} />
+              <Route path="/admin/pacotes" element={<Packages />} />
+              <Route path="/admin/agenda" element={<Schedule />} />
+              <Route path="/admin/agendamentos" element={<Appointments />} />
+              <Route path="/admin/financeiro" element={<FinancialTransactions />} />
+              <Route path="/admin/guias" element={<MedicalGuides />} />
+              <Route path="/admin/repasses" element={<ProfessionalPayouts />} />
+              <Route path="/admin/repasse-convenios" element={<InsuranceReimbursements />} />
+              <Route path="/admin/lotes-faturamento" element={<BillingBatches />} />
+              <Route path="/admin/relatorios-financeiros" element={<FinancialReports />} />
+              <Route path="/admin/formas-pagamento" element={<PaymentMethods />} />
+            </Route>
+            
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </ErrorBoundary>
     </TooltipProvider>
   </QueryClientProvider>
 );

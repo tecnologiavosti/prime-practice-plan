@@ -4,34 +4,21 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from '@/components/ui/dialog';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Search } from 'lucide-react';
 import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
+import { ReceiptDialog } from '@/components/patient/ReceiptDialog';
 
 interface Appointment {
   id: string;
@@ -43,43 +30,17 @@ interface Appointment {
   notes: string | null;
   patient: { id: string; full_name: string } | null;
   professional: { id: string; full_name: string } | null;
-  procedure: { id: string; name: string } | null;
+  procedure: { id: string; name: string; private_price?: number } | null;
   health_insurance: { id: string; name: string } | null;
 }
 
-interface Patient {
-  id: string;
-  full_name: string;
-}
-
-interface Professional {
-  id: string;
-  full_name: string;
-}
-
-interface Procedure {
-  id: string;
-  name: string;
-  duration_minutes: number;
-  private_price: number;
-}
-
-interface HealthInsurance {
-  id: string;
-  name: string;
-}
-
-interface PrivatePackage {
-  id: string;
-  name: string;
-  total_price: number;
-}
-
-interface ProcedureInsurancePrice {
-  procedure_id: string;
-  health_insurance_id: string;
-  price: number;
-}
+interface Patient { id: string; full_name: string; }
+interface Professional { id: string; full_name: string; }
+interface Procedure { id: string; name: string; duration_minutes: number; private_price: number; }
+interface HealthInsurance { id: string; name: string; }
+interface PrivatePackage { id: string; name: string; total_price: number; }
+interface ProcedureInsurancePrice { procedure_id: string; health_insurance_id: string; price: number; }
+interface PaymentMethod { id: string; name: string; }
 
 const statusOptions = [
   { value: 'agendado', label: 'Agendado' },
@@ -120,28 +81,46 @@ export default function Appointments() {
   const [insurances, setInsurances] = useState<HealthInsurance[]>([]);
   const [packages, setPackages] = useState<PrivatePackage[]>([]);
   const [procedureInsurancePrices, setProcedureInsurancePrices] = useState<ProcedureInsurancePrice[]>([]);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [dateFilter, setDateFilter] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formData, setFormData] = useState(emptyForm);
+  const [submitting, setSubmitting] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+
+  // Finalization state
+  const [finalizeDialogOpen, setFinalizeDialogOpen] = useState(false);
+  const [finalizingAppointment, setFinalizingAppointment] = useState<Appointment | null>(null);
+  const [finalizePaymentMethodId, setFinalizePaymentMethodId] = useState('');
+  const [finalizeAmount, setFinalizeAmount] = useState(0);
+  const [finalizeNotes, setFinalizeNotes] = useState('');
+
+  // Receipt state
+  const [receiptOpen, setReceiptOpen] = useState(false);
+  const [receiptData, setReceiptData] = useState<any>(null);
 
   useEffect(() => {
     fetchData();
   }, [dateFilter]);
 
   const fetchData = async () => {
-    await Promise.all([
-      fetchAppointments(),
-      fetchPatients(),
-      fetchProfessionals(),
-      fetchProcedures(),
-      fetchInsurances(),
-      fetchPackages(),
-      fetchProcedureInsurancePrices(),
-    ]);
+    try {
+      await Promise.all([
+        fetchAppointments(),
+        fetchPatients(),
+        fetchProfessionals(),
+        fetchProcedures(),
+        fetchInsurances(),
+        fetchPackages(),
+        fetchProcedureInsurancePrices(),
+        fetchPaymentMethods(),
+      ]);
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Erro', description: 'Erro ao carregar dados' });
+    }
     setLoading(false);
   };
 
@@ -149,25 +128,15 @@ export default function Appointments() {
     const { data, error } = await supabase
       .from('appointments')
       .select(`
-        id,
-        appointment_date,
-        start_time,
-        end_time,
-        status,
-        consultation_type,
-        notes,
+        id, appointment_date, start_time, end_time, status, consultation_type, notes,
         patient:patients(id, full_name),
         professional:professionals(id, full_name),
-        procedure:procedures(id, name),
+        procedure:procedures(id, name, private_price),
         health_insurance:health_insurances(id, name)
       `)
       .eq('appointment_date', dateFilter)
       .order('start_time');
-
-    if (error) {
-      toast({ variant: 'destructive', title: 'Erro', description: error.message });
-      return;
-    }
+    if (error) { toast({ variant: 'destructive', title: 'Erro', description: error.message }); return; }
     setAppointments((data as any) || []);
   };
 
@@ -175,109 +144,173 @@ export default function Appointments() {
     const { data } = await supabase.from('patients').select('id, full_name').eq('active', true).order('full_name');
     setPatients(data || []);
   };
-
   const fetchProfessionals = async () => {
     const { data } = await supabase.from('professionals').select('id, full_name').eq('active', true).order('full_name');
     setProfessionals(data || []);
   };
-
   const fetchProcedures = async () => {
     const { data } = await supabase.from('procedures').select('id, name, duration_minutes, private_price').eq('active', true).order('name');
     setProcedures(data || []);
   };
-
   const fetchInsurances = async () => {
     const { data } = await supabase.from('health_insurances').select('id, name').eq('active', true).order('name');
     setInsurances(data || []);
   };
-
   const fetchPackages = async () => {
     const { data } = await supabase.from('private_packages').select('id, name, total_price').eq('active', true).order('name');
     setPackages(data || []);
   };
-
   const fetchProcedureInsurancePrices = async () => {
     const { data } = await supabase.from('procedure_insurance_prices').select('procedure_id, health_insurance_id, price');
     setProcedureInsurancePrices(data || []);
   };
+  const fetchPaymentMethods = async () => {
+    const { data } = await supabase.from('payment_methods').select('id, name').eq('active', true).order('name');
+    setPaymentMethods(data || []);
+  };
 
   const getProcedurePrice = (): number | null => {
     if (!formData.procedure_id) return null;
-    
     if (formData.consultation_type === 'particular') {
-      const procedure = procedures.find(p => p.id === formData.procedure_id);
-      return procedure?.private_price || null;
+      return procedures.find(p => p.id === formData.procedure_id)?.private_price || null;
     }
-    
     if (formData.consultation_type === 'convenio' && formData.health_insurance_id) {
-      const insurancePrice = procedureInsurancePrices.find(
+      return procedureInsurancePrices.find(
         pip => pip.procedure_id === formData.procedure_id && pip.health_insurance_id === formData.health_insurance_id
-      );
-      return insurancePrice?.price || null;
+      )?.price || null;
     }
-    
     return null;
   };
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
-  };
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const payload = {
-      patient_id: formData.patient_id,
-      professional_id: formData.professional_id,
-      procedure_id: formData.procedure_id || null,
-      appointment_date: formData.appointment_date,
-      start_time: formData.start_time,
-      end_time: formData.end_time,
-      consultation_type: formData.consultation_type,
-      health_insurance_id: formData.consultation_type === 'convenio' ? formData.health_insurance_id : null,
-      notes: formData.notes || null,
-      status: formData.status,
-      created_by: user?.id,
-    };
-
-    const { error } = await supabase.from('appointments').insert(payload);
-
-    if (error) {
-      toast({ variant: 'destructive', title: 'Erro', description: error.message });
+    if (!formData.patient_id || !formData.professional_id) {
+      toast({ variant: 'destructive', title: 'Erro', description: 'Selecione paciente e profissional' });
       return;
     }
 
-    toast({ title: 'Agendamento criado com sucesso!' });
-    setDialogOpen(false);
-    setFormData(emptyForm);
+    if (formData.consultation_type === 'convenio' && !formData.health_insurance_id) {
+      toast({ variant: 'destructive', title: 'Erro', description: 'Selecione um convênio' });
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const payload = {
+        patient_id: formData.patient_id,
+        professional_id: formData.professional_id,
+        procedure_id: formData.procedure_id || null,
+        appointment_date: formData.appointment_date,
+        start_time: formData.start_time,
+        end_time: formData.end_time,
+        consultation_type: formData.consultation_type,
+        health_insurance_id: formData.consultation_type === 'convenio' ? formData.health_insurance_id || null : null,
+        patient_package_id: null,
+        notes: formData.notes || null,
+        status: formData.status,
+        created_by: user?.id,
+      };
+
+      const { error } = await supabase.from('appointments').insert(payload);
+      if (error) {
+        toast({ variant: 'destructive', title: 'Erro', description: error.message });
+        return;
+      }
+
+      toast({ title: 'Agendamento criado com sucesso!' });
+      setDialogOpen(false);
+      setFormData(emptyForm);
+      fetchAppointments();
+    } catch (err: any) {
+      toast({ variant: 'destructive', title: 'Erro inesperado', description: err?.message || 'Tente novamente' });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleStatusChange = async (appointmentId: string, newStatus: string) => {
+    if (newStatus === 'finalizado') {
+      const apt = appointments.find(a => a.id === appointmentId);
+      if (apt) {
+        setFinalizingAppointment(apt);
+        const price = apt.procedure?.private_price;
+        setFinalizeAmount(price ? Number(price) : 0);
+        setFinalizePaymentMethodId('');
+        setFinalizeNotes('');
+        setFinalizeDialogOpen(true);
+        return;
+      }
+    }
+
+    const { error } = await supabase.from('appointments').update({ status: newStatus }).eq('id', appointmentId);
+    if (error) { toast({ variant: 'destructive', title: 'Erro', description: error.message }); return; }
+    toast({ title: 'Status atualizado!' });
     fetchAppointments();
   };
 
-  const handleStatusChange = async (appointmentId: string, newStatus: 'agendado' | 'confirmado' | 'em_atendimento' | 'finalizado' | 'cancelado' | 'faltou') => {
-    const { error } = await supabase
-      .from('appointments')
-      .update({ status: newStatus })
-      .eq('id', appointmentId);
-
-    if (error) {
-      toast({ variant: 'destructive', title: 'Erro', description: error.message });
+  const handleFinalize = async () => {
+    if (!finalizingAppointment) return;
+    if (!finalizePaymentMethodId) {
+      toast({ variant: 'destructive', title: 'Erro', description: 'Selecione a forma de pagamento' });
       return;
     }
 
-    toast({ title: 'Status atualizado!' });
-    fetchAppointments();
+    setSubmitting(true);
+    try {
+      const { error } = await supabase.from('appointments')
+        .update({ status: 'finalizado' })
+        .eq('id', finalizingAppointment.id);
+      if (error) throw error;
+
+      await supabase.from('financial_transactions').insert({
+        transaction_type: finalizingAppointment.consultation_type === 'convenio' ? 'convenio' : 'particular',
+        patient_id: finalizingAppointment.patient?.id || null,
+        professional_id: finalizingAppointment.professional?.id || null,
+        procedure_id: finalizingAppointment.procedure?.id || null,
+        appointment_id: finalizingAppointment.id,
+        health_insurance_id: finalizingAppointment.health_insurance?.id || null,
+        amount: finalizeAmount,
+        payment_method_id: finalizePaymentMethodId,
+        payment_date: format(new Date(), 'yyyy-MM-dd'),
+        status: 'pago',
+        description: `Consulta - ${finalizingAppointment.patient?.full_name}`,
+        notes: finalizeNotes || null,
+      });
+
+      const pmName = paymentMethods.find(m => m.id === finalizePaymentMethodId)?.name || '';
+
+      setReceiptData({
+        patientName: finalizingAppointment.patient?.full_name || '',
+        professionalName: finalizingAppointment.professional?.full_name || '',
+        procedureName: finalizingAppointment.procedure?.name || 'Consulta',
+        consultationType: finalizingAppointment.consultation_type,
+        insuranceName: finalizingAppointment.health_insurance?.name,
+        appointmentDate: finalizingAppointment.appointment_date,
+        amount: finalizeAmount,
+        paymentMethodName: pmName,
+      });
+
+      setFinalizeDialogOpen(false);
+      setReceiptOpen(true);
+      toast({ title: 'Consulta finalizada com sucesso!' });
+      fetchAppointments();
+    } catch (err: any) {
+      toast({ variant: 'destructive', title: 'Erro', description: err?.message || 'Erro ao finalizar' });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleProcedureChange = (procedureId: string) => {
     const procedure = procedures.find((p) => p.id === procedureId);
     if (procedure) {
       const [hours, minutes] = formData.start_time.split(':').map(Number);
-      const startMinutes = hours * 60 + minutes;
-      const endMinutes = startMinutes + procedure.duration_minutes;
-      const endHours = Math.floor(endMinutes / 60);
-      const endMins = endMinutes % 60;
-      const endTime = `${endHours.toString().padStart(2, '0')}:${endMins.toString().padStart(2, '0')}`;
-      
+      const endMinutes = hours * 60 + minutes + procedure.duration_minutes;
+      const endTime = `${Math.floor(endMinutes / 60).toString().padStart(2, '0')}:${(endMinutes % 60).toString().padStart(2, '0')}`;
       setFormData({ ...formData, procedure_id: procedureId, end_time: endTime });
     } else {
       setFormData({ ...formData, procedure_id: procedureId });
@@ -291,8 +324,8 @@ export default function Appointments() {
 
   const filtered = appointments.filter(
     (a) =>
-      a.patient?.full_name.toLowerCase().includes(search.toLowerCase()) ||
-      a.professional?.full_name.toLowerCase().includes(search.toLowerCase())
+      a.patient?.full_name?.toLowerCase().includes(search.toLowerCase()) ||
+      a.professional?.full_name?.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -317,51 +350,28 @@ export default function Appointments() {
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label>Paciente *</Label>
-                  <Select
-                    required
-                    value={formData.patient_id}
-                    onValueChange={(v) => setFormData({ ...formData, patient_id: v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione" />
-                    </SelectTrigger>
+                  <Select value={formData.patient_id} onValueChange={(v) => setFormData({ ...formData, patient_id: v })}>
+                    <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                     <SelectContent>
-                      {patients.map((p) => (
-                        <SelectItem key={p.id} value={p.id}>{p.full_name}</SelectItem>
-                      ))}
+                      {patients.map((p) => <SelectItem key={p.id} value={p.id}>{p.full_name}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
                   <Label>Profissional *</Label>
-                  <Select
-                    required
-                    value={formData.professional_id}
-                    onValueChange={(v) => setFormData({ ...formData, professional_id: v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione" />
-                    </SelectTrigger>
+                  <Select value={formData.professional_id} onValueChange={(v) => setFormData({ ...formData, professional_id: v })}>
+                    <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                     <SelectContent>
-                      {professionals.map((p) => (
-                        <SelectItem key={p.id} value={p.id}>{p.full_name}</SelectItem>
-                      ))}
+                      {professionals.map((p) => <SelectItem key={p.id} value={p.id}>{p.full_name}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
                   <Label>Procedimento</Label>
-                  <Select
-                    value={formData.procedure_id}
-                    onValueChange={handleProcedureChange}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione" />
-                    </SelectTrigger>
+                  <Select value={formData.procedure_id} onValueChange={handleProcedureChange}>
+                    <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                     <SelectContent>
-                      {procedures.map((p) => (
-                        <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                      ))}
+                      {procedures.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
@@ -369,11 +379,9 @@ export default function Appointments() {
                   <Label>Tipo de Consulta *</Label>
                   <Select
                     value={formData.consultation_type}
-                    onValueChange={(v) => setFormData({ ...formData, consultation_type: v as 'particular' | 'convenio' | 'pacote', health_insurance_id: '' })}
+                    onValueChange={(v) => setFormData({ ...formData, consultation_type: v as any, health_insurance_id: '' })}
                   >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="particular">Particular</SelectItem>
                       <SelectItem value="convenio">Convênio</SelectItem>
@@ -383,18 +391,15 @@ export default function Appointments() {
                 </div>
                 {formData.consultation_type === 'convenio' && (
                   <div className="space-y-2">
-                    <Label>Convênio</Label>
-                    <Select
-                      value={formData.health_insurance_id}
-                      onValueChange={(v) => setFormData({ ...formData, health_insurance_id: v })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione" />
-                      </SelectTrigger>
+                    <Label>Convênio *</Label>
+                    <Select value={formData.health_insurance_id} onValueChange={(v) => setFormData({ ...formData, health_insurance_id: v })}>
+                      <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                       <SelectContent>
-                        {insurances.map((i) => (
-                          <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
-                        ))}
+                        {insurances.length === 0 ? (
+                          <SelectItem value="none" disabled>Nenhum convênio ativo</SelectItem>
+                        ) : (
+                          insurances.map((i) => <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>)
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
@@ -402,21 +407,14 @@ export default function Appointments() {
                 {formData.consultation_type === 'pacote' && (
                   <div className="space-y-2">
                     <Label>Pacote</Label>
-                    <Select
-                      value={formData.health_insurance_id}
-                      onValueChange={(v) => setFormData({ ...formData, health_insurance_id: v })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o pacote" />
-                      </SelectTrigger>
+                    <Select value={formData.health_insurance_id} onValueChange={(v) => setFormData({ ...formData, health_insurance_id: v })}>
+                      <SelectTrigger><SelectValue placeholder="Selecione o pacote" /></SelectTrigger>
                       <SelectContent>
                         {packages.length === 0 ? (
                           <SelectItem value="none" disabled>Nenhum pacote cadastrado</SelectItem>
                         ) : (
                           packages.map((pkg) => (
-                            <SelectItem key={pkg.id} value={pkg.id}>
-                              {pkg.name} - {formatCurrency(pkg.total_price)}
-                            </SelectItem>
+                            <SelectItem key={pkg.id} value={pkg.id}>{pkg.name} - {formatCurrency(pkg.total_price)}</SelectItem>
                           ))
                         )}
                       </SelectContent>
@@ -433,44 +431,24 @@ export default function Appointments() {
                 )}
                 <div className="space-y-2">
                   <Label>Data *</Label>
-                  <Input
-                    type="date"
-                    required
-                    value={formData.appointment_date}
-                    onChange={(e) => setFormData({ ...formData, appointment_date: e.target.value })}
-                  />
+                  <Input type="date" required value={formData.appointment_date} onChange={(e) => setFormData({ ...formData, appointment_date: e.target.value })} />
                 </div>
                 <div className="space-y-2">
                   <Label>Hora Início *</Label>
-                  <Input
-                    type="time"
-                    required
-                    value={formData.start_time}
-                    onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
-                  />
+                  <Input type="time" required value={formData.start_time} onChange={(e) => setFormData({ ...formData, start_time: e.target.value })} />
                 </div>
                 <div className="space-y-2">
                   <Label>Hora Fim *</Label>
-                  <Input
-                    type="time"
-                    required
-                    value={formData.end_time}
-                    onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
-                  />
+                  <Input type="time" required value={formData.end_time} onChange={(e) => setFormData({ ...formData, end_time: e.target.value })} />
                 </div>
                 <div className="space-y-2 md:col-span-2">
                   <Label>Observações</Label>
-                  <Textarea
-                    value={formData.notes}
-                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  />
+                  <Textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
                 </div>
               </div>
               <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button type="submit">Agendar</Button>
+                <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
+                <Button type="submit" disabled={submitting}>{submitting ? 'Salvando...' : 'Agendar'}</Button>
               </div>
             </form>
           </DialogContent>
@@ -480,19 +458,9 @@ export default function Appointments() {
       <div className="mb-4 flex flex-wrap gap-4">
         <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Buscar..."
-            className="pl-10"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+          <Input placeholder="Buscar..." className="pl-10" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
-        <Input
-          type="date"
-          className="w-[180px]"
-          value={dateFilter}
-          onChange={(e) => setDateFilter(e.target.value)}
-        />
+        <Input type="date" className="w-[180px]" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} />
       </div>
 
       <div className="rounded-md border">
@@ -509,21 +477,15 @@ export default function Appointments() {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center">Carregando...</TableCell>
-              </TableRow>
+              <TableRow><TableCell colSpan={6} className="text-center">Carregando...</TableCell></TableRow>
             ) : filtered.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center">Nenhum agendamento encontrado</TableCell>
-              </TableRow>
+              <TableRow><TableCell colSpan={6} className="text-center">Nenhum agendamento encontrado</TableCell></TableRow>
             ) : (
               filtered.map((apt) => (
                 <TableRow key={apt.id}>
-                  <TableCell className="font-mono">
-                    {apt.start_time.slice(0, 5)} - {apt.end_time.slice(0, 5)}
-                  </TableCell>
-                  <TableCell className="font-medium">{apt.patient?.full_name}</TableCell>
-                  <TableCell>{apt.professional?.full_name}</TableCell>
+                  <TableCell className="font-mono">{apt.start_time?.slice(0, 5)} - {apt.end_time?.slice(0, 5)}</TableCell>
+                  <TableCell className="font-medium">{apt.patient?.full_name || '-'}</TableCell>
+                  <TableCell>{apt.professional?.full_name || '-'}</TableCell>
                   <TableCell>{apt.procedure?.name || '-'}</TableCell>
                   <TableCell className="capitalize">
                     {apt.consultation_type}
@@ -532,16 +494,14 @@ export default function Appointments() {
                   <TableCell>
                     <Select
                       value={apt.status}
-                      onValueChange={(v) => handleStatusChange(apt.id, v as 'agendado' | 'confirmado' | 'em_atendimento' | 'finalizado' | 'cancelado' | 'faltou')}
+                      onValueChange={(v) => handleStatusChange(apt.id, v)}
                     >
                       <SelectTrigger className={cn('w-[140px]', statusColors[apt.status])}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         {statusOptions.map((opt) => (
-                          <SelectItem key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </SelectItem>
+                          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -552,6 +512,43 @@ export default function Appointments() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Finalize Consultation Dialog */}
+      <Dialog open={finalizeDialogOpen} onOpenChange={setFinalizeDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Finalizar Consulta</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Paciente: <strong>{finalizingAppointment?.patient?.full_name}</strong>
+            </p>
+            <div className="space-y-2">
+              <Label>Forma de Pagamento *</Label>
+              <Select value={finalizePaymentMethodId} onValueChange={setFinalizePaymentMethodId}>
+                <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                <SelectContent>
+                  {paymentMethods.map((m) => <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Valor</Label>
+              <Input type="number" step="0.01" value={finalizeAmount} onChange={(e) => setFinalizeAmount(parseFloat(e.target.value) || 0)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Observações</Label>
+              <Textarea value={finalizeNotes} onChange={(e) => setFinalizeNotes(e.target.value)} />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setFinalizeDialogOpen(false)}>Cancelar</Button>
+              <Button onClick={handleFinalize} disabled={submitting}>{submitting ? 'Finalizando...' : 'Finalizar e Gerar Recibo'}</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <ReceiptDialog open={receiptOpen} onOpenChange={setReceiptOpen} data={receiptData} />
     </div>
   );
 }
