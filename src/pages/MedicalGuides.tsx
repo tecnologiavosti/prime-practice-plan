@@ -87,6 +87,12 @@ interface Procedure {
   code: string;
 }
 
+interface ProcedureInsurancePrice {
+  procedure_id: string;
+  health_insurance_id: string;
+  price: number;
+}
+
 const statusColors: Record<string, string> = {
   pendente: 'bg-yellow-100 text-yellow-800',
   autorizada: 'bg-green-100 text-green-800',
@@ -127,6 +133,7 @@ export default function MedicalGuides() {
   const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [insurances, setInsurances] = useState<HealthInsurance[]>([]);
   const [procedures, setProcedures] = useState<Procedure[]>([]);
+  const [procedureInsurancePrices, setProcedureInsurancePrices] = useState<ProcedureInsurancePrice[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -147,6 +154,7 @@ export default function MedicalGuides() {
       fetchProfessionals(),
       fetchInsurances(),
       fetchProcedures(),
+      fetchProcedureInsurancePrices(),
     ]);
     setLoading(false);
   };
