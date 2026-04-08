@@ -130,6 +130,7 @@ export const PatientAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
         full_name: fullName,
         email: email,
         cpf: cpf,
+        active: false,
       });
 
       if (patientError) {
