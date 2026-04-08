@@ -21,7 +21,11 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search, Edit, Building2, Link2, DollarSign } from 'lucide-react';
+import { Plus, Search, Edit, Building2, Link2, DollarSign, Trash2 } from 'lucide-react';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface Administrator {
   id: string;
@@ -67,7 +71,20 @@ export default function Administrators() {
   const [selectedAdmin, setSelectedAdmin] = useState<Administrator | null>(null);
   const [insuranceSettings, setInsuranceSettings] = useState<Map<string, InsuranceWithValue>>(new Map());
   const [formData, setFormData] = useState(emptyAdministrator);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const handleDeleteAdmin = async () => {
+    if (!deleteId) return;
+    const { error } = await supabase.from('administrators').delete().eq('id', deleteId);
+    if (error) {
+      toast({ variant: 'destructive', title: 'Erro', description: error.message });
+    } else {
+      toast({ title: 'Administradora removida com sucesso!' });
+      fetchData();
+    }
+    setDeleteId(null);
+  };
 
   useEffect(() => {
     fetchData();
@@ -422,6 +439,15 @@ export default function Administrators() {
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => setDeleteId(admin.id)}
+                          title="Remover"
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -539,6 +565,19 @@ export default function Administrators() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>Tem certeza que deseja remover esta administradora? Esta ação não pode ser desfeita.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteAdmin} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Remover</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

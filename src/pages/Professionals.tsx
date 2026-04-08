@@ -27,7 +27,11 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search, Edit, Calendar } from 'lucide-react';
+import { Plus, Search, Edit, Calendar, Trash2 } from 'lucide-react';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Professional {
@@ -102,7 +106,20 @@ export default function Professionals() {
   const [selectedInsurances, setSelectedInsurances] = useState<string[]>([]);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [newSchedule, setNewSchedule] = useState<Schedule>(emptySchedule);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const handleDeleteProfessional = async () => {
+    if (!deleteId) return;
+    const { error } = await supabase.from('professionals').delete().eq('id', deleteId);
+    if (error) {
+      toast({ variant: 'destructive', title: 'Erro', description: error.message });
+    } else {
+      toast({ title: 'Profissional removido com sucesso!' });
+      fetchProfessionals();
+    }
+    setDeleteId(null);
+  };
 
   useEffect(() => {
     fetchProfessionals();
@@ -647,11 +664,14 @@ export default function Professionals() {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => openEdit(prof)}>
+                      <Button variant="ghost" size="icon" onClick={() => openEdit(prof)} title="Editar">
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => openSchedule(prof)}>
+                      <Button variant="ghost" size="icon" onClick={() => openSchedule(prof)} title="Horários">
                         <Calendar className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => setDeleteId(prof.id)} title="Remover" className="text-destructive hover:text-destructive">
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </TableCell>
@@ -661,6 +681,19 @@ export default function Professionals() {
           </TableBody>
         </Table>
       </div>
+
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>Tem certeza que deseja remover este profissional? Esta ação não pode ser desfeita.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteProfessional} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Remover</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
