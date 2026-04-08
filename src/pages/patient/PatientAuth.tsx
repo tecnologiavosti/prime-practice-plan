@@ -41,7 +41,7 @@ export default function PatientAuth({ mode }: PatientAuthProps) {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   
-  const { signIn, signUp, user, isPatient, isAdmin, isPending } = usePatientAuth();
+  const { signIn, signUp, signOut, user, isPatient, isAdmin, isPending } = usePatientAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
