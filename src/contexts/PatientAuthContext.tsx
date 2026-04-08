@@ -171,6 +171,7 @@ export const PatientAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
         signOut,
         isPatient,
         isAdmin,
+        isPending,
       }}
     >
       {children}
