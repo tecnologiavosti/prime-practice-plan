@@ -21,7 +21,7 @@ const menuItems = [
 ];
 
 export function PatientLayout() {
-  const { user, loading, isPatient, patientProfile, signOut } = usePatientAuth();
+  const { user, loading, isPatient, isPending, patientProfile, signOut } = usePatientAuth();
   const navigate = useNavigate();
 
   if (loading) {
@@ -39,14 +39,17 @@ export function PatientLayout() {
     return <Navigate to="/login" replace />;
   }
 
-  if (!isPatient) {
+  if (!isPatient || isPending) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="text-center max-w-md p-6">
-          <h1 className="text-2xl font-bold">Acesso Restrito</h1>
+          <h1 className="text-2xl font-bold">
+            {isPending ? 'Acesso Pendente' : 'Acesso Restrito'}
+          </h1>
           <p className="mt-2 text-muted-foreground">
-            Sua conta não está vinculada a um perfil de paciente. 
-            Por favor, cadastre-se como paciente ou entre em contato com a clínica.
+            {isPending
+              ? 'Seu cadastro está aguardando aprovação do administrador. Você será notificado quando o acesso for liberado.'
+              : 'Sua conta não está vinculada a um perfil de paciente. Por favor, cadastre-se como paciente ou entre em contato com a clínica.'}
           </p>
           <Button 
             variant="outline" 
