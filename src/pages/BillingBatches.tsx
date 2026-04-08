@@ -238,6 +238,29 @@ export default function BillingBatches() {
     fetchBatches();
   };
 
+  const handleEditBatch = (batch: BillingBatch) => {
+    setEditingBatch(batch);
+    setEditPeriodStart(batch.period_start);
+    setEditPeriodEnd(batch.period_end);
+    setEditDialogOpen(true);
+  };
+
+  const handleUpdateBatch = async () => {
+    if (!editingBatch) return;
+    const { error } = await supabase.from('billing_batches').update({
+      period_start: editPeriodStart,
+      period_end: editPeriodEnd,
+    }).eq('id', editingBatch.id);
+    if (error) {
+      toast({ variant: 'destructive', title: 'Erro', description: error.message });
+      return;
+    }
+    toast({ title: 'Lote atualizado!' });
+    setEditDialogOpen(false);
+    setEditingBatch(null);
+    fetchBatches();
+  };
+
   const handleDeleteBatch = async () => {
     if (!deleteId) return;
     await supabase.from('billing_batch_guides').delete().eq('batch_id', deleteId);

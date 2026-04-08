@@ -235,6 +235,33 @@ export default function ProfessionalPayouts() {
     fetchFees();
   };
 
+  const handleEditPayout = (p: Payout) => {
+    setEditingPayout(p);
+    setEditPayoutForm({
+      payout_amount: p.payout_amount,
+      reference_date: p.reference_date,
+      notes: '',
+    });
+    setEditPayoutDialogOpen(true);
+  };
+
+  const handleUpdatePayout = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingPayout) return;
+    const { error } = await supabase.from('professional_payouts').update({
+      payout_amount: editPayoutForm.payout_amount,
+      reference_date: editPayoutForm.reference_date,
+    }).eq('id', editingPayout.id);
+    if (error) {
+      toast({ variant: 'destructive', title: 'Erro', description: error.message });
+      return;
+    }
+    toast({ title: 'Repasse atualizado!' });
+    setEditPayoutDialogOpen(false);
+    setEditingPayout(null);
+    fetchPayouts();
+  };
+
   const handleDeletePayout = async () => {
     if (!deletePayoutId) return;
     const { error } = await supabase.from('professional_payouts').delete().eq('id', deletePayoutId);
