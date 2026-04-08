@@ -130,13 +130,38 @@ export default function PatientAuth({ mode }: PatientAuthProps) {
       }
 
       toast({
-        title: 'Conta criada com sucesso!',
-        description: 'Você já pode acessar o portal.',
+        title: 'Cadastro realizado!',
+        description: 'Seu acesso será liberado após aprovação do administrador.',
       });
       
-      navigate('/dashboard');
+      // Don't navigate, let the pending state show
     }
   };
+
+  // Show pending message
+  if (user && isPending) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/20 p-4">
+        <Card className="w-full max-w-md border-0 shadow-2xl bg-card/80 backdrop-blur-xl">
+          <CardHeader className="text-center space-y-4">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-yellow-400 to-yellow-500 shadow-lg">
+              <Calendar className="h-10 w-10 text-primary-foreground" />
+            </div>
+            <CardTitle className="text-2xl font-bold">Acesso Pendente</CardTitle>
+            <CardDescription className="text-base">
+              Seu cadastro foi recebido com sucesso! Aguarde a aprovação do administrador para acessar o portal.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-center">
+            <Button variant="outline" className="w-full" onClick={signOut}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Voltar para a página inicial
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const isLogin = mode === 'login';
 
