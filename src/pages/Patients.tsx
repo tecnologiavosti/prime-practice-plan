@@ -197,7 +197,7 @@ export default function Patients() {
   );
 
   return (
-    <>
+    <div className="p-6">
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Pacientes</h1>
@@ -424,9 +424,6 @@ export default function Patients() {
           </TableBody>
         </Table>
       </div>
-    </div>
-    <div className="p-6" style={{display:'none'}}></div>
-    </div>
 
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>
