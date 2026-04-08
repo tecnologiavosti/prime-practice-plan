@@ -494,6 +494,9 @@ export default function BillingBatches() {
                             <SelectItem value="parcial">Parcial</SelectItem>
                           </SelectContent>
                         </Select>
+                        <Button variant="ghost" size="icon" onClick={() => handleEditBatch(b)} title="Editar">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
                         <Button variant="ghost" size="icon" onClick={() => setDeleteId(b.id)} title="Remover" className="text-destructive hover:text-destructive">
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -552,6 +555,9 @@ export default function BillingBatches() {
                             <SelectItem value="parcial">Parcial</SelectItem>
                           </SelectContent>
                         </Select>
+                        <Button variant="ghost" size="icon" onClick={() => handleEditBatch(b)} title="Editar">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
                         <Button variant="ghost" size="icon" onClick={() => setDeleteId(b.id)} title="Remover" className="text-destructive hover:text-destructive">
                           <Trash2 className="h-4 w-4" />
                         </Button>

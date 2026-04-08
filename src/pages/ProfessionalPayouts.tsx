@@ -526,6 +526,9 @@ export default function ProfessionalPayouts() {
                           Pagar
                         </Button>
                       )}
+                      <Button variant="ghost" size="icon" onClick={() => handleEditPayout(p)} title="Editar">
+                        <Pencil className="h-4 w-4" />
+                      </Button>
                       <Button variant="ghost" size="icon" onClick={() => setDeletePayoutId(p.id)} title="Remover" className="text-destructive hover:text-destructive">
                         <Trash2 className="h-4 w-4" />
                       </Button>
