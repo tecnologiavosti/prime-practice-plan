@@ -88,6 +88,10 @@ export default function BillingBatches() {
   const [periodStart, setPeriodStart] = useState(format(new Date(), 'yyyy-MM-01'));
   const [periodEnd, setPeriodEnd] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [editingBatch, setEditingBatch] = useState<BillingBatch | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editPeriodStart, setEditPeriodStart] = useState('');
+  const [editPeriodEnd, setEditPeriodEnd] = useState('');
   const { toast } = useToast();
 
   useEffect(() => {

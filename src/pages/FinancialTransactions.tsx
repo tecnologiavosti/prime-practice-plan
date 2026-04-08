@@ -583,12 +583,6 @@ export default function FinancialTransactions() {
                           </Button>
                         </>
                       )}
-                      <Button variant="ghost" size="icon" onClick={() => handleEditTransaction(t)} title="Editar">
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => setDeleteId(t.id)} title="Remover" className="text-destructive hover:text-destructive">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>

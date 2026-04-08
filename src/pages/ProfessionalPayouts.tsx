@@ -91,6 +91,13 @@ export default function ProfessionalPayouts() {
     per_procedure_value: 0,
   });
   const [deletePayoutId, setDeletePayoutId] = useState<string | null>(null);
+  const [editPayoutDialogOpen, setEditPayoutDialogOpen] = useState(false);
+  const [editingPayout, setEditingPayout] = useState<Payout | null>(null);
+  const [editPayoutForm, setEditPayoutForm] = useState({
+    payout_amount: 0,
+    reference_date: '',
+    notes: '',
+  });
   const { toast } = useToast();
 
   const [stats, setStats] = useState({
