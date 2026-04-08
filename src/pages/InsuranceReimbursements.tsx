@@ -12,9 +12,13 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Upload, ArrowUpDown } from 'lucide-react';
+import { Plus, ArrowUpDown, Pencil, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
@@ -64,8 +68,10 @@ export default function InsuranceReimbursements() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formData, setFormData] = useState(emptyForm);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -122,7 +128,7 @@ export default function InsuranceReimbursements() {
     let receiptPath: string | null = null;
     if (receiptFile) {
       const filePath = `reimbursements/${formData.health_insurance_id}/${formData.reference_month}/${receiptFile.name}`;
-      const { error: uploadError } = await supabase.storage.from('documents').upload(filePath, receiptFile);
+      const { error: uploadError } = await supabase.storage.from('documents').upload(filePath, receiptFile, { upsert: true });
       if (uploadError) {
         toast({ variant: 'destructive', title: 'Erro no upload', description: uploadError.message });
         setSubmitting(false);
@@ -131,15 +137,23 @@ export default function InsuranceReimbursements() {
       receiptPath = filePath;
     }
 
-    const { error } = await supabase.from('insurance_reimbursements').insert({
+    const payload: any = {
       health_insurance_id: formData.health_insurance_id,
       reference_month: formData.reference_month,
       expected_amount: formData.expected_amount,
       received_amount: formData.received_amount,
-      receipt_file_path: receiptPath,
       status: formData.status,
       notes: formData.notes || null,
-    });
+    };
+    if (receiptPath) payload.receipt_file_path = receiptPath;
+
+    let error;
+    if (editingId) {
+      ({ error } = await supabase.from('insurance_reimbursements').update(payload).eq('id', editingId));
+    } else {
+      if (receiptPath) payload.receipt_file_path = receiptPath;
+      ({ error } = await supabase.from('insurance_reimbursements').insert(payload));
+    }
 
     setSubmitting(false);
     if (error) {
@@ -147,11 +161,38 @@ export default function InsuranceReimbursements() {
       return;
     }
 
-    toast({ title: 'Repasse registrado com sucesso!' });
+    toast({ title: editingId ? 'Repasse atualizado com sucesso!' : 'Repasse registrado com sucesso!' });
     setDialogOpen(false);
     setFormData(emptyForm);
+    setEditingId(null);
     setReceiptFile(null);
     fetchReimbursements();
+  };
+
+  const handleEdit = (r: Reimbursement) => {
+    setEditingId(r.id);
+    setFormData({
+      health_insurance_id: r.health_insurance_id,
+      reference_month: r.reference_month,
+      expected_amount: Number(r.expected_amount),
+      received_amount: Number(r.received_amount),
+      status: r.status,
+      notes: r.notes || '',
+    });
+    setReceiptFile(null);
+    setDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    const { error } = await supabase.from('insurance_reimbursements').delete().eq('id', deleteId);
+    if (error) {
+      toast({ variant: 'destructive', title: 'Erro', description: error.message });
+    } else {
+      toast({ title: 'Repasse removido com sucesso!' });
+      fetchReimbursements();
+    }
+    setDeleteId(null);
   };
 
   const formatCurrency = (value: number) =>
@@ -159,6 +200,7 @@ export default function InsuranceReimbursements() {
 
   const openNew = () => {
     setFormData(emptyForm);
+    setEditingId(null);
     setReceiptFile(null);
     setDialogOpen(true);
   };
@@ -179,7 +221,7 @@ export default function InsuranceReimbursements() {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Registrar Repasse</DialogTitle>
+              <DialogTitle>{editingId ? 'Editar Repasse' : 'Registrar Repasse'}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
@@ -301,13 +343,14 @@ export default function InsuranceReimbursements() {
               <TableHead>Recebido</TableHead>
               <TableHead>Diferença</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={6} className="text-center">Carregando...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="text-center">Carregando...</TableCell></TableRow>
             ) : reimbursements.length === 0 ? (
-              <TableRow><TableCell colSpan={6} className="text-center">Nenhum repasse registrado</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="text-center">Nenhum repasse registrado</TableCell></TableRow>
             ) : (
               reimbursements.map((r) => {
                 const diff = Number(r.received_amount) - Number(r.expected_amount);
@@ -327,6 +370,16 @@ export default function InsuranceReimbursements() {
                         {statusLabels[r.status] || r.status}
                       </Badge>
                     </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => handleEdit(r)} title="Editar">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => setDeleteId(r.id)} title="Remover" className="text-destructive hover:text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 );
               })
@@ -334,6 +387,23 @@ export default function InsuranceReimbursements() {
           </TableBody>
         </Table>
       </div>
+
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja remover este repasse? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Remover
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
