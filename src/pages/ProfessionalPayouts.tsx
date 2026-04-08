@@ -27,7 +27,11 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search, DollarSign, Clock } from 'lucide-react';
+import { Plus, Search, DollarSign, Clock, Pencil, Trash2 } from 'lucide-react';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
@@ -221,6 +225,18 @@ export default function ProfessionalPayouts() {
     }
     toast({ title: 'Configuração removida!' });
     fetchFees();
+  };
+
+  const handleDeletePayout = async () => {
+    if (!deletePayoutId) return;
+    const { error } = await supabase.from('professional_payouts').delete().eq('id', deletePayoutId);
+    if (error) {
+      toast({ variant: 'destructive', title: 'Erro', description: error.message });
+    } else {
+      toast({ title: 'Repasse removido com sucesso!' });
+      fetchPayouts();
+    }
+    setDeletePayoutId(null);
   };
 
   const filtered = payouts.filter((p) =>
@@ -469,11 +485,16 @@ export default function ProfessionalPayouts() {
                     </span>
                   </TableCell>
                   <TableCell>
-                    {p.status === 'pendente' && (
-                      <Button size="sm" variant="outline" onClick={() => handlePayoutStatus(p.id, 'pago')}>
-                        Pagar
+                    <div className="flex items-center gap-1">
+                      {p.status === 'pendente' && (
+                        <Button size="sm" variant="outline" onClick={() => handlePayoutStatus(p.id, 'pago')}>
+                          Pagar
+                        </Button>
+                      )}
+                      <Button variant="ghost" size="icon" onClick={() => setDeletePayoutId(p.id)} title="Remover" className="text-destructive hover:text-destructive">
+                        <Trash2 className="h-4 w-4" />
                       </Button>
-                    )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -481,6 +502,23 @@ export default function ProfessionalPayouts() {
           </TableBody>
         </Table>
       </div>
+
+      <AlertDialog open={!!deletePayoutId} onOpenChange={(open) => !open && setDeletePayoutId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja remover este repasse? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeletePayout} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Remover
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
