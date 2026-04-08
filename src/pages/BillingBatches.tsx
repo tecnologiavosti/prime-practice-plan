@@ -88,6 +88,10 @@ export default function BillingBatches() {
   const [periodStart, setPeriodStart] = useState(format(new Date(), 'yyyy-MM-01'));
   const [periodEnd, setPeriodEnd] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [editingBatch, setEditingBatch] = useState<BillingBatch | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editPeriodStart, setEditPeriodStart] = useState('');
+  const [editPeriodEnd, setEditPeriodEnd] = useState('');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -231,6 +235,29 @@ export default function BillingBatches() {
     }
 
     toast({ title: 'Status atualizado!' });
+    fetchBatches();
+  };
+
+  const handleEditBatch = (batch: BillingBatch) => {
+    setEditingBatch(batch);
+    setEditPeriodStart(batch.period_start);
+    setEditPeriodEnd(batch.period_end);
+    setEditDialogOpen(true);
+  };
+
+  const handleUpdateBatch = async () => {
+    if (!editingBatch) return;
+    const { error } = await supabase.from('billing_batches').update({
+      period_start: editPeriodStart,
+      period_end: editPeriodEnd,
+    }).eq('id', editingBatch.id);
+    if (error) {
+      toast({ variant: 'destructive', title: 'Erro', description: error.message });
+      return;
+    }
+    toast({ title: 'Lote atualizado!' });
+    setEditDialogOpen(false);
+    setEditingBatch(null);
     fetchBatches();
   };
 
@@ -467,6 +494,9 @@ export default function BillingBatches() {
                             <SelectItem value="parcial">Parcial</SelectItem>
                           </SelectContent>
                         </Select>
+                        <Button variant="ghost" size="icon" onClick={() => handleEditBatch(b)} title="Editar">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
                         <Button variant="ghost" size="icon" onClick={() => setDeleteId(b.id)} title="Remover" className="text-destructive hover:text-destructive">
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -525,6 +555,9 @@ export default function BillingBatches() {
                             <SelectItem value="parcial">Parcial</SelectItem>
                           </SelectContent>
                         </Select>
+                        <Button variant="ghost" size="icon" onClick={() => handleEditBatch(b)} title="Editar">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
                         <Button variant="ghost" size="icon" onClick={() => setDeleteId(b.id)} title="Remover" className="text-destructive hover:text-destructive">
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -543,6 +576,32 @@ export default function BillingBatches() {
           Nenhum lote de faturamento encontrado
         </div>
       )}
+
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Lote</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Nº Lote</Label>
+              <Input value={editingBatch?.batch_number || ''} disabled />
+            </div>
+            <div className="space-y-2">
+              <Label>Período Início</Label>
+              <Input type="date" value={editPeriodStart} onChange={(e) => setEditPeriodStart(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Período Fim</Label>
+              <Input type="date" value={editPeriodEnd} onChange={(e) => setEditPeriodEnd(e.target.value)} />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setEditDialogOpen(false)}>Cancelar</Button>
+              <Button onClick={handleUpdateBatch}>Salvar</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>

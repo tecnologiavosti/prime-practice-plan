@@ -91,6 +91,13 @@ export default function ProfessionalPayouts() {
     per_procedure_value: 0,
   });
   const [deletePayoutId, setDeletePayoutId] = useState<string | null>(null);
+  const [editPayoutDialogOpen, setEditPayoutDialogOpen] = useState(false);
+  const [editingPayout, setEditingPayout] = useState<Payout | null>(null);
+  const [editPayoutForm, setEditPayoutForm] = useState({
+    payout_amount: 0,
+    reference_date: '',
+    notes: '',
+  });
   const { toast } = useToast();
 
   const [stats, setStats] = useState({
@@ -226,6 +233,33 @@ export default function ProfessionalPayouts() {
     }
     toast({ title: 'Configuração removida!' });
     fetchFees();
+  };
+
+  const handleEditPayout = (p: Payout) => {
+    setEditingPayout(p);
+    setEditPayoutForm({
+      payout_amount: p.payout_amount,
+      reference_date: p.reference_date,
+      notes: '',
+    });
+    setEditPayoutDialogOpen(true);
+  };
+
+  const handleUpdatePayout = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingPayout) return;
+    const { error } = await supabase.from('professional_payouts').update({
+      payout_amount: editPayoutForm.payout_amount,
+      reference_date: editPayoutForm.reference_date,
+    }).eq('id', editingPayout.id);
+    if (error) {
+      toast({ variant: 'destructive', title: 'Erro', description: error.message });
+      return;
+    }
+    toast({ title: 'Repasse atualizado!' });
+    setEditPayoutDialogOpen(false);
+    setEditingPayout(null);
+    fetchPayouts();
   };
 
   const handleDeletePayout = async () => {
@@ -492,6 +526,9 @@ export default function ProfessionalPayouts() {
                           Pagar
                         </Button>
                       )}
+                      <Button variant="ghost" size="icon" onClick={() => handleEditPayout(p)} title="Editar">
+                        <Pencil className="h-4 w-4" />
+                      </Button>
                       <Button variant="ghost" size="icon" onClick={() => setDeletePayoutId(p.id)} title="Remover" className="text-destructive hover:text-destructive">
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -503,6 +540,41 @@ export default function ProfessionalPayouts() {
           </TableBody>
         </Table>
       </div>
+
+      <Dialog open={editPayoutDialogOpen} onOpenChange={setEditPayoutDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Repasse</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleUpdatePayout} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Profissional</Label>
+              <Input value={editingPayout?.professional?.full_name || ''} disabled />
+            </div>
+            <div className="space-y-2">
+              <Label>Valor (R$)</Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={editPayoutForm.payout_amount}
+                onChange={(e) => setEditPayoutForm({ ...editPayoutForm, payout_amount: parseFloat(e.target.value) || 0 })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Data Referência</Label>
+              <Input
+                type="date"
+                value={editPayoutForm.reference_date}
+                onChange={(e) => setEditPayoutForm({ ...editPayoutForm, reference_date: e.target.value })}
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setEditPayoutDialogOpen(false)}>Cancelar</Button>
+              <Button type="submit">Salvar</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog open={!!deletePayoutId} onOpenChange={(open) => !open && setDeletePayoutId(null)}>
         <AlertDialogContent>
