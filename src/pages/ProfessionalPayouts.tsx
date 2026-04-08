@@ -90,6 +90,7 @@ export default function ProfessionalPayouts() {
     percentage_value: 0,
     per_procedure_value: 0,
   });
+  const [deletePayoutId, setDeletePayoutId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const [stats, setStats] = useState({

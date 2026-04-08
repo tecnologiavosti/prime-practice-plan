@@ -234,6 +234,19 @@ export default function BillingBatches() {
     fetchBatches();
   };
 
+  const handleDeleteBatch = async () => {
+    if (!deleteId) return;
+    await supabase.from('billing_batch_guides').delete().eq('batch_id', deleteId);
+    const { error } = await supabase.from('billing_batches').delete().eq('id', deleteId);
+    if (error) {
+      toast({ variant: 'destructive', title: 'Erro', description: error.message });
+    } else {
+      toast({ title: 'Lote removido com sucesso!' });
+      fetchBatches();
+    }
+    setDeleteId(null);
+  };
+
   const toggleGuide = (guideId: string) => {
     if (selectedGuides.includes(guideId)) {
       setSelectedGuides(selectedGuides.filter(id => id !== guideId));
