@@ -33,7 +33,11 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search, Trash2, FileText, Calendar, AlertTriangle } from 'lucide-react';
+import { Plus, Search, Trash2, FileText, Calendar, AlertTriangle, Pencil } from 'lucide-react';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { format, addDays, isAfter, isBefore } from 'date-fns';
 import { cn } from '@/lib/utils';
 
@@ -141,6 +145,8 @@ export default function MedicalGuides() {
   const [formData, setFormData] = useState(emptyForm);
   const [items, setItems] = useState<Omit<GuideItem, 'id' | 'procedure' | 'professional'>[]>([{ ...emptyItem }]);
   const [expandedGuide, setExpandedGuide] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -388,9 +394,36 @@ export default function MedicalGuides() {
   };
 
   const openNew = () => {
+    setEditingId(null);
     setFormData({ ...emptyForm, guide_number: generateGuideNumber() });
     setItems([{ ...emptyItem }]);
     setDialogOpen(true);
+  };
+
+  const handleEdit = (g: MedicalGuide) => {
+    setEditingId(g.id);
+    setFormData({
+      guide_number: g.guide_number,
+      patient_id: g.patient?.id || '',
+      health_insurance_id: g.health_insurance?.id || '',
+      guide_date: g.guide_date,
+      validity_date: g.validity_date || '',
+    });
+    setItems([{ ...emptyItem }]);
+    setDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    await supabase.from('medical_guide_items').delete().eq('medical_guide_id', deleteId);
+    const { error } = await supabase.from('medical_guides').delete().eq('id', deleteId);
+    if (error) {
+      toast({ variant: 'destructive', title: 'Erro', description: error.message });
+    } else {
+      toast({ title: 'Guia removida com sucesso!' });
+      fetchGuides();
+    }
+    setDeleteId(null);
   };
 
   const filtered = guides.filter((g) =>
@@ -711,18 +744,26 @@ export default function MedicalGuides() {
                       </Badge>
                     </TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>
-                      <Select value={g.status} onValueChange={(v) => handleStatusChange(g.id, v)}>
-                        <SelectTrigger className="w-[120px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="pendente">Pendente</SelectItem>
-                          <SelectItem value="autorizada">Autorizada</SelectItem>
-                          <SelectItem value="faturada">Faturada</SelectItem>
-                          <SelectItem value="recebida">Recebida</SelectItem>
-                          <SelectItem value="glosada">Glosada</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="flex items-center gap-1">
+                        <Select value={g.status} onValueChange={(v) => handleStatusChange(g.id, v)}>
+                          <SelectTrigger className="w-[120px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pendente">Pendente</SelectItem>
+                            <SelectItem value="autorizada">Autorizada</SelectItem>
+                            <SelectItem value="faturada">Faturada</SelectItem>
+                            <SelectItem value="recebida">Recebida</SelectItem>
+                            <SelectItem value="glosada">Glosada</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Button variant="ghost" size="icon" onClick={() => handleEdit(g)} title="Editar">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => setDeleteId(g.id)} title="Remover" className="text-destructive hover:text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                   {/* Expanded items */}
@@ -780,6 +821,23 @@ export default function MedicalGuides() {
           </TableBody>
         </Table>
       </div>
+
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja remover esta guia? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Remover
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

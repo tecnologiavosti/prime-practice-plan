@@ -13,7 +13,11 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2 } from 'lucide-react';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
@@ -88,6 +92,8 @@ export default function Appointments() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formData, setFormData] = useState(emptyForm);
   const [submitting, setSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -318,8 +324,38 @@ export default function Appointments() {
   };
 
   const openNew = () => {
+    setEditingId(null);
     setFormData({ ...emptyForm, appointment_date: dateFilter });
     setDialogOpen(true);
+  };
+
+  const handleEditAppointment = (apt: Appointment) => {
+    setEditingId(apt.id);
+    setFormData({
+      patient_id: apt.patient?.id || '',
+      professional_id: apt.professional?.id || '',
+      procedure_id: apt.procedure?.id || '',
+      appointment_date: apt.appointment_date,
+      start_time: apt.start_time?.slice(0, 5) || '08:00',
+      end_time: apt.end_time?.slice(0, 5) || '08:30',
+      consultation_type: apt.consultation_type as any,
+      health_insurance_id: apt.health_insurance?.id || '',
+      notes: apt.notes || '',
+      status: apt.status as any,
+    });
+    setDialogOpen(true);
+  };
+
+  const handleDeleteAppointment = async () => {
+    if (!deleteId) return;
+    const { error } = await supabase.from('appointments').delete().eq('id', deleteId);
+    if (error) {
+      toast({ variant: 'destructive', title: 'Erro', description: error.message });
+    } else {
+      toast({ title: 'Agendamento removido com sucesso!' });
+      fetchAppointments();
+    }
+    setDeleteId(null);
   };
 
   const filtered = appointments.filter(
@@ -473,13 +509,14 @@ export default function Appointments() {
               <TableHead>Procedimento</TableHead>
               <TableHead>Tipo</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={6} className="text-center">Carregando...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="text-center">Carregando...</TableCell></TableRow>
             ) : filtered.length === 0 ? (
-              <TableRow><TableCell colSpan={6} className="text-center">Nenhum agendamento encontrado</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="text-center">Nenhum agendamento encontrado</TableCell></TableRow>
             ) : (
               filtered.map((apt) => (
                 <TableRow key={apt.id}>
@@ -506,12 +543,39 @@ export default function Appointments() {
                       </SelectContent>
                     </Select>
                   </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      <Button variant="ghost" size="icon" onClick={() => handleEditAppointment(apt)} title="Editar">
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => setDeleteId(apt.id)} title="Remover" className="text-destructive hover:text-destructive">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
                 </TableRow>
               ))
             )}
           </TableBody>
         </Table>
       </div>
+
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja remover este agendamento? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteAppointment} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Remover
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Finalize Consultation Dialog */}
       <Dialog open={finalizeDialogOpen} onOpenChange={setFinalizeDialogOpen}>

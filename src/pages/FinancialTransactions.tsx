@@ -28,7 +28,11 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search, DollarSign, FileText, Clock } from 'lucide-react';
+import { Plus, Search, DollarSign, FileText, Clock, Pencil, Trash2 } from 'lucide-react';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
@@ -105,6 +109,8 @@ export default function FinancialTransactions() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'pendente' | 'pago' | 'cancelado'>('all');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formData, setFormData] = useState(emptyForm);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const [stats, setStats] = useState({
@@ -253,8 +259,37 @@ export default function FinancialTransactions() {
   };
 
   const openNew = () => {
+    setEditingId(null);
     setFormData(emptyForm);
     setDialogOpen(true);
+  };
+
+  const handleEditTransaction = (t: Transaction) => {
+    setEditingId(t.id);
+    setFormData({
+      transaction_type: t.transaction_type as any,
+      patient_id: (t as any).patient_id || '',
+      professional_id: (t as any).professional_id || '',
+      health_insurance_id: (t as any).health_insurance_id || '',
+      procedure_id: (t as any).procedure_id || '',
+      amount: Number(t.amount),
+      due_date: t.due_date || format(new Date(), 'yyyy-MM-dd'),
+      payment_method_id: (t as any).payment_method_id || '',
+      description: t.description || '',
+    });
+    setDialogOpen(true);
+  };
+
+  const handleDeleteTransaction = async () => {
+    if (!deleteId) return;
+    const { error } = await supabase.from('financial_transactions').delete().eq('id', deleteId);
+    if (error) {
+      toast({ variant: 'destructive', title: 'Erro', description: error.message });
+    } else {
+      toast({ title: 'Lançamento removido com sucesso!' });
+      fetchTransactions();
+    }
+    setDeleteId(null);
   };
 
   const filtered = transactions.filter((t) =>
@@ -537,16 +572,24 @@ export default function FinancialTransactions() {
                     </span>
                   </TableCell>
                   <TableCell>
-                    {t.status === 'pendente' && (
-                      <div className="flex gap-1">
-                        <Button size="sm" variant="outline" onClick={() => handleStatusChange(t.id, 'pago')}>
-                          Receber
-                        </Button>
-                        <Button size="sm" variant="ghost" onClick={() => handleStatusChange(t.id, 'cancelado')}>
-                          Cancelar
-                        </Button>
-                      </div>
-                    )}
+                    <div className="flex items-center gap-1">
+                      {t.status === 'pendente' && (
+                        <>
+                          <Button size="sm" variant="outline" onClick={() => handleStatusChange(t.id, 'pago')}>
+                            Receber
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => handleStatusChange(t.id, 'cancelado')}>
+                            Cancelar
+                          </Button>
+                        </>
+                      )}
+                      <Button variant="ghost" size="icon" onClick={() => handleEditTransaction(t)} title="Editar">
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => setDeleteId(t.id)} title="Remover" className="text-destructive hover:text-destructive">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -554,6 +597,23 @@ export default function FinancialTransactions() {
           </TableBody>
         </Table>
       </div>
+
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja remover este lançamento? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteTransaction} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Remover
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

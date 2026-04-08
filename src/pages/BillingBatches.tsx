@@ -28,7 +28,11 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search, FileText } from 'lucide-react';
+import { Plus, Search, FileText, Pencil, Trash2 } from 'lucide-react';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
@@ -83,6 +87,7 @@ export default function BillingBatches() {
   const [selectedGuides, setSelectedGuides] = useState<string[]>([]);
   const [periodStart, setPeriodStart] = useState(format(new Date(), 'yyyy-MM-01'));
   const [periodEnd, setPeriodEnd] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -227,6 +232,19 @@ export default function BillingBatches() {
 
     toast({ title: 'Status atualizado!' });
     fetchBatches();
+  };
+
+  const handleDeleteBatch = async () => {
+    if (!deleteId) return;
+    await supabase.from('billing_batch_guides').delete().eq('batch_id', deleteId);
+    const { error } = await supabase.from('billing_batches').delete().eq('id', deleteId);
+    if (error) {
+      toast({ variant: 'destructive', title: 'Erro', description: error.message });
+    } else {
+      toast({ title: 'Lote removido com sucesso!' });
+      fetchBatches();
+    }
+    setDeleteId(null);
   };
 
   const toggleGuide = (guideId: string) => {
@@ -437,17 +455,22 @@ export default function BillingBatches() {
                       </span>
                     </TableCell>
                     <TableCell>
-                      <Select value={b.status} onValueChange={(v) => handleStatusChange(b.id, v)}>
-                        <SelectTrigger className="w-[120px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="aberto">Aberto</SelectItem>
-                          <SelectItem value="enviado">Enviado</SelectItem>
-                          <SelectItem value="recebido">Recebido</SelectItem>
-                          <SelectItem value="parcial">Parcial</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="flex items-center gap-1">
+                        <Select value={b.status} onValueChange={(v) => handleStatusChange(b.id, v)}>
+                          <SelectTrigger className="w-[120px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="aberto">Aberto</SelectItem>
+                            <SelectItem value="enviado">Enviado</SelectItem>
+                            <SelectItem value="recebido">Recebido</SelectItem>
+                            <SelectItem value="parcial">Parcial</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Button variant="ghost" size="icon" onClick={() => setDeleteId(b.id)} title="Remover" className="text-destructive hover:text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -490,17 +513,22 @@ export default function BillingBatches() {
                       </span>
                     </TableCell>
                     <TableCell>
-                      <Select value={b.status} onValueChange={(v) => handleStatusChange(b.id, v)}>
-                        <SelectTrigger className="w-[120px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="aberto">Aberto</SelectItem>
-                          <SelectItem value="enviado">Enviado</SelectItem>
-                          <SelectItem value="recebido">Recebido</SelectItem>
-                          <SelectItem value="parcial">Parcial</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="flex items-center gap-1">
+                        <Select value={b.status} onValueChange={(v) => handleStatusChange(b.id, v)}>
+                          <SelectTrigger className="w-[120px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="aberto">Aberto</SelectItem>
+                            <SelectItem value="enviado">Enviado</SelectItem>
+                            <SelectItem value="recebido">Recebido</SelectItem>
+                            <SelectItem value="parcial">Parcial</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Button variant="ghost" size="icon" onClick={() => setDeleteId(b.id)} title="Remover" className="text-destructive hover:text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -515,6 +543,23 @@ export default function BillingBatches() {
           Nenhum lote de faturamento encontrado
         </div>
       )}
+
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja remover este lote? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteBatch} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Remover
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
