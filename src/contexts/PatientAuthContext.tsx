@@ -54,15 +54,19 @@ export const PatientAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
       // Fetch patient profile
       const { data: patientData } = await supabase
         .from('patients')
-        .select('id, full_name, email, phone, cpf, birth_date, health_insurance_id')
+        .select('id, full_name, email, phone, cpf, birth_date, health_insurance_id, active')
         .eq('user_id', userId)
         .single();
 
       if (patientData) {
         setPatientProfile(patientData);
+        setIsPending(!patientData.active);
+      } else {
+        setIsPending(false);
       }
     } else {
       setPatientProfile(null);
+      setIsPending(false);
     }
   };
 
