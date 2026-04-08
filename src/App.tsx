@@ -26,6 +26,7 @@ import BillingBatches from "./pages/BillingBatches";
 import FinancialReports from "./pages/FinancialReports";
 import PaymentMethods from "./pages/PaymentMethods";
 import InsuranceReimbursements from "./pages/InsuranceReimbursements";
+import PendingPatients from "./pages/PendingPatients";
 import NotFound from "./pages/NotFound";
 // Patient Portal
 import LandingPage from "./pages/LandingPage";
@@ -82,6 +83,7 @@ const App = () => (
               <Route path="/admin/lotes-faturamento" element={<BillingBatches />} />
               <Route path="/admin/relatorios-financeiros" element={<FinancialReports />} />
               <Route path="/admin/formas-pagamento" element={<PaymentMethods />} />
+              <Route path="/admin/pacientes-pendentes" element={<PendingPatients />} />
             </Route>
             
             <Route path="*" element={<NotFound />} />
