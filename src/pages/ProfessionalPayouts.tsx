@@ -541,6 +541,41 @@ export default function ProfessionalPayouts() {
         </Table>
       </div>
 
+      <Dialog open={editPayoutDialogOpen} onOpenChange={setEditPayoutDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Repasse</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleUpdatePayout} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Profissional</Label>
+              <Input value={editingPayout?.professional?.full_name || ''} disabled />
+            </div>
+            <div className="space-y-2">
+              <Label>Valor (R$)</Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={editPayoutForm.payout_amount}
+                onChange={(e) => setEditPayoutForm({ ...editPayoutForm, payout_amount: parseFloat(e.target.value) || 0 })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Data Referência</Label>
+              <Input
+                type="date"
+                value={editPayoutForm.reference_date}
+                onChange={(e) => setEditPayoutForm({ ...editPayoutForm, reference_date: e.target.value })}
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setEditPayoutDialogOpen(false)}>Cancelar</Button>
+              <Button type="submit">Salvar</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       <AlertDialog open={!!deletePayoutId} onOpenChange={(open) => !open && setDeletePayoutId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>

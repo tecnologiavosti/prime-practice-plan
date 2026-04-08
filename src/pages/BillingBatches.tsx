@@ -577,6 +577,32 @@ export default function BillingBatches() {
         </div>
       )}
 
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Lote</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Nº Lote</Label>
+              <Input value={editingBatch?.batch_number || ''} disabled />
+            </div>
+            <div className="space-y-2">
+              <Label>Período Início</Label>
+              <Input type="date" value={editPeriodStart} onChange={(e) => setEditPeriodStart(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Período Fim</Label>
+              <Input type="date" value={editPeriodEnd} onChange={(e) => setEditPeriodEnd(e.target.value)} />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setEditDialogOpen(false)}>Cancelar</Button>
+              <Button onClick={handleUpdateBatch}>Salvar</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
