@@ -681,7 +681,6 @@ export default function Professionals() {
           </TableBody>
         </Table>
       </div>
-    </div>
 
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>

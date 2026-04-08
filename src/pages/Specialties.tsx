@@ -217,7 +217,6 @@ export default function Specialties() {
           </TableBody>
         </Table>
       </div>
-    </div>
 
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>

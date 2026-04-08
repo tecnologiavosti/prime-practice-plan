@@ -334,7 +334,6 @@ export default function HealthInsurances() {
           </TableBody>
         </Table>
       </div>
-    </div>
 
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>
@@ -350,4 +349,5 @@ export default function HealthInsurances() {
       </AlertDialog>
     </div>
   );
+}
 }
