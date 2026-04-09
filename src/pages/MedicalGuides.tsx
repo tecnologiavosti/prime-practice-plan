@@ -833,6 +833,9 @@ export default function MedicalGuides() {
                             <SelectItem value="glosada">Glosada</SelectItem>
                           </SelectContent>
                         </Select>
+                        <Button variant="ghost" size="icon" onClick={() => handleDownloadPDF(g)} title="Download PDF">
+                          <FileDown className="h-4 w-4" />
+                        </Button>
                         <Button variant="ghost" size="icon" onClick={() => handleEdit(g)} title="Editar">
                           <Pencil className="h-4 w-4" />
                         </Button>
