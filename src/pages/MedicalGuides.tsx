@@ -413,8 +413,83 @@ export default function MedicalGuides() {
     setItems([{ ...emptyItem }]);
     setDialogOpen(true);
   };
+  const handleDownloadPDF = (g: MedicalGuide) => {
+    const doc = new jsPDF();
+    const margin = 20;
+    let y = margin;
 
-  const handleDelete = async () => {
+    // Header
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('GUIA MÉDICA', 105, y, { align: 'center' });
+    y += 8;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Clínica Médica', 105, y, { align: 'center' });
+    y += 12;
+
+    doc.setDrawColor(180);
+    doc.line(margin, y, 190, y);
+    y += 10;
+
+    doc.setFontSize(11);
+    const addField = (label: string, value: string) => {
+      doc.setFont('helvetica', 'bold');
+      doc.text(`${label}:`, margin, y);
+      doc.setFont('helvetica', 'normal');
+      doc.text(value, margin + 50, y);
+      y += 8;
+    };
+
+    addField('Nº da Guia', g.guide_number);
+    addField('Data', format(new Date(g.guide_date), 'dd/MM/yyyy'));
+    if (g.validity_date) addField('Validade', format(new Date(g.validity_date), 'dd/MM/yyyy'));
+    addField('Paciente', g.patient?.full_name || '-');
+    addField('Convênio', g.health_insurance?.name || '-');
+    addField('Profissional', g.professional?.full_name || '-');
+    addField('Procedimento', g.procedure?.name || '-');
+    addField('Valor Total', formatCurrency(Number(g.total_value)));
+    addField('Status', statusLabels[g.status] || g.status);
+
+    // Items section
+    if (g.items && g.items.length > 0) {
+      y += 5;
+      doc.line(margin, y, 190, y);
+      y += 8;
+      doc.setFont('helvetica', 'bold');
+      doc.text('Atendimentos:', margin, y);
+      y += 8;
+
+      g.items.forEach((item, idx) => {
+        doc.setFont('helvetica', 'normal');
+        doc.text(
+          `${idx + 1}. ${item.procedure?.code || ''} - ${item.procedure?.name || '-'} | ${item.professional?.full_name || '-'} | Qtd: ${item.quantity} | ${formatCurrency(Number(item.total_value))}`,
+          margin + 5, y
+        );
+        y += 7;
+      });
+    }
+
+    y += 10;
+    doc.line(margin, y, 190, y);
+    y += 25;
+
+    // Signature lines
+    doc.line(margin, y, 85, y);
+    doc.line(115, y, 190, y);
+    y += 5;
+    doc.setFontSize(9);
+    doc.text('Assinatura do Profissional', 52.5, y, { align: 'center' });
+    doc.text('Assinatura do Paciente', 152.5, y, { align: 'center' });
+
+    y += 15;
+    doc.setFontSize(8);
+    doc.text(`Emitido em: ${format(new Date(), "dd/MM/yyyy 'às' HH:mm")}`, 105, y, { align: 'center' });
+
+    doc.save(`guia_${g.guide_number}.pdf`);
+  };
+
+
     if (!deleteId) return;
     await supabase.from('medical_guide_items').delete().eq('medical_guide_id', deleteId);
     const { error } = await supabase.from('medical_guides').delete().eq('id', deleteId);
