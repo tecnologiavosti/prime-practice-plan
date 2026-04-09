@@ -489,7 +489,7 @@ export default function MedicalGuides() {
     doc.save(`guia_${g.guide_number}.pdf`);
   };
 
-
+  const handleDelete = async () => {
     if (!deleteId) return;
     await supabase.from('medical_guide_items').delete().eq('medical_guide_id', deleteId);
     const { error } = await supabase.from('medical_guides').delete().eq('id', deleteId);
