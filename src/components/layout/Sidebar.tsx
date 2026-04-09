@@ -19,7 +19,6 @@ import {
   Wallet,
   FileBarChart,
   Banknote,
-  UserCheck,
 } from 'lucide-react';
 
 const menuItems = [
