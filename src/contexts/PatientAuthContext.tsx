@@ -119,34 +119,13 @@ export const PatientAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
         emailRedirectTo: redirectUrl,
         data: {
           full_name: fullName,
+          cpf: cpf,
         },
       },
     });
 
-    if (!error && data.user) {
-      // Create patient record linked to user
-      const { error: patientError } = await supabase.from('patients').insert({
-        user_id: data.user.id,
-        full_name: fullName,
-        email: email,
-        cpf: cpf,
-        active: false,
-      });
-
-      if (patientError) {
-        console.error('Error creating patient:', patientError);
-      }
-
-      // Assign patient role
-      const { error: roleError } = await supabase.from('user_roles').insert({
-        user_id: data.user.id,
-        role: 'paciente',
-      });
-
-      if (roleError) {
-        console.error('Error assigning role:', roleError);
-      }
-    }
+    // The database trigger handle_new_patient_signup automatically creates
+    // the patient record, user_role, and profile when the user is created.
 
     return { error };
   };
