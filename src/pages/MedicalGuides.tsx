@@ -33,7 +33,8 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search, Trash2, FileText, Calendar, AlertTriangle, Pencil } from 'lucide-react';
+import { Plus, Search, Trash2, FileText, Calendar, AlertTriangle, Pencil, FileDown } from 'lucide-react';
+import jsPDF from 'jspdf';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
