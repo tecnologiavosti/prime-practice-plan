@@ -22,7 +22,6 @@ interface PatientAuthContextType {
   signOut: () => Promise<void>;
   isPatient: boolean;
   isAdmin: boolean;
-  isPending: boolean;
 }
 
 const PatientAuthContext = createContext<PatientAuthContextType | undefined>(undefined);
@@ -34,7 +33,7 @@ export const PatientAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [patientProfile, setPatientProfile] = useState<PatientProfile | null>(null);
   const [isPatient, setIsPatient] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isPending, setIsPending] = useState(false);
+  
 
   const fetchPatientProfile = async (userId: string) => {
     // Check all user roles
@@ -51,22 +50,17 @@ export const PatientAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
     setIsPatient(hasPatientRole);
 
     if (hasPatientRole) {
-      // Fetch patient profile
       const { data: patientData } = await supabase
         .from('patients')
-        .select('id, full_name, email, phone, cpf, birth_date, health_insurance_id, active')
+        .select('id, full_name, email, phone, cpf, birth_date, health_insurance_id')
         .eq('user_id', userId)
         .single();
 
       if (patientData) {
         setPatientProfile(patientData);
-        setIsPending(!patientData.active);
-      } else {
-        setIsPending(false);
       }
     } else {
       setPatientProfile(null);
-      setIsPending(false);
     }
   };
 
@@ -151,7 +145,6 @@ export const PatientAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
         signOut,
         isPatient,
         isAdmin,
-        isPending,
       }}
     >
       {children}
