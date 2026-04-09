@@ -27,7 +27,7 @@ const menuItems = [
   { to: '/admin/agenda', icon: Calendar, label: 'Agenda', roles: ['administrador', 'recepcao', 'profissional'] },
   { to: '/admin/agendamentos', icon: ClipboardList, label: 'Agendamentos', roles: ['administrador', 'recepcao', 'profissional'] },
   { to: '/admin/pacientes', icon: Users, label: 'Pacientes', roles: ['administrador', 'recepcao', 'profissional'] },
-  { to: '/admin/pacientes-pendentes', icon: UserCheck, label: 'Pacientes Pendentes', roles: ['administrador'] },
+  
   { to: '/admin/profissionais', icon: UserCog, label: 'Profissionais', roles: ['administrador'] },
   { to: '/admin/procedimentos', icon: FileText, label: 'Procedimentos', roles: ['administrador'] },
   { to: '/admin/convenios', icon: Building2, label: 'Convênios', roles: ['administrador'] },
