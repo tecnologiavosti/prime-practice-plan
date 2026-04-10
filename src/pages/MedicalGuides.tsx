@@ -33,7 +33,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search, Trash2, FileText, Calendar, AlertTriangle, Pencil, FileDown } from 'lucide-react';
+import { Plus, Search, Trash2, FileText, Calendar, AlertTriangle, Pencil, FileDown, Paperclip, Loader2 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -69,6 +69,7 @@ interface MedicalGuide {
   procedure: { id: string; name: string } | null;
   professional: { id: string; full_name: string } | null;
   items?: GuideItem[];
+  attachment_url?: string | null;
 }
 
 interface Patient {
@@ -148,6 +149,8 @@ export default function MedicalGuides() {
   const [expandedGuide, setExpandedGuide] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [uploadingAttachment, setUploadingAttachment] = useState(false);
+  const [attachmentUrl, setAttachmentUrl] = useState<string>('');
   const { toast } = useToast();
 
   useEffect(() => {
