@@ -401,6 +401,7 @@ export default function MedicalGuides() {
     setEditingId(null);
     setFormData({ ...emptyForm, guide_number: generateGuideNumber() });
     setItems([{ ...emptyItem }]);
+    setAttachmentUrl('');
     setDialogOpen(true);
   };
 
@@ -414,6 +415,7 @@ export default function MedicalGuides() {
       validity_date: g.validity_date || '',
     });
     setItems([{ ...emptyItem }]);
+    setAttachmentUrl(g.attachment_url || '');
     setDialogOpen(true);
   };
   const handleDownloadPDF = (g: MedicalGuide) => {
