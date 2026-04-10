@@ -52,7 +52,6 @@ interface Patient {
   zip_code: string | null;
   notes: string | null;
   gender: string | null;
-  document_url: string | null;
   document_url?: string | null;
 }
 
@@ -186,6 +185,7 @@ export default function Patients() {
       zip_code: patient.zip_code || '',
       notes: patient.notes || '',
       gender: patient.gender || '',
+      document_url: patient.document_url || '',
     });
     setDialogOpen(true);
   };
