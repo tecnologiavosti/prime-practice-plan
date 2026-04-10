@@ -53,6 +53,7 @@ interface Patient {
   notes: string | null;
   gender: string | null;
   document_url: string | null;
+  document_url?: string | null;
 }
 
 interface HealthInsurance {
@@ -75,6 +76,7 @@ const emptyPatient = {
   zip_code: '',
   notes: '',
   gender: '',
+  document_url: '',
 };
 
 export default function Patients() {
@@ -132,10 +134,12 @@ export default function Patients() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    const { document_url, ...rest } = formData;
     const payload = {
-      ...formData,
-      health_insurance_id: formData.health_insurance_id || null,
-      birth_date: formData.birth_date || null,
+      ...rest,
+      health_insurance_id: rest.health_insurance_id || null,
+      birth_date: rest.birth_date || null,
+      document_url: document_url || null,
     };
 
     if (editingPatient) {
