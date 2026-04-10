@@ -83,7 +83,7 @@ export default function Professionals() {
   const [dialogOpen, setDialogOpen] = useState(false);
   
   const [editingProfessional, setEditingProfessional] = useState<Professional | null>(null);
-  const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
+  
   const [formData, setFormData] = useState(emptyProfessional);
   const [selectedInsurances, setSelectedInsurances] = useState<string[]>([]);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -202,7 +202,7 @@ export default function Professionals() {
 
   const openEdit = async (professional: Professional) => {
     setEditingProfessional(professional);
-    setSelectedProfessional(professional);
+    
     setFormData({
       full_name: professional.full_name,
       cpf: professional.cpf || '',
