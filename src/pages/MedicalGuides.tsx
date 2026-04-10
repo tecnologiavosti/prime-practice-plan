@@ -33,7 +33,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search, Trash2, FileText, Calendar, AlertTriangle, Pencil, FileDown } from 'lucide-react';
+import { Plus, Search, Trash2, FileText, Calendar, AlertTriangle, Pencil, FileDown, Paperclip, Loader2 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -69,6 +69,7 @@ interface MedicalGuide {
   procedure: { id: string; name: string } | null;
   professional: { id: string; full_name: string } | null;
   items?: GuideItem[];
+  attachment_url?: string | null;
 }
 
 interface Patient {
@@ -148,6 +149,8 @@ export default function MedicalGuides() {
   const [expandedGuide, setExpandedGuide] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [uploadingAttachment, setUploadingAttachment] = useState(false);
+  const [attachmentUrl, setAttachmentUrl] = useState<string>('');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -315,6 +318,7 @@ export default function MedicalGuides() {
       unit_value: 0,
       total_value: totalValue,
       status: 'pendente',
+      attachment_url: attachmentUrl || null,
     };
 
     const { data: guideData, error } = await supabase
@@ -398,6 +402,7 @@ export default function MedicalGuides() {
     setEditingId(null);
     setFormData({ ...emptyForm, guide_number: generateGuideNumber() });
     setItems([{ ...emptyItem }]);
+    setAttachmentUrl('');
     setDialogOpen(true);
   };
 
@@ -411,6 +416,7 @@ export default function MedicalGuides() {
       validity_date: g.validity_date || '',
     });
     setItems([{ ...emptyItem }]);
+    setAttachmentUrl(g.attachment_url || '');
     setDialogOpen(true);
   };
   const handleDownloadPDF = (g: MedicalGuide) => {
@@ -721,6 +727,41 @@ export default function MedicalGuides() {
                 </div>
               </div>
 
+              {/* Upload de Anexo */}
+              <div className="space-y-2">
+                <Label>Anexo (PDF/Imagem)</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png,.webp"
+                    disabled={uploadingAttachment}
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setUploadingAttachment(true);
+                      const ext = file.name.split('.').pop();
+                      const path = `anexos_guias/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+                      const { error: uploadError } = await supabase.storage.from('documents').upload(path, file);
+                      if (uploadError) {
+                        toast({ variant: 'destructive', title: 'Erro no upload', description: uploadError.message });
+                        setUploadingAttachment(false);
+                        return;
+                      }
+                      const { data: urlData } = supabase.storage.from('documents').getPublicUrl(path);
+                      setAttachmentUrl(urlData.publicUrl);
+                      setUploadingAttachment(false);
+                      toast({ title: 'Anexo enviado!' });
+                    }}
+                  />
+                  {uploadingAttachment && <Loader2 className="h-4 w-4 animate-spin" />}
+                </div>
+                {attachmentUrl && (
+                  <Button type="button" variant="outline" size="sm" onClick={() => window.open(attachmentUrl, '_blank')}>
+                    <Paperclip className="mr-1 h-3 w-3" /> Ver Anexo Atual
+                  </Button>
+                )}
+              </div>
+
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                   Cancelar
@@ -836,6 +877,11 @@ export default function MedicalGuides() {
                         <Button variant="ghost" size="icon" onClick={() => handleDownloadPDF(g)} title="Download PDF">
                           <FileDown className="h-4 w-4" />
                         </Button>
+                        {g.attachment_url && (
+                          <Button variant="ghost" size="icon" onClick={() => window.open(g.attachment_url!, '_blank')} title="Ver Anexo">
+                            <Paperclip className="h-4 w-4" />
+                          </Button>
+                        )}
                         <Button variant="ghost" size="icon" onClick={() => handleEdit(g)} title="Editar">
                           <Pencil className="h-4 w-4" />
                         </Button>
