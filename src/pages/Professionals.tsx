@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search, Edit, Calendar, Trash2 } from 'lucide-react';
+import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -57,16 +57,6 @@ interface HealthInsurance {
   name: string;
 }
 
-interface Schedule {
-  day_of_week: number;
-  start_time: string;
-  end_time: string;
-  slot_duration_minutes: number;
-  service_type: 'ambos' | 'particular' | 'convenio';
-  active: boolean;
-}
-
-const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 
 const emptyProfessional = {
   full_name: '',
@@ -83,14 +73,6 @@ const emptyProfessional = {
   zip_code: '',
 };
 
-const emptySchedule: Schedule = {
-  day_of_week: 1,
-  start_time: '08:00',
-  end_time: '18:00',
-  slot_duration_minutes: 30,
-  service_type: 'ambos' as 'ambos' | 'particular' | 'convenio',
-  active: true,
-};
 
 export default function Professionals() {
   const [professionals, setProfessionals] = useState<Professional[]>([]);
@@ -99,13 +81,11 @@ export default function Professionals() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
+  
   const [editingProfessional, setEditingProfessional] = useState<Professional | null>(null);
-  const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
+  
   const [formData, setFormData] = useState(emptyProfessional);
   const [selectedInsurances, setSelectedInsurances] = useState<string[]>([]);
-  const [schedules, setSchedules] = useState<Schedule[]>([]);
-  const [newSchedule, setNewSchedule] = useState<Schedule>(emptySchedule);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -159,14 +139,6 @@ export default function Professionals() {
     return data?.map((d) => d.health_insurance_id) || [];
   };
 
-  const fetchSchedules = async (professionalId: string) => {
-    const { data } = await supabase
-      .from('professional_schedules')
-      .select('*')
-      .eq('professional_id', professionalId)
-      .order('day_of_week');
-    setSchedules(data || []);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -227,36 +199,10 @@ export default function Professionals() {
     fetchProfessionals();
   };
 
-  const handleAddSchedule = async () => {
-    if (!selectedProfessional) return;
-
-    const { error } = await supabase.from('professional_schedules').insert([{
-      ...newSchedule,
-      professional_id: selectedProfessional.id,
-    }]);
-
-    if (error) {
-      toast({ variant: 'destructive', title: 'Erro', description: error.message });
-      return;
-    }
-
-    toast({ title: 'Horário adicionado!' });
-    setNewSchedule(emptySchedule);
-    fetchSchedules(selectedProfessional.id);
-  };
-
-  const handleDeleteSchedule = async (scheduleId: string) => {
-    const { error } = await supabase.from('professional_schedules').delete().eq('id', scheduleId);
-    if (error) {
-      toast({ variant: 'destructive', title: 'Erro', description: error.message });
-      return;
-    }
-    if (selectedProfessional) fetchSchedules(selectedProfessional.id);
-  };
 
   const openEdit = async (professional: Professional) => {
     setEditingProfessional(professional);
-    setSelectedProfessional(professional);
+    
     setFormData({
       full_name: professional.full_name,
       cpf: professional.cpf || '',
@@ -273,15 +219,9 @@ export default function Professionals() {
     });
     const insIds = await fetchProfessionalInsurances(professional.id);
     setSelectedInsurances(insIds);
-    await fetchSchedules(professional.id);
     setDialogOpen(true);
   };
 
-  const openSchedule = (professional: Professional) => {
-    setSelectedProfessional(professional);
-    fetchSchedules(professional.id);
-    setScheduleDialogOpen(true);
-  };
 
   const openNew = () => {
     setEditingProfessional(null);
@@ -319,9 +259,6 @@ export default function Professionals() {
                 <TabsList className="w-full">
                   <TabsTrigger value="dados" className="flex-1">Dados</TabsTrigger>
                   <TabsTrigger value="convenios" className="flex-1">Convênios</TabsTrigger>
-                  {editingProfessional && (
-                    <TabsTrigger value="horarios" className="flex-1">Horários</TabsTrigger>
-                  )}
                 </TabsList>
                 <TabsContent value="dados" className="space-y-4">
                   <div className="grid gap-4 md:grid-cols-2">
@@ -424,102 +361,6 @@ export default function Professionals() {
                     ))}
                   </div>
                 </TabsContent>
-                {editingProfessional && (
-                  <TabsContent value="horarios" className="space-y-4">
-                    <p className="text-sm text-muted-foreground">Configure os horários de atendimento</p>
-                    <div className="grid gap-3 md:grid-cols-5 items-end">
-                      <div className="space-y-2">
-                        <Label>Dia da Semana</Label>
-                        <Select
-                          value={newSchedule.day_of_week.toString()}
-                          onValueChange={(v) => setNewSchedule({ ...newSchedule, day_of_week: parseInt(v) })}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {dayNames.map((day, i) => (
-                              <SelectItem key={i} value={i.toString()}>{day}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Início</Label>
-                        <Input
-                          type="time"
-                          value={newSchedule.start_time}
-                          onChange={(e) => setNewSchedule({ ...newSchedule, start_time: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Fim</Label>
-                        <Input
-                          type="time"
-                          value={newSchedule.end_time}
-                          onChange={(e) => setNewSchedule({ ...newSchedule, end_time: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Duração (min)</Label>
-                        <Input
-                          type="number"
-                          value={newSchedule.slot_duration_minutes}
-                          onChange={(e) => setNewSchedule({ ...newSchedule, slot_duration_minutes: parseInt(e.target.value) })}
-                        />
-                      </div>
-                      <Button 
-                        type="button" 
-                        onClick={() => {
-                          setSelectedProfessional(editingProfessional);
-                          handleAddSchedule();
-                        }}
-                      >
-                        Adicionar
-                      </Button>
-                    </div>
-
-                    {schedules.length > 0 ? (
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Dia</TableHead>
-                            <TableHead>Horário</TableHead>
-                            <TableHead>Duração</TableHead>
-                            <TableHead>Tipo</TableHead>
-                            <TableHead className="w-[100px]"></TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {schedules.map((sched: any) => (
-                            <TableRow key={sched.id}>
-                              <TableCell>{dayNames[sched.day_of_week]}</TableCell>
-                              <TableCell>{sched.start_time.slice(0, 5)} - {sched.end_time.slice(0, 5)}</TableCell>
-                              <TableCell>{sched.slot_duration_minutes} min</TableCell>
-                              <TableCell className="capitalize">{sched.service_type}</TableCell>
-                              <TableCell>
-                                <Button 
-                                  type="button" 
-                                  variant="destructive" 
-                                  size="sm" 
-                                  onClick={() => handleDeleteSchedule(sched.id)}
-                                >
-                                  Remover
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    ) : (
-                      <div className="text-center py-8 text-muted-foreground border rounded-lg border-dashed">
-                        <Calendar className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        <p>Nenhum horário cadastrado</p>
-                        <p className="text-sm">Adicione horários de atendimento acima</p>
-                      </div>
-                    )}
-                  </TabsContent>
-                )}
               </Tabs>
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
@@ -531,89 +372,6 @@ export default function Professionals() {
           </DialogContent>
         </Dialog>
       </div>
-
-      {/* Schedule Dialog */}
-      <Dialog open={scheduleDialogOpen} onOpenChange={setScheduleDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Agenda de {selectedProfessional?.full_name}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-5">
-              <div className="space-y-2">
-                <Label>Dia</Label>
-                <Select
-                  value={newSchedule.day_of_week.toString()}
-                  onValueChange={(v) => setNewSchedule({ ...newSchedule, day_of_week: parseInt(v) })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {dayNames.map((day, i) => (
-                      <SelectItem key={i} value={i.toString()}>{day}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Início</Label>
-                <Input
-                  type="time"
-                  value={newSchedule.start_time}
-                  onChange={(e) => setNewSchedule({ ...newSchedule, start_time: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Fim</Label>
-                <Input
-                  type="time"
-                  value={newSchedule.end_time}
-                  onChange={(e) => setNewSchedule({ ...newSchedule, end_time: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Duração (min)</Label>
-                <Input
-                  type="number"
-                  value={newSchedule.slot_duration_minutes}
-                  onChange={(e) => setNewSchedule({ ...newSchedule, slot_duration_minutes: parseInt(e.target.value) })}
-                />
-              </div>
-              <div className="flex items-end">
-                <Button onClick={handleAddSchedule}>Adicionar</Button>
-              </div>
-            </div>
-
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Dia</TableHead>
-                  <TableHead>Horário</TableHead>
-                  <TableHead>Duração</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {schedules.map((sched: any) => (
-                  <TableRow key={sched.id}>
-                    <TableCell>{dayNames[sched.day_of_week]}</TableCell>
-                    <TableCell>{sched.start_time} - {sched.end_time}</TableCell>
-                    <TableCell>{sched.slot_duration_minutes} min</TableCell>
-                    <TableCell className="capitalize">{sched.service_type}</TableCell>
-                    <TableCell>
-                      <Button variant="destructive" size="sm" onClick={() => handleDeleteSchedule(sched.id)}>
-                        Remover
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       <div className="mb-4">
         <div className="relative max-w-sm">
@@ -666,9 +424,6 @@ export default function Professionals() {
                     <div className="flex gap-1">
                       <Button variant="ghost" size="icon" onClick={() => openEdit(prof)} title="Editar">
                         <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => openSchedule(prof)} title="Horários">
-                        <Calendar className="h-4 w-4" />
                       </Button>
                       <Button variant="ghost" size="icon" onClick={() => setDeleteId(prof.id)} title="Remover" className="text-destructive hover:text-destructive">
                         <Trash2 className="h-4 w-4" />
