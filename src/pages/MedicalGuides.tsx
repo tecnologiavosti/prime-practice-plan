@@ -318,6 +318,7 @@ export default function MedicalGuides() {
       unit_value: 0,
       total_value: totalValue,
       status: 'pendente',
+      attachment_url: attachmentUrl || null,
     };
 
     const { data: guideData, error } = await supabase
