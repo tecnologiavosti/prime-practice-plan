@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Download, Printer } from 'lucide-react';
 import jsPDF from 'jspdf';
+import { addClinicHeader } from '@/lib/pdfHeader';
 
 interface ReceiptData {
   patientName: string;
@@ -34,19 +35,17 @@ export function ReceiptDialog({ open, onOpenChange, data }: ReceiptDialogProps) 
     ? `Convênio${data.insuranceName ? ` (${data.insuranceName})` : ''}`
     : data.consultationType === 'pacote' ? 'Pacote' : 'Particular';
 
-  const generatePDF = () => {
+  const generatePDF = async () => {
     const doc = new jsPDF();
     const margin = 20;
-    let y = margin;
+    let y = await addClinicHeader(doc, margin);
 
-    doc.setFontSize(18);
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
     doc.text('RECIBO DE ATENDIMENTO', 105, y, { align: 'center' });
-    y += 15;
+    y += 12;
 
     doc.setFontSize(11);
-    doc.setDrawColor(200);
-    doc.line(margin, y, 190, y);
-    y += 10;
 
     const addLine = (label: string, value: string) => {
       doc.setFont('helvetica', 'bold');
