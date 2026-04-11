@@ -82,6 +82,7 @@ export default function ProfessionalPayouts() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pendente' | 'pago'>('all');
   const [feeDialogOpen, setFeeDialogOpen] = useState(false);
+  const [editingFeeId, setEditingFeeId] = useState<string | null>(null);
   const [feeForm, setFeeForm] = useState({
     professional_id: '',
     procedure_id: '',
@@ -90,6 +91,7 @@ export default function ProfessionalPayouts() {
     percentage_value: 0,
     per_procedure_value: 0,
   });
+  const [deleteFeeId, setDeleteFeeId] = useState<string | null>(null);
   const [deletePayoutId, setDeletePayoutId] = useState<string | null>(null);
   const [editPayoutDialogOpen, setEditPayoutDialogOpen] = useState(false);
   const [editingPayout, setEditingPayout] = useState<Payout | null>(null);
@@ -184,7 +186,12 @@ export default function ProfessionalPayouts() {
       per_procedure_value: feeForm.fee_type === 'per_procedure' ? feeForm.per_procedure_value : 0,
     };
 
-    const { error } = await supabase.from('professional_fees').insert([payload]);
+    let error;
+    if (editingFeeId) {
+      ({ error } = await supabase.from('professional_fees').update(payload).eq('id', editingFeeId));
+    } else {
+      ({ error } = await supabase.from('professional_fees').insert([payload]));
+    }
 
     if (error) {
       if (error.code === '23505') {
@@ -195,8 +202,14 @@ export default function ProfessionalPayouts() {
       return;
     }
 
-    toast({ title: 'Configuração de repasse salva!' });
+    toast({ title: editingFeeId ? 'Configuração atualizada!' : 'Configuração de repasse salva!' });
     setFeeDialogOpen(false);
+    setEditingFeeId(null);
+    resetFeeForm();
+    fetchFees();
+  };
+
+  const resetFeeForm = () => {
     setFeeForm({
       professional_id: '',
       procedure_id: '',
@@ -205,7 +218,19 @@ export default function ProfessionalPayouts() {
       percentage_value: 0,
       per_procedure_value: 0,
     });
-    fetchFees();
+  };
+
+  const handleEditFee = (fee: ProfessionalFee) => {
+    setEditingFeeId(fee.id);
+    setFeeForm({
+      professional_id: fee.professional_id,
+      procedure_id: fee.procedure_id || '',
+      fee_type: fee.fee_type as any,
+      fixed_value: Number(fee.fixed_value),
+      percentage_value: Number(fee.percentage_value),
+      per_procedure_value: Number(fee.per_procedure_value),
+    });
+    setFeeDialogOpen(true);
   };
 
   const handlePayoutStatus = async (id: string, status: 'pendente' | 'pago') => {
@@ -225,14 +250,16 @@ export default function ProfessionalPayouts() {
     fetchPayouts();
   };
 
-  const handleDeleteFee = async (id: string) => {
-    const { error } = await supabase.from('professional_fees').delete().eq('id', id);
+  const handleDeleteFee = async () => {
+    if (!deleteFeeId) return;
+    const { error } = await supabase.from('professional_fees').delete().eq('id', deleteFeeId);
     if (error) {
       toast({ variant: 'destructive', title: 'Erro', description: error.message });
-      return;
+    } else {
+      toast({ title: 'Configuração removida!' });
+      fetchFees();
     }
-    toast({ title: 'Configuração removida!' });
-    fetchFees();
+    setDeleteFeeId(null);
   };
 
   const handleEditPayout = (p: Payout) => {
@@ -296,16 +323,16 @@ export default function ProfessionalPayouts() {
           <h1 className="text-3xl font-bold">Repasse Profissionais</h1>
           <p className="text-muted-foreground">Gerencie os repasses dos profissionais</p>
         </div>
-        <Dialog open={feeDialogOpen} onOpenChange={setFeeDialogOpen}>
+        <Dialog open={feeDialogOpen} onOpenChange={(open) => { setFeeDialogOpen(open); if (!open) { setEditingFeeId(null); resetFeeForm(); } }}>
           <DialogTrigger asChild>
-            <Button>
+            <Button onClick={() => { setEditingFeeId(null); resetFeeForm(); }}>
               <Plus className="mr-2 h-4 w-4" />
               Config. Repasse
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Configurar Repasse</DialogTitle>
+              <DialogTitle>{editingFeeId ? 'Editar Configuração de Repasse' : 'Configurar Repasse'}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleFeeSubmit} className="space-y-4">
               <div className="space-y-2">
@@ -449,9 +476,14 @@ export default function ProfessionalPayouts() {
                     <TableCell>{fee.procedure?.name || 'Todos'}</TableCell>
                     <TableCell>{getFeeDescription(fee)}</TableCell>
                     <TableCell>
-                      <Button size="sm" variant="destructive" onClick={() => handleDeleteFee(fee.id)}>
-                        Remover
-                      </Button>
+                      <div className="flex items-center gap-3">
+                        <Button variant="ghost" size="icon" onClick={() => handleEditFee(fee)} title="Editar">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => setDeleteFeeId(fee.id)} title="Remover" className="text-destructive hover:text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -587,6 +619,23 @@ export default function ProfessionalPayouts() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeletePayout} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Remover
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!deleteFeeId} onOpenChange={(open) => !open && setDeleteFeeId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja remover esta regra de repasse? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteFee} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Remover
             </AlertDialogAction>
           </AlertDialogFooter>
