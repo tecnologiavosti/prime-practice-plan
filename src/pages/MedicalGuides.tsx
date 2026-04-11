@@ -35,6 +35,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Search, Trash2, FileText, Calendar, AlertTriangle, Pencil, FileDown, Paperclip, Loader2 } from 'lucide-react';
 import jsPDF from 'jspdf';
+import { addClinicHeader } from '@/lib/pdfHeader';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
