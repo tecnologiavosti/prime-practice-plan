@@ -419,24 +419,15 @@ export default function MedicalGuides() {
     setAttachmentUrl(g.attachment_url || '');
     setDialogOpen(true);
   };
-  const handleDownloadPDF = (g: MedicalGuide) => {
+  const handleDownloadPDF = async (g: MedicalGuide) => {
     const doc = new jsPDF();
     const margin = 20;
-    let y = margin;
+    let y = await addClinicHeader(doc, margin);
 
-    // Header
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
     doc.text('GUIA MÉDICA', 105, y, { align: 'center' });
-    y += 8;
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text('Clínica Médica', 105, y, { align: 'center' });
     y += 12;
-
-    doc.setDrawColor(180);
-    doc.line(margin, y, 190, y);
-    y += 10;
 
     doc.setFontSize(11);
     const addField = (label: string, value: string) => {
