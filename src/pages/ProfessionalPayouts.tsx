@@ -323,9 +323,9 @@ export default function ProfessionalPayouts() {
           <h1 className="text-3xl font-bold">Repasse Profissionais</h1>
           <p className="text-muted-foreground">Gerencie os repasses dos profissionais</p>
         </div>
-        <Dialog open={feeDialogOpen} onOpenChange={setFeeDialogOpen}>
+        <Dialog open={feeDialogOpen} onOpenChange={(open) => { setFeeDialogOpen(open); if (!open) { setEditingFeeId(null); resetFeeForm(); } }}>
           <DialogTrigger asChild>
-            <Button>
+            <Button onClick={() => { setEditingFeeId(null); resetFeeForm(); }}>
               <Plus className="mr-2 h-4 w-4" />
               Config. Repasse
             </Button>
