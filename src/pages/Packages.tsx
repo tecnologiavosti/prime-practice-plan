@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { CurrencyInput } from '@/components/ui/currency-input';
 import { Label } from '@/components/ui/label';
 import {
   Table,
@@ -245,12 +246,10 @@ export default function Packages() {
                 </div>
                 <div className="space-y-2">
                   <Label>Valor Total (R$) *</Label>
-                  <Input
+                  <CurrencyInput
                     required
-                    type="number"
-                    step="0.01"
                     value={formData.total_price}
-                    onChange={(e) => setFormData({ ...formData, total_price: parseFloat(e.target.value) || 0 })}
+                    onChange={(val) => setFormData({ ...formData, total_price: val })}
                   />
                 </div>
                 <div className="space-y-2 md:col-span-2">

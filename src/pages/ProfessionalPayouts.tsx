@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { CurrencyInput } from '@/components/ui/currency-input';
 import { Label } from '@/components/ui/label';
 import {
   Table,
@@ -389,11 +390,9 @@ export default function ProfessionalPayouts() {
               {feeForm.fee_type === 'fixed' && (
                 <div className="space-y-2">
                   <Label>Valor Fixo (R$)</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
+                  <CurrencyInput
                     value={feeForm.fixed_value}
-                    onChange={(e) => setFeeForm({ ...feeForm, fixed_value: parseFloat(e.target.value) || 0 })}
+                    onChange={(val) => setFeeForm({ ...feeForm, fixed_value: val })}
                   />
                 </div>
               )}
@@ -401,11 +400,9 @@ export default function ProfessionalPayouts() {
               {feeForm.fee_type === 'percentage' && (
                 <div className="space-y-2">
                   <Label>Percentual (%)</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
+                  <CurrencyInput
                     value={feeForm.percentage_value}
-                    onChange={(e) => setFeeForm({ ...feeForm, percentage_value: parseFloat(e.target.value) || 0 })}
+                    onChange={(val) => setFeeForm({ ...feeForm, percentage_value: val })}
                   />
                 </div>
               )}
@@ -413,11 +410,9 @@ export default function ProfessionalPayouts() {
               {feeForm.fee_type === 'per_procedure' && (
                 <div className="space-y-2">
                   <Label>Valor por Procedimento (R$)</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
+                  <CurrencyInput
                     value={feeForm.per_procedure_value}
-                    onChange={(e) => setFeeForm({ ...feeForm, per_procedure_value: parseFloat(e.target.value) || 0 })}
+                    onChange={(val) => setFeeForm({ ...feeForm, per_procedure_value: val })}
                   />
                 </div>
               )}
@@ -585,11 +580,9 @@ export default function ProfessionalPayouts() {
             </div>
             <div className="space-y-2">
               <Label>Valor (R$)</Label>
-              <Input
-                type="number"
-                step="0.01"
+              <CurrencyInput
                 value={editPayoutForm.payout_amount}
-                onChange={(e) => setEditPayoutForm({ ...editPayoutForm, payout_amount: parseFloat(e.target.value) || 0 })}
+                onChange={(val) => setEditPayoutForm({ ...editPayoutForm, payout_amount: val })}
               />
             </div>
             <div className="space-y-2">

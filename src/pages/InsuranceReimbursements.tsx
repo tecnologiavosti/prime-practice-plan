@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { CurrencyInput } from '@/components/ui/currency-input';
 import { Label } from '@/components/ui/label';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -255,20 +256,16 @@ export default function InsuranceReimbursements() {
                 </div>
                 <div className="space-y-2">
                   <Label>Valor Esperado (Guias)</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
+                  <CurrencyInput
                     value={formData.expected_amount}
-                    onChange={(e) => setFormData({ ...formData, expected_amount: parseFloat(e.target.value) || 0 })}
+                    onChange={(val) => setFormData({ ...formData, expected_amount: val })}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>Valor Recebido</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
+                  <CurrencyInput
                     value={formData.received_amount}
-                    onChange={(e) => setFormData({ ...formData, received_amount: parseFloat(e.target.value) || 0 })}
+                    onChange={(val) => setFormData({ ...formData, received_amount: val })}
                   />
                 </div>
                 <div className="space-y-2">

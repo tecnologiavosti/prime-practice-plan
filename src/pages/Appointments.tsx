@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { CurrencyInput } from '@/components/ui/currency-input';
 import { Label } from '@/components/ui/label';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -598,7 +599,7 @@ export default function Appointments() {
             </div>
             <div className="space-y-2">
               <Label>Valor</Label>
-              <Input type="number" step="0.01" value={finalizeAmount} onChange={(e) => setFinalizeAmount(parseFloat(e.target.value) || 0)} />
+              <CurrencyInput value={finalizeAmount} onChange={(val) => setFinalizeAmount(val)} />
             </div>
             <div className="space-y-2">
               <Label>Observações</Label>
