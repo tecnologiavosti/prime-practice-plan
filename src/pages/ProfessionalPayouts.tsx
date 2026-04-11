@@ -186,7 +186,12 @@ export default function ProfessionalPayouts() {
       per_procedure_value: feeForm.fee_type === 'per_procedure' ? feeForm.per_procedure_value : 0,
     };
 
-    const { error } = await supabase.from('professional_fees').insert([payload]);
+    let error;
+    if (editingFeeId) {
+      ({ error } = await supabase.from('professional_fees').update(payload).eq('id', editingFeeId));
+    } else {
+      ({ error } = await supabase.from('professional_fees').insert([payload]));
+    }
 
     if (error) {
       if (error.code === '23505') {
@@ -197,8 +202,14 @@ export default function ProfessionalPayouts() {
       return;
     }
 
-    toast({ title: 'Configuração de repasse salva!' });
+    toast({ title: editingFeeId ? 'Configuração atualizada!' : 'Configuração de repasse salva!' });
     setFeeDialogOpen(false);
+    setEditingFeeId(null);
+    resetFeeForm();
+    fetchFees();
+  };
+
+  const resetFeeForm = () => {
     setFeeForm({
       professional_id: '',
       procedure_id: '',
@@ -207,7 +218,19 @@ export default function ProfessionalPayouts() {
       percentage_value: 0,
       per_procedure_value: 0,
     });
-    fetchFees();
+  };
+
+  const handleEditFee = (fee: ProfessionalFee) => {
+    setEditingFeeId(fee.id);
+    setFeeForm({
+      professional_id: fee.professional_id,
+      procedure_id: fee.procedure_id || '',
+      fee_type: fee.fee_type as any,
+      fixed_value: Number(fee.fixed_value),
+      percentage_value: Number(fee.percentage_value),
+      per_procedure_value: Number(fee.per_procedure_value),
+    });
+    setFeeDialogOpen(true);
   };
 
   const handlePayoutStatus = async (id: string, status: 'pendente' | 'pago') => {
