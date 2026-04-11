@@ -82,6 +82,7 @@ export default function ProfessionalPayouts() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pendente' | 'pago'>('all');
   const [feeDialogOpen, setFeeDialogOpen] = useState(false);
+  const [editingFeeId, setEditingFeeId] = useState<string | null>(null);
   const [feeForm, setFeeForm] = useState({
     professional_id: '',
     procedure_id: '',
@@ -90,6 +91,7 @@ export default function ProfessionalPayouts() {
     percentage_value: 0,
     per_procedure_value: 0,
   });
+  const [deleteFeeId, setDeleteFeeId] = useState<string | null>(null);
   const [deletePayoutId, setDeletePayoutId] = useState<string | null>(null);
   const [editPayoutDialogOpen, setEditPayoutDialogOpen] = useState(false);
   const [editingPayout, setEditingPayout] = useState<Payout | null>(null);
