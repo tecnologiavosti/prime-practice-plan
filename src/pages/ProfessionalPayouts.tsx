@@ -250,14 +250,16 @@ export default function ProfessionalPayouts() {
     fetchPayouts();
   };
 
-  const handleDeleteFee = async (id: string) => {
-    const { error } = await supabase.from('professional_fees').delete().eq('id', id);
+  const handleDeleteFee = async () => {
+    if (!deleteFeeId) return;
+    const { error } = await supabase.from('professional_fees').delete().eq('id', deleteFeeId);
     if (error) {
       toast({ variant: 'destructive', title: 'Erro', description: error.message });
-      return;
+    } else {
+      toast({ title: 'Configuração removida!' });
+      fetchFees();
     }
-    toast({ title: 'Configuração removida!' });
-    fetchFees();
+    setDeleteFeeId(null);
   };
 
   const handleEditPayout = (p: Payout) => {
