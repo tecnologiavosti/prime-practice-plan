@@ -332,7 +332,7 @@ export default function ProfessionalPayouts() {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Configurar Repasse</DialogTitle>
+              <DialogTitle>{editingFeeId ? 'Editar Configuração de Repasse' : 'Configurar Repasse'}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleFeeSubmit} className="space-y-4">
               <div className="space-y-2">
@@ -476,9 +476,14 @@ export default function ProfessionalPayouts() {
                     <TableCell>{fee.procedure?.name || 'Todos'}</TableCell>
                     <TableCell>{getFeeDescription(fee)}</TableCell>
                     <TableCell>
-                      <Button size="sm" variant="destructive" onClick={() => handleDeleteFee(fee.id)}>
-                        Remover
-                      </Button>
+                      <div className="flex items-center gap-3">
+                        <Button variant="ghost" size="icon" onClick={() => handleEditFee(fee)} title="Editar">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => setDeleteFeeId(fee.id)} title="Remover" className="text-destructive hover:text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
