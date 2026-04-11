@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { CurrencyInput } from '@/components/ui/currency-input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -689,11 +690,9 @@ export default function MedicalGuides() {
                           </div>
                           <div className="space-y-1">
                             <Label className="text-xs">Valor</Label>
-                            <Input
-                              type="number"
-                              step="0.01"
+                            <CurrencyInput
                               value={item.unit_value}
-                              onChange={(e) => updateItem(index, 'unit_value', parseFloat(e.target.value) || 0)}
+                              onChange={(val) => updateItem(index, 'unit_value', val)}
                             />
                           </div>
                           <div className="space-y-1">

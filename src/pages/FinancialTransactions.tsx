@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { CurrencyInput } from '@/components/ui/currency-input';
 import { Label } from '@/components/ui/label';
 import {
   Table,
@@ -411,12 +412,10 @@ export default function FinancialTransactions() {
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label>Valor (R$) *</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
+                  <CurrencyInput
                     required
                     value={formData.amount}
-                    onChange={(e) => setFormData({ ...formData, amount: parseFloat(e.target.value) || 0 })}
+                    onChange={(val) => setFormData({ ...formData, amount: val })}
                   />
                 </div>
                 <div className="space-y-2">

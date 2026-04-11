@@ -598,7 +598,7 @@ export default function Appointments() {
             </div>
             <div className="space-y-2">
               <Label>Valor</Label>
-              <Input type="number" step="0.01" value={finalizeAmount} onChange={(e) => setFinalizeAmount(parseFloat(e.target.value) || 0)} />
+              <CurrencyInput value={finalizeAmount} onChange={(val) => setFinalizeAmount(val)} />
             </div>
             <div className="space-y-2">
               <Label>Observações</Label>

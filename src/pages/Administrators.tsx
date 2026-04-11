@@ -527,13 +527,10 @@ export default function Administrators() {
                           {settings?.selected && (
                             <div className="flex items-center gap-2">
                               <DollarSign className="h-4 w-4 text-muted-foreground" />
-                              <Input
-                                type="number"
-                                step="0.01"
-                                min="0"
+                              <CurrencyInput
                                 placeholder="Valor"
-                                value={settings.billing_rate || ''}
-                                onChange={(e) => updateBillingRate(insurance.id, parseFloat(e.target.value) || 0)}
+                                value={settings.billing_rate || 0}
+                                onChange={(val) => updateBillingRate(insurance.id, val)}
                                 className="w-28 h-8"
                               />
                             </div>

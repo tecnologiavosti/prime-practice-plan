@@ -331,12 +331,10 @@ export default function Procedures() {
                     <Label className="font-medium">Valor Particular</Label>
                     <div className="flex items-center gap-2 max-w-xs">
                       <span className="text-muted-foreground">R$</span>
-                      <Input
-                        type="number"
-                        step="0.01"
+                      <CurrencyInput
                         placeholder="0,00"
-                        value={formData.private_price || ''}
-                        onChange={(e) => setFormData({ ...formData, private_price: parseFloat(e.target.value) || 0 })}
+                        value={formData.private_price}
+                        onChange={(val) => setFormData({ ...formData, private_price: val })}
                       />
                     </div>
                   </div>
@@ -360,15 +358,13 @@ export default function Procedures() {
                               <Label className="w-40 shrink-0 text-sm">{ins.name}</Label>
                               <div className="flex items-center gap-2 flex-1 max-w-xs">
                                 <span className="text-muted-foreground text-sm">R$</span>
-                                <Input
-                                  type="number"
-                                  step="0.01"
+                                <CurrencyInput
                                   placeholder="0,00"
-                                  value={priceObj?.price || ''}
-                                  onChange={(e) => {
+                                  value={priceObj?.price || 0}
+                                  onChange={(val) => {
                                     const newPrices = insurancePrices.map((p) =>
                                       p.health_insurance_id === ins.id
-                                        ? { ...p, price: parseFloat(e.target.value) || 0 }
+                                        ? { ...p, price: val }
                                         : p
                                     );
                                     setInsurancePrices(newPrices);
