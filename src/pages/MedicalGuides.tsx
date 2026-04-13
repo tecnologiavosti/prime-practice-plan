@@ -43,6 +43,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { format, addDays, isAfter, isBefore } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { createDocumentSignedUrl, DOCUMENTS_BUCKET } from '@/lib/storageDocuments';
 
 interface GuideItem {
   id?: string;
@@ -400,6 +401,25 @@ export default function MedicalGuides() {
     fetchGuides();
   };
 
+  const handleOpenAttachment = async (storedValue: string) => {
+    const { path, url, error } = await createDocumentSignedUrl(storedValue);
+
+    console.info('[documents] Medical guide attachment URL generated', {
+      bucket: DOCUMENTS_BUCKET,
+      storedValue,
+      path,
+      url,
+    });
+
+    if (error || !url) {
+      toast({ variant: 'destructive', title: 'Erro ao abrir anexo', description: error || 'Não foi possível gerar o link do arquivo.' });
+      return;
+    }
+
+    toast({ title: 'Link gerado', description: 'A URL do anexo foi registrada no console.' });
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
   const openNew = () => {
     setEditingId(null);
     setFormData({ ...emptyForm, guide_number: generateGuideNumber() });
@@ -738,8 +758,7 @@ export default function MedicalGuides() {
                         setUploadingAttachment(false);
                         return;
                       }
-                      const { data: urlData } = supabase.storage.from('documents').getPublicUrl(path);
-                      setAttachmentUrl(urlData.publicUrl);
+                      setAttachmentUrl(path);
                       setUploadingAttachment(false);
                       toast({ title: 'Anexo enviado!' });
                     }}
@@ -747,7 +766,7 @@ export default function MedicalGuides() {
                   {uploadingAttachment && <Loader2 className="h-4 w-4 animate-spin" />}
                 </div>
                 {attachmentUrl && (
-                  <Button type="button" variant="outline" size="sm" onClick={() => window.open(attachmentUrl, '_blank')}>
+                  <Button type="button" variant="outline" size="sm" onClick={() => void handleOpenAttachment(attachmentUrl)}>
                     <Paperclip className="mr-1 h-3 w-3" /> Ver Anexo Atual
                   </Button>
                 )}
@@ -869,7 +888,7 @@ export default function MedicalGuides() {
                           <FileDown className="h-4 w-4" />
                         </Button>
                         {g.attachment_url && (
-                          <Button variant="ghost" size="icon" onClick={() => window.open(g.attachment_url!, '_blank')} title="Ver Anexo">
+                          <Button variant="ghost" size="icon" onClick={() => void handleOpenAttachment(g.attachment_url!)} title="Ver Anexo">
                             <Paperclip className="h-4 w-4" />
                           </Button>
                         )}
