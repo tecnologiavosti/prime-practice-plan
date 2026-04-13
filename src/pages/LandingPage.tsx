@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import logoPacem from '@/assets/logoPacem.png';
 import { 
   Calendar, 
   Clock, 
@@ -8,32 +9,15 @@ import {
   Users, 
   CheckCircle, 
   ArrowRight,
-  Stethoscope,
   Heart,
   Star
 } from 'lucide-react';
 
 const features = [
-  {
-    icon: Calendar,
-    title: 'Agendamento Online',
-    description: 'Marque suas consultas 24h por dia, de qualquer lugar.',
-  },
-  {
-    icon: Clock,
-    title: 'Horários Flexíveis',
-    description: 'Ampla disponibilidade de horários para sua conveniência.',
-  },
-  {
-    icon: Shield,
-    title: 'Dados Seguros',
-    description: 'Suas informações protegidas com criptografia de ponta.',
-  },
-  {
-    icon: Users,
-    title: 'Equipe Especializada',
-    description: 'Profissionais qualificados e experientes à sua disposição.',
-  },
+  { icon: Calendar, title: 'Agendamento Online', description: 'Marque suas consultas 24h por dia, de qualquer lugar.' },
+  { icon: Clock, title: 'Horários Flexíveis', description: 'Ampla disponibilidade de horários para sua conveniência.' },
+  { icon: Shield, title: 'Dados Seguros', description: 'Suas informações protegidas com criptografia de ponta.' },
+  { icon: Users, title: 'Equipe Especializada', description: 'Profissionais qualificados e experientes à sua disposição.' },
 ];
 
 const benefits = [
@@ -47,57 +31,46 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 border-b bg-background/80 backdrop-blur-lg">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary">
-              <Stethoscope className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-bold">Clínica Saúde</span>
+      <header className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/90 backdrop-blur-md">
+        <div className="container mx-auto flex h-14 items-center justify-between px-4">
+          <div className="flex items-center gap-2.5">
+            <img src={logoPacem} alt="Clínica Pacem" className="h-8 w-auto" />
+            <span className="text-base font-semibold text-foreground tracking-tight">Clínica Pacem</span>
           </div>
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" asChild>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" asChild>
               <Link to="/login">Entrar</Link>
             </Button>
-            <Button asChild>
+            <Button size="sm" asChild>
               <Link to="/cadastro">Cadastrar</Link>
             </Button>
           </div>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="relative pt-16 overflow-hidden">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
-          <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-accent/20 rounded-full blur-3xl" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-primary/5 to-accent/5 rounded-full blur-3xl" />
-        </div>
-        
-        <div className="container mx-auto px-4 py-24 lg:py-32">
-          <div className="max-w-3xl mx-auto text-center relative z-10">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
-              <Heart className="h-4 w-4" />
+      {/* Hero */}
+      <section className="pt-14">
+        <div className="container mx-auto px-4 py-20 lg:py-28">
+          <div className="max-w-2xl mx-auto text-center">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium mb-5">
+              <Heart className="h-3 w-3" />
               Cuidando da sua saúde
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
-              Agende suas consultas{' '}
-              <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                com facilidade
-              </span>
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-semibold leading-tight text-foreground mb-5">
+              Agende suas consultas com facilidade
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+            <p className="text-base text-muted-foreground mb-7 max-w-xl mx-auto">
               Simplifique o cuidado com sua saúde. Agende consultas online, acompanhe seu histórico 
               médico e gerencie seus atendimentos em um só lugar.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="h-12 px-8 text-base" asChild>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button size="lg" asChild>
                 <Link to="/cadastro">
                   Criar Minha Conta
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="h-12 px-8 text-base" asChild>
+              <Button size="lg" variant="outline" asChild>
                 <Link to="/login">Já Tenho Conta</Link>
               </Button>
             </div>
@@ -105,27 +78,22 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-24 bg-muted/30">
+      {/* Features */}
+      <section className="py-16 border-t border-border">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Por que escolher nossa clínica?
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Oferecemos uma experiência completa para o cuidado da sua saúde
-            </p>
+          <div className="text-center mb-10">
+            <h2 className="text-2xl font-semibold text-foreground mb-2">Por que escolher a Clínica Pacem?</h2>
+            <p className="text-sm text-muted-foreground">Experiência completa para o cuidado da sua saúde</p>
           </div>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
             {features.map((feature, index) => (
-              <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-shadow bg-card">
-                <CardContent className="p-6 text-center">
-                  <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 mb-4">
-                    <feature.icon className="h-7 w-7 text-primary" />
+              <Card key={index} className="shadow-none border">
+                <CardContent className="p-5 text-center">
+                  <div className="inline-flex h-10 w-10 items-center justify-center rounded-md bg-muted mb-3">
+                    <feature.icon className="h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
                   </div>
-                  <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-muted-foreground text-sm">{feature.description}</p>
+                  <h3 className="text-sm font-semibold text-foreground mb-1">{feature.title}</h3>
+                  <p className="text-xs text-muted-foreground">{feature.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -133,79 +101,66 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Benefits Section */}
-      <section className="py-24">
+      {/* Benefits */}
+      <section className="py-16 border-t border-border">
         <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">
+              <h2 className="text-2xl font-semibold text-foreground mb-4">
                 Tudo que você precisa para gerenciar sua saúde
               </h2>
-              <p className="text-lg text-muted-foreground mb-8">
+              <p className="text-sm text-muted-foreground mb-6">
                 Nosso portal oferece uma experiência completa e intuitiva para você cuidar 
                 da sua saúde de forma prática e organizada.
               </p>
-              <ul className="space-y-4">
+              <ul className="space-y-3">
                 {benefits.map((benefit, index) => (
-                  <li key={index} className="flex items-center gap-3">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10">
-                      <CheckCircle className="h-4 w-4 text-primary" />
-                    </div>
-                    <span className="text-base">{benefit}</span>
+                  <li key={index} className="flex items-center gap-2.5">
+                    <CheckCircle className="h-4 w-4 text-primary shrink-0" strokeWidth={1.75} />
+                    <span className="text-sm text-foreground">{benefit}</span>
                   </li>
                 ))}
               </ul>
-              <Button size="lg" className="mt-8" asChild>
+              <Button className="mt-6" asChild>
                 <Link to="/cadastro">
                   Começar Agora
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
             </div>
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-3xl blur-2xl" />
-              <Card className="relative border-0 shadow-2xl">
-                <CardContent className="p-8">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Calendar className="h-6 w-6 text-primary" />
+            <div>
+              <Card className="shadow-none border">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center">
+                      <Calendar className="h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
                     </div>
                     <div>
-                      <h4 className="font-semibold">Próxima Consulta</h4>
-                      <p className="text-sm text-muted-foreground">Segunda, 10:00</p>
+                      <h4 className="text-sm font-semibold text-foreground">Próxima Consulta</h4>
+                      <p className="text-xs text-muted-foreground">Segunda, 10:00</p>
                     </div>
                   </div>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                          <Users className="h-5 w-5 text-primary" />
+                  <div className="space-y-2">
+                    {[
+                      { name: 'Dr. João Silva', specialty: 'Cardiologista', rating: '4.9' },
+                      { name: 'Dra. Maria Santos', specialty: 'Dermatologista', rating: '4.8' },
+                    ].map((doc) => (
+                      <div key={doc.name} className="flex items-center justify-between p-3 rounded-md bg-muted/50 border border-border">
+                        <div className="flex items-center gap-2.5">
+                          <div className="h-8 w-8 rounded-md bg-muted flex items-center justify-center">
+                            <Users className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{doc.name}</p>
+                            <p className="text-[11px] text-muted-foreground">{doc.specialty}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium text-sm">Dr. João Silva</p>
-                          <p className="text-xs text-muted-foreground">Cardiologista</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1 text-amber-500">
-                        <Star className="h-4 w-4 fill-current" />
-                        <span className="text-sm font-medium">4.9</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                          <Users className="h-5 w-5 text-primary" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-sm">Dra. Maria Santos</p>
-                          <p className="text-xs text-muted-foreground">Dermatologista</p>
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          <Star className="h-3 w-3 fill-current text-primary" />
+                          <span className="text-xs font-medium">{doc.rating}</span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1 text-amber-500">
-                        <Star className="h-4 w-4 fill-current" />
-                        <span className="text-sm font-medium">4.8</span>
-                      </div>
-                    </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
@@ -214,23 +169,23 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-24 bg-primary text-primary-foreground">
+      {/* CTA */}
+      <section className="py-16 bg-primary">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+          <h2 className="text-2xl font-semibold text-primary-foreground mb-3">
             Pronto para cuidar da sua saúde?
           </h2>
-          <p className="text-lg opacity-90 mb-8 max-w-2xl mx-auto">
+          <p className="text-sm text-primary-foreground/80 mb-6 max-w-lg mx-auto">
             Crie sua conta gratuitamente e comece a agendar suas consultas hoje mesmo.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" variant="secondary" className="h-12 px-8 text-base" asChild>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button size="lg" variant="secondary" asChild>
               <Link to="/cadastro">
                 Criar Conta Grátis
-                <ArrowRight className="ml-2 h-5 w-5" />
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
-            <Button size="lg" variant="outline" className="h-12 px-8 text-base bg-transparent border-primary-foreground/30 hover:bg-primary-foreground/10" asChild>
+            <Button size="lg" variant="outline" className="bg-transparent border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10" asChild>
               <Link to="/login">Fazer Login</Link>
             </Button>
           </div>
@@ -238,21 +193,19 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 border-t">
+      <footer className="py-8 border-t border-border">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                <Stethoscope className="h-4 w-4 text-primary-foreground" />
-              </div>
-              <span className="font-semibold">Clínica Saúde</span>
+              <img src={logoPacem} alt="Clínica Pacem" className="h-6 w-auto" />
+              <span className="text-sm font-medium text-foreground">Clínica Pacem</span>
             </div>
-            <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} Clínica Saúde. Todos os direitos reservados.
+            <p className="text-xs text-muted-foreground">
+              © {new Date().getFullYear()} Clínica Pacem. Todos os direitos reservados.
             </p>
             <Link 
               to="/admin/auth" 
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
               Área Administrativa
             </Link>
