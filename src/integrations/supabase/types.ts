@@ -694,6 +694,7 @@ export type Database = {
       medical_guides: {
         Row: {
           appointment_id: string | null
+          attachment_url: string | null
           created_at: string
           guide_date: string
           guide_number: string
@@ -712,6 +713,7 @@ export type Database = {
         }
         Insert: {
           appointment_id?: string | null
+          attachment_url?: string | null
           created_at?: string
           guide_date?: string
           guide_number: string
@@ -730,6 +732,7 @@ export type Database = {
         }
         Update: {
           appointment_id?: string | null
+          attachment_url?: string | null
           created_at?: string
           guide_date?: string
           guide_number?: string
