@@ -261,7 +261,15 @@ export default function Appointments() {
     }
 
     const { error } = await supabase.from('appointments').update({ status: newStatus as any }).eq('id', appointmentId);
-    if (error) { toast({ variant: 'destructive', title: 'Erro', description: error.message }); return; }
+    if (error) {
+      const msg = error.message || '';
+      if (msg.includes('CONFLICT_PROFESSIONAL') || msg.includes('CONFLICT_PATIENT')) {
+        toast({ variant: 'destructive', title: 'Conflito de Agenda', description: 'Não é possível reativar: já existe outro atendimento neste horário.' });
+      } else {
+        toast({ variant: 'destructive', title: 'Erro', description: msg });
+      }
+      return;
+    }
     toast({ title: 'Status atualizado!' });
     fetchAppointments();
   };
