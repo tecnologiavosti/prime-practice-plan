@@ -33,6 +33,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
 import { Textarea } from '@/components/ui/textarea';
+import { createDocumentSignedUrl, DOCUMENTS_BUCKET } from '@/lib/storageDocuments';
 
 interface Patient {
   id: string;
@@ -194,6 +195,25 @@ export default function Patients() {
     setEditingPatient(null);
     setFormData(emptyPatient);
     setDialogOpen(true);
+  };
+
+  const handleOpenPatientDocument = async (storedValue: string) => {
+    const { path, url, error } = await createDocumentSignedUrl(storedValue);
+
+    console.info('[documents] Patient document URL generated', {
+      bucket: DOCUMENTS_BUCKET,
+      storedValue,
+      path,
+      url,
+    });
+
+    if (error || !url) {
+      toast({ variant: 'destructive', title: 'Erro ao abrir documento', description: error || 'Não foi possível gerar o link do arquivo.' });
+      return;
+    }
+
+    toast({ title: 'Link gerado', description: 'A URL do documento foi registrada no console.' });
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const filtered = patients.filter((p) =>
@@ -372,16 +392,15 @@ export default function Patients() {
                           setUploadingDoc(false);
                           return;
                         }
-                        const { data: urlData } = supabase.storage.from('documents').getPublicUrl(path);
-                        setFormData({ ...formData, document_url: urlData.publicUrl });
+                        setFormData((current) => ({ ...current, document_url: path }));
                         setUploadingDoc(false);
                         toast({ title: 'Documento enviado!' });
                       }}
                     />
                     {uploadingDoc && <Loader2 className="h-4 w-4 animate-spin" />}
                   </div>
-                  {editingPatient?.document_url && (
-                    <Button type="button" variant="outline" size="sm" className="mt-1" onClick={() => window.open(editingPatient.document_url!, '_blank')}>
+                  {formData.document_url && (
+                    <Button type="button" variant="outline" size="sm" className="mt-1" onClick={() => void handleOpenPatientDocument(formData.document_url)}>
                       <ExternalLink className="mr-1 h-3 w-3" /> Ver Documento Atual
                     </Button>
                   )}
