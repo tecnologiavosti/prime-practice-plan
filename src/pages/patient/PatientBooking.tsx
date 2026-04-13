@@ -193,11 +193,14 @@ export default function PatientBooking() {
 
     if (error) {
       console.error('Error creating appointment:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Erro ao agendar',
-        description: 'Não foi possível realizar o agendamento. Tente novamente.',
-      });
+      const msg = error.message || '';
+      if (msg.includes('CONFLICT_PROFESSIONAL')) {
+        toast({ variant: 'destructive', title: 'Conflito de Agenda', description: 'Este profissional já possui um atendimento neste horário.' });
+      } else if (msg.includes('CONFLICT_PATIENT')) {
+        toast({ variant: 'destructive', title: 'Conflito de Agenda', description: 'Você já possui um atendimento neste horário.' });
+      } else {
+        toast({ variant: 'destructive', title: 'Erro ao agendar', description: 'Não foi possível realizar o agendamento. Tente novamente.' });
+      }
       return;
     }
 

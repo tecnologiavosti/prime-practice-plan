@@ -224,7 +224,14 @@ export default function Appointments() {
 
       const { error } = await supabase.from('appointments').insert(payload);
       if (error) {
-        toast({ variant: 'destructive', title: 'Erro', description: error.message });
+        const msg = error.message || '';
+        if (msg.includes('CONFLICT_PROFESSIONAL')) {
+          toast({ variant: 'destructive', title: 'Conflito de Agenda', description: 'Este profissional já possui um atendimento neste horário.' });
+        } else if (msg.includes('CONFLICT_PATIENT')) {
+          toast({ variant: 'destructive', title: 'Conflito de Agenda', description: 'Este paciente já possui um atendimento neste horário.' });
+        } else {
+          toast({ variant: 'destructive', title: 'Erro', description: msg });
+        }
         return;
       }
 
