@@ -56,6 +56,7 @@ export default function PatientBooking() {
   const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingSlots, setLoadingSlots] = useState(false);
+  const [noScheduleForDay, setNoScheduleForDay] = useState(false);
 
   useEffect(() => {
     fetchProfessionals();
@@ -63,10 +64,13 @@ export default function PatientBooking() {
   }, []);
 
   useEffect(() => {
-    if (selectedProfessional && selectedDate) {
+    if (selectedProfessional && selectedDate && selectedProcedure) {
       fetchAvailableSlots();
+    } else {
+      setAvailableSlots([]);
+      setNoScheduleForDay(false);
     }
-  }, [selectedProfessional, selectedDate]);
+  }, [selectedProfessional, selectedDate, selectedProcedure]);
 
   const fetchProfessionals = async () => {
     const { data } = await supabase
@@ -89,21 +93,31 @@ export default function PatientBooking() {
   };
 
   const fetchAvailableSlots = async () => {
-    if (!selectedProfessional || !selectedDate) return;
+    if (!selectedProfessional || !selectedDate || !selectedProcedure) return;
 
     setLoadingSlots(true);
+    setNoScheduleForDay(false);
+    setSelectedSlot(null);
     const dayOfWeek = selectedDate.getDay();
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
 
-    // Get professional's schedule for this day
+    // Get professional's schedule for this specific day of week
     const { data: schedules } = await supabase
       .from('professional_schedules')
-      .select('*')
+      .select('day_of_week, start_time, end_time, slot_duration_minutes')
       .eq('professional_id', selectedProfessional)
       .eq('day_of_week', dayOfWeek)
       .eq('active', true);
 
-    // Get existing appointments for this day
+    // If no schedule exists for this day, show specific message
+    if (!schedules || schedules.length === 0) {
+      setAvailableSlots([]);
+      setNoScheduleForDay(true);
+      setLoadingSlots(false);
+      return;
+    }
+
+    // Get existing appointments for this professional on this day
     const { data: existingAppointments } = await supabase
       .from('appointments')
       .select('start_time, end_time')
@@ -114,42 +128,48 @@ export default function PatientBooking() {
     // Get schedule blocks for this day
     const { data: blocks } = await supabase
       .from('schedule_blocks')
-      .select('*')
+      .select('is_full_day, start_time, end_time')
       .eq('professional_id', selectedProfessional)
       .eq('block_date', dateStr);
 
-    // Generate available slots
+    // Check if full day is blocked
+    const isFullDayBlocked = blocks?.some(block => block.is_full_day);
+    if (isFullDayBlocked) {
+      setAvailableSlots([]);
+      setNoScheduleForDay(true);
+      setLoadingSlots(false);
+      return;
+    }
+
+    // Generate available slots based on schedule
     const slots: TimeSlot[] = [];
     const procedure = procedures.find(p => p.id === selectedProcedure);
     const duration = procedure?.duration_minutes || 30;
 
-    if (schedules && schedules.length > 0) {
-      for (const schedule of schedules) {
-        let currentTime = schedule.start_time;
+    for (const schedule of schedules) {
+      let currentTime = schedule.start_time;
+      
+      while (currentTime < schedule.end_time) {
+        const endTime = addMinutesToTime(currentTime, duration);
         
-        while (currentTime < schedule.end_time) {
-          const endTime = addMinutesToTime(currentTime, duration);
-          
-          if (endTime <= schedule.end_time) {
-            const isBlocked = blocks?.some(block => {
-              if (block.is_full_day) return true;
-              return block.start_time && block.end_time && 
-                     currentTime < block.end_time && endTime > block.start_time;
-            });
+        if (endTime <= schedule.end_time) {
+          const isBlocked = blocks?.some(block => 
+            block.start_time && block.end_time && 
+            currentTime < block.end_time && endTime > block.start_time
+          );
 
-            const isBooked = existingAppointments?.some(apt => 
-              currentTime < apt.end_time && endTime > apt.start_time
-            );
+          const isBooked = existingAppointments?.some(apt => 
+            currentTime < apt.end_time && endTime > apt.start_time
+          );
 
-            slots.push({
-              start: currentTime,
-              end: endTime,
-              available: !isBlocked && !isBooked,
-            });
-          }
-          
-          currentTime = addMinutesToTime(currentTime, schedule.slot_duration_minutes);
+          slots.push({
+            start: currentTime,
+            end: endTime,
+            available: !isBlocked && !isBooked,
+          });
         }
+        
+        currentTime = addMinutesToTime(currentTime, schedule.slot_duration_minutes);
       }
     }
 
@@ -359,6 +379,15 @@ export default function PatientBooking() {
               <CardContent>
                 {loadingSlots ? (
                   <p className="text-center py-4 text-muted-foreground">Carregando horários...</p>
+                ) : noScheduleForDay ? (
+                  <div className="text-center py-6 space-y-2">
+                    <p className="text-destructive font-medium">
+                      Este profissional não atende nesta data.
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Por favor, escolha outro dia.
+                    </p>
+                  </div>
                 ) : availableSlots.length === 0 ? (
                   <p className="text-center py-4 text-muted-foreground">
                     Não há horários disponíveis nesta data
