@@ -110,9 +110,9 @@ export default function PatientAuth({ mode }: PatientAuthProps) {
 
       setIsLoading(true);
       const { error } = await signUp(formData.email, formData.password, formData.fullName, formData.cpf);
-      setIsLoading(false);
 
       if (error) {
+        setIsLoading(false);
         let message = error.message;
         if (error.message.includes('already registered')) {
           message = 'Este email já está cadastrado';
@@ -125,12 +125,26 @@ export default function PatientAuth({ mode }: PatientAuthProps) {
         return;
       }
 
+      // Auto-login after signup (email auto-confirmed)
+      const { error: loginError } = await signIn(formData.email, formData.password);
+      setIsLoading(false);
+
+      if (loginError) {
+        toast({
+          variant: 'destructive',
+          title: 'Cadastro realizado, mas houve erro ao entrar',
+          description: 'Tente fazer login manualmente.',
+        });
+        navigate('/login');
+        return;
+      }
+
       toast({
-        title: 'Cadastro realizado!',
-        description: 'Verifique seu email para confirmar a conta.',
+        title: 'Bem-vindo!',
+        description: 'Sua conta foi criada com sucesso.',
       });
       
-      navigate('/login');
+      navigate('/dashboard');
     }
   };
 
