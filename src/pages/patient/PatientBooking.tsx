@@ -70,7 +70,7 @@ export default function PatientBooking() {
 
   const fetchProfessionals = async () => {
     const { data } = await supabase
-      .from('professionals')
+      .from('professionals_public')
       .select('id, full_name, specialty:specialties(name)')
       .eq('active', true)
       .order('full_name');
