@@ -39,32 +39,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
+    let mounted = true;
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        if (!mounted) return;
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
           setTimeout(() => {
-            fetchUserRoles(session.user.id).then(setRoles);
+            if (!mounted) return;
+            fetchUserRoles(session.user.id).then((r) => {
+              if (mounted) {
+                setRoles(r);
+                setLoading(false);
+              }
+            });
           }, 0);
         } else {
           setRoles([]);
+          setLoading(false);
         }
-        
-        setLoading(false);
       }
     );
 
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        fetchUserRoles(session.user.id).then(setRoles);
+        fetchUserRoles(session.user.id).then((r) => {
+          if (mounted) {
+            setRoles(r);
+            setLoading(false);
+          }
+        });
+      } else {
+        setLoading(false);
       }
-      
-      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
