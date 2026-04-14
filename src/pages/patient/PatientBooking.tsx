@@ -379,6 +379,15 @@ export default function PatientBooking() {
               <CardContent>
                 {loadingSlots ? (
                   <p className="text-center py-4 text-muted-foreground">Carregando horários...</p>
+                ) : noScheduleForDay ? (
+                  <div className="text-center py-6 space-y-2">
+                    <p className="text-destructive font-medium">
+                      Este profissional não atende nesta data.
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Por favor, escolha outro dia.
+                    </p>
+                  </div>
                 ) : availableSlots.length === 0 ? (
                   <p className="text-center py-4 text-muted-foreground">
                     Não há horários disponíveis nesta data
