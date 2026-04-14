@@ -1,6 +1,7 @@
 import { Outlet, Navigate, NavLink, useNavigate } from 'react-router-dom';
 import { usePatientAuth } from '@/contexts/PatientAuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
