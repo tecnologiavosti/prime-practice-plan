@@ -1,6 +1,7 @@
 import { Outlet, Navigate, NavLink, useNavigate } from 'react-router-dom';
 import { usePatientAuth } from '@/contexts/PatientAuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
@@ -21,10 +22,23 @@ const menuItems = [
 ];
 
 export function PatientLayout() {
-  const { user, loading, isPatient, patientProfile, signOut } = usePatientAuth();
+  const { user, loading, isPatient, isAdmin, patientProfile, signOut } = usePatientAuth();
   const navigate = useNavigate();
+  const [rolesChecked, setRolesChecked] = useState(false);
 
-  if (loading) {
+  // Wait for roles to be fetched before making decisions
+  useEffect(() => {
+    if (!loading && user) {
+      // Give a small delay for fetchPatientProfile to complete
+      const timer = setTimeout(() => setRolesChecked(true), 300);
+      return () => clearTimeout(timer);
+    }
+    if (!loading && !user) {
+      setRolesChecked(true);
+    }
+  }, [loading, user]);
+
+  if (loading || (user && !rolesChecked)) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="space-y-4">
@@ -37,6 +51,11 @@ export function PatientLayout() {
 
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Admin users should be redirected to admin panel
+  if (isAdmin && !isPatient) {
+    return <Navigate to="/admin" replace />;
   }
 
   if (!isPatient) {

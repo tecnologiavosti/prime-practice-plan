@@ -65,37 +65,49 @@ export const PatientAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
   };
 
   useEffect(() => {
+    let mounted = true;
+    
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        if (!mounted) return;
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
           setTimeout(() => {
-            fetchPatientProfile(session.user.id);
+            if (mounted) {
+              fetchPatientProfile(session.user.id).then(() => {
+                if (mounted) setLoading(false);
+              });
+            }
           }, 0);
         } else {
           setIsPatient(false);
           setIsAdmin(false);
           setPatientProfile(null);
+          setLoading(false);
         }
-        
-        setLoading(false);
       }
     );
 
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        fetchPatientProfile(session.user.id);
+        fetchPatientProfile(session.user.id).then(() => {
+          if (mounted) setLoading(false);
+        });
+      } else {
+        setLoading(false);
       }
-      
-      setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
