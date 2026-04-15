@@ -158,6 +158,18 @@ export default function Procedures() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validate unique code
+    const { data: existing } = await supabase
+      .from('procedures')
+      .select('id')
+      .eq('code', formData.code)
+      .maybeSingle();
+
+    if (existing && existing.id !== editingProcedure?.id) {
+      toast({ variant: 'destructive', title: 'Erro', description: `O código "${formData.code}" já está em uso por outro procedimento.` });
+      return;
+    }
+
     const payload = {
       ...formData,
       private_price: parseFloat(formData.private_price.toString()),
