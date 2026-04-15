@@ -124,6 +124,7 @@ const emptyForm = {
   guide_number: '',
   patient_id: '',
   health_insurance_id: '',
+  professional_id: '',
   guide_date: format(new Date(), 'yyyy-MM-dd'),
   validity_date: format(addDays(new Date(), 30), 'yyyy-MM-dd'),
   cid_10: '',
@@ -302,8 +303,8 @@ export default function MedicalGuides() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.patient_id || !formData.health_insurance_id) {
-      toast({ variant: 'destructive', title: 'Erro', description: 'Preencha paciente e convênio' });
+    if (!formData.patient_id || !formData.health_insurance_id || !formData.professional_id) {
+      toast({ variant: 'destructive', title: 'Erro', description: 'Preencha paciente, convênio e profissional executante' });
       return;
     }
 
@@ -319,6 +320,7 @@ export default function MedicalGuides() {
       guide_number: formData.guide_number || generateGuideNumber(),
       patient_id: formData.patient_id,
       health_insurance_id: formData.health_insurance_id,
+      professional_id: formData.professional_id || null,
       guide_date: formData.guide_date,
       validity_date: formData.validity_date,
       quantity: items.reduce((sum, i) => sum + i.quantity, 0),
@@ -440,6 +442,7 @@ export default function MedicalGuides() {
       guide_number: g.guide_number,
       patient_id: g.patient?.id || '',
       health_insurance_id: g.health_insurance?.id || '',
+      professional_id: g.professional?.id || '',
       guide_date: g.guide_date,
       validity_date: g.validity_date || '',
       cid_10: g.cid_10 || '',
@@ -450,6 +453,11 @@ export default function MedicalGuides() {
     setDialogOpen(true);
   };
   const handleDownloadPDF = async (g: MedicalGuide) => {
+    if (!g.professional) {
+      toast({ variant: 'destructive', title: 'Profissional não vinculado', description: 'Esta guia não possui um profissional associado. Edite a guia e selecione o profissional antes de gerar o PDF.' });
+      return;
+    }
+
     const doc = new jsPDF();
     const margin = 15;
     const pageWidth = 210;
@@ -519,7 +527,7 @@ export default function MedicalGuides() {
 
     addFieldLine('Paciente', g.patient?.full_name || '-');
 
-    const cpfRaw = g.patient?.cpf || '';
+    const cpfRaw = (g.patient?.cpf || '').replace(/\D/g, '');
     const cpfFormatted = cpfRaw.length === 11
       ? cpfRaw.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')
       : cpfRaw || '-';
@@ -536,13 +544,13 @@ export default function MedicalGuides() {
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(60, 120, 120);
-    doc.text('PROFISSIONAL SOLICITANTE', margin, y);
+    doc.text('PROFISSIONAL EXECUTANTE', margin, y);
     doc.setTextColor(0);
     y += 7;
 
     const profName = g.professional?.full_name || '-';
     const crmText = g.professional?.crm
-      ? `CRM/${g.professional.uf_crm || 'XX'} ${g.professional.crm}`
+      ? `${g.professional.crm} / ${g.professional.uf_crm || 'XX'}`
       : '-';
     addField('Nome', profName);
     y += 7;
@@ -770,7 +778,23 @@ export default function MedicalGuides() {
                 </div>
               </div>
 
-              {/* Campos Clínicos */}
+              {/* Profissional Executante */}
+              <div className="space-y-2">
+                <Label>Profissional Executante *</Label>
+                <Select
+                  value={formData.professional_id}
+                  onValueChange={(v) => setFormData({ ...formData, professional_id: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o profissional" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {professionals.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>{p.full_name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label>CID-10 Principal</Label>
