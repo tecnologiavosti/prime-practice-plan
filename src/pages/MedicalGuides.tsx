@@ -67,9 +67,11 @@ interface MedicalGuide {
   unit_value: number;
   total_value: number;
   status: string;
-  patient: { id: string; full_name: string } | null;
+  cid_10: string | null;
+  clinical_indication: string | null;
+  patient: { id: string; full_name: string; cpf?: string | null } | null;
   health_insurance: { id: string; name: string } | null;
-  procedure: { id: string; name: string } | null;
+  procedure: { id: string; name: string; code?: string } | null;
   professional: { id: string; full_name: string; crm?: string | null; uf_crm?: string | null } | null;
   items?: GuideItem[];
   attachment_url?: string | null;
@@ -124,6 +126,8 @@ const emptyForm = {
   health_insurance_id: '',
   guide_date: format(new Date(), 'yyyy-MM-dd'),
   validity_date: format(addDays(new Date(), 30), 'yyyy-MM-dd'),
+  cid_10: '',
+  clinical_indication: '',
 };
 
 const emptyItem: Omit<GuideItem, 'id' | 'procedure' | 'professional'> = {
@@ -177,9 +181,9 @@ export default function MedicalGuides() {
       .from('medical_guides')
       .select(`
         *,
-        patient:patients(id, full_name),
+        patient:patients(id, full_name, cpf),
         health_insurance:health_insurances(id, name),
-        procedure:procedures(id, name),
+        procedure:procedures(id, name, code),
         professional:professionals(id, full_name, crm, uf_crm)
       `)
       .order('created_at', { ascending: false });
@@ -322,6 +326,8 @@ export default function MedicalGuides() {
       total_value: totalValue,
       status: 'pendente',
       attachment_url: attachmentUrl || null,
+      cid_10: formData.cid_10 || null,
+      clinical_indication: formData.clinical_indication || null,
     };
 
     const { data: guideData, error } = await supabase
@@ -436,6 +442,8 @@ export default function MedicalGuides() {
       health_insurance_id: g.health_insurance?.id || '',
       guide_date: g.guide_date,
       validity_date: g.validity_date || '',
+      cid_10: g.cid_10 || '',
+      clinical_indication: g.clinical_indication || '',
     });
     setItems([{ ...emptyItem }]);
     setAttachmentUrl(g.attachment_url || '');
@@ -443,70 +451,204 @@ export default function MedicalGuides() {
   };
   const handleDownloadPDF = async (g: MedicalGuide) => {
     const doc = new jsPDF();
-    const margin = 20;
+    const margin = 15;
+    const pageWidth = 210;
+    const contentWidth = pageWidth - margin * 2;
     let y = await addClinicHeader(doc, margin);
 
-    doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.text('GUIA MÉDICA', 105, y, { align: 'center' });
-    y += 12;
+    const CNES = '0000000'; // Substituir pelo CNES real da clínica
 
-    doc.setFontSize(11);
-    const addField = (label: string, value: string) => {
+    // --- Título ---
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('GUIA DE SERVIÇO PROFISSIONAL / SADT', pageWidth / 2, y, { align: 'center' });
+    y += 4;
+    doc.setDrawColor(100, 160, 160);
+    doc.setLineWidth(0.8);
+    doc.line(margin, y, pageWidth - margin, y);
+    y += 10;
+
+    // --- Helper para campo com label ---
+    const labelWidth = 45;
+    const addField = (label: string, value: string, xOffset = 0, customLabelWidth = labelWidth) => {
+      doc.setFontSize(9);
       doc.setFont('helvetica', 'bold');
-      doc.text(`${label}:`, margin, y);
+      doc.text(`${label}:`, margin + xOffset, y);
       doc.setFont('helvetica', 'normal');
-      doc.text(value, margin + 50, y);
-      y += 8;
+      doc.text(value || '-', margin + xOffset + customLabelWidth, y);
     };
 
+    const addFieldLine = (label: string, value: string) => {
+      addField(label, value);
+      y += 7;
+    };
+
+    // --- Seção: Dados da Guia ---
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(60, 120, 120);
+    doc.text('DADOS DA GUIA', margin, y);
+    doc.setTextColor(0);
+    y += 7;
+
     addField('Nº da Guia', g.guide_number);
-    addField('Data', format(new Date(g.guide_date), 'dd/MM/yyyy'));
-    if (g.validity_date) addField('Validade', format(new Date(g.validity_date), 'dd/MM/yyyy'));
-    addField('Paciente', g.patient?.full_name || '-');
-    addField('Convênio', g.health_insurance?.name || '-');
-    addField('Profissional', g.professional?.full_name || '-');
-    if (g.professional?.crm) {
-      addField('CRM', `${g.professional.crm}${g.professional.uf_crm ? ' - ' + g.professional.uf_crm : ''}`);
+    addField('Data', format(new Date(g.guide_date), 'dd/MM/yyyy'), 90, 20);
+    y += 7;
+    if (g.validity_date) {
+      addField('Validade', format(new Date(g.validity_date), 'dd/MM/yyyy'));
+      addField('Status', statusLabels[g.status] || g.status, 90, 20);
+      y += 7;
+    } else {
+      addFieldLine('Status', statusLabels[g.status] || g.status);
     }
-    addField('Procedimento', g.procedure?.name || '-');
-    addField('Valor Total', formatCurrency(Number(g.total_value)));
-    addField('Status', statusLabels[g.status] || g.status);
+    addFieldLine('CNES', CNES);
 
-    // Items section
-    if (g.items && g.items.length > 0) {
-      y += 5;
-      doc.line(margin, y, 190, y);
-      y += 8;
+    y += 3;
+    doc.setDrawColor(200);
+    doc.setLineWidth(0.3);
+    doc.line(margin, y, pageWidth - margin, y);
+    y += 8;
+
+    // --- Seção: Beneficiário ---
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(60, 120, 120);
+    doc.text('BENEFICIÁRIO', margin, y);
+    doc.setTextColor(0);
+    y += 7;
+
+    addFieldLine('Paciente', g.patient?.full_name || '-');
+
+    const cpfRaw = g.patient?.cpf || '';
+    const cpfFormatted = cpfRaw.length === 11
+      ? cpfRaw.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')
+      : cpfRaw || '-';
+    addField('CPF', cpfFormatted);
+    addField('Convênio', g.health_insurance?.name || '-', 90, 30);
+    y += 7;
+
+    y += 3;
+    doc.setDrawColor(200);
+    doc.line(margin, y, pageWidth - margin, y);
+    y += 8;
+
+    // --- Seção: Profissional Solicitante ---
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(60, 120, 120);
+    doc.text('PROFISSIONAL SOLICITANTE', margin, y);
+    doc.setTextColor(0);
+    y += 7;
+
+    const profName = g.professional?.full_name || '-';
+    const crmText = g.professional?.crm
+      ? `CRM/${g.professional.uf_crm || 'XX'} ${g.professional.crm}`
+      : '-';
+    addField('Nome', profName);
+    y += 7;
+    addFieldLine('CRM', crmText);
+
+    // --- CID e Indicação Clínica ---
+    if (g.cid_10) addFieldLine('CID-10', g.cid_10);
+    if (g.clinical_indication) {
+      doc.setFontSize(9);
       doc.setFont('helvetica', 'bold');
-      doc.text('Atendimentos:', margin, y);
-      y += 8;
+      doc.text('Indicação Clínica:', margin, y);
+      y += 6;
+      doc.setFont('helvetica', 'normal');
+      const lines = doc.splitTextToSize(g.clinical_indication, contentWidth);
+      doc.text(lines, margin, y);
+      y += lines.length * 5 + 2;
+    }
 
+    y += 3;
+    doc.setDrawColor(200);
+    doc.line(margin, y, pageWidth - margin, y);
+    y += 8;
+
+    // --- Seção: Procedimentos ---
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(60, 120, 120);
+    doc.text('PROCEDIMENTOS', margin, y);
+    doc.setTextColor(0);
+    y += 7;
+
+    if (g.procedure) {
+      addField('Procedimento', `${g.procedure.code ? g.procedure.code + ' - ' : ''}${g.procedure.name}`);
+      addField('Valor', formatCurrency(Number(g.total_value)), 120, 18);
+      y += 7;
+    }
+
+    if (g.items && g.items.length > 0) {
+      // Table header
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.setFillColor(240, 245, 245);
+      doc.rect(margin, y - 4, contentWidth, 7, 'F');
+      doc.text('#', margin + 2, y);
+      doc.text('Cód. TUSS', margin + 10, y);
+      doc.text('Procedimento', margin + 40, y);
+      doc.text('Profissional', margin + 95, y);
+      doc.text('Qtd', margin + 135, y);
+      doc.text('Valor', margin + 150, y);
+      y += 7;
+
+      doc.setFont('helvetica', 'normal');
       g.items.forEach((item, idx) => {
-        doc.setFont('helvetica', 'normal');
-        doc.text(
-          `${idx + 1}. ${item.procedure?.code || ''} - ${item.procedure?.name || '-'} | ${item.professional?.full_name || '-'} | Qtd: ${item.quantity} | ${formatCurrency(Number(item.total_value))}`,
-          margin + 5, y
-        );
-        y += 7;
+        if (y > 260) {
+          doc.addPage();
+          y = 20;
+        }
+        doc.text(`${idx + 1}`, margin + 2, y);
+        doc.text(item.procedure?.code || '-', margin + 10, y);
+        doc.text((item.procedure?.name || '-').substring(0, 30), margin + 40, y);
+        doc.text((item.professional?.full_name || '-').substring(0, 22), margin + 95, y);
+        doc.text(`${item.quantity}`, margin + 135, y);
+        doc.text(formatCurrency(Number(item.total_value)), margin + 150, y);
+        y += 6;
       });
     }
 
-    y += 10;
-    doc.line(margin, y, 190, y);
-    y += 25;
+    // Total
+    y += 4;
+    doc.setDrawColor(100, 160, 160);
+    doc.setLineWidth(0.5);
+    doc.line(margin + 120, y, pageWidth - margin, y);
+    y += 6;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('TOTAL:', margin + 120, y);
+    doc.text(formatCurrency(Number(g.total_value)), pageWidth - margin, y, { align: 'right' });
+    y += 12;
 
-    // Signature lines
-    doc.line(margin, y, 85, y);
-    doc.line(115, y, 190, y);
-    y += 5;
-    doc.setFontSize(9);
-    doc.text('Assinatura do Profissional', 52.5, y, { align: 'center' });
-    doc.text('Assinatura do Paciente', 152.5, y, { align: 'center' });
+    // --- Assinaturas ---
+    doc.setDrawColor(150);
+    doc.setLineWidth(0.3);
 
-    y += 15;
+    const sigY = Math.max(y + 15, 240);
+    const sigLeft = margin;
+    const sigRight = pageWidth / 2 + 10;
+    const sigWidth = 70;
+
+    doc.line(sigLeft, sigY, sigLeft + sigWidth, sigY);
+    doc.line(sigRight, sigY, sigRight + sigWidth, sigY);
+
     doc.setFontSize(8);
-    doc.text(`Emitido em: ${format(new Date(), "dd/MM/yyyy 'às' HH:mm")}`, 105, y, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.text('Assinatura e Carimbo do Profissional', sigLeft + sigWidth / 2, sigY + 5, { align: 'center' });
+    doc.text('Assinatura do Beneficiário/Responsável', sigRight + sigWidth / 2, sigY + 5, { align: 'center' });
+
+    // --- Rodapé ---
+    doc.setFontSize(7);
+    doc.setTextColor(130);
+    doc.text(
+      `Gerado em ${format(new Date(), "dd/MM/yyyy")} às ${format(new Date(), "HH:mm")}`,
+      pageWidth / 2,
+      290,
+      { align: 'center' }
+    );
+    doc.setTextColor(0);
 
     doc.save(`guia_${g.guide_number}.pdf`);
   };
@@ -625,6 +767,26 @@ export default function MedicalGuides() {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+              </div>
+
+              {/* Campos Clínicos */}
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>CID-10 Principal</Label>
+                  <Input
+                    value={formData.cid_10}
+                    onChange={(e) => setFormData({ ...formData, cid_10: e.target.value })}
+                    placeholder="Ex: F32.1"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Indicação Clínica</Label>
+                  <Input
+                    value={formData.clinical_indication}
+                    onChange={(e) => setFormData({ ...formData, clinical_indication: e.target.value })}
+                    placeholder="Justificativa do atendimento"
+                  />
                 </div>
               </div>
 
