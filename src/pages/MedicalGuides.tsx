@@ -636,6 +636,24 @@ export default function MedicalGuides() {
                 </div>
               </div>
 
+              {/* Campos Clínicos */}
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>CID-10 Principal</Label>
+                  <Input
+                    value={formData.cid_10}
+                    onChange={(e) => setFormData({ ...formData, cid_10: e.target.value })}
+                    placeholder="Ex: F32.1"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Indicação Clínica</Label>
+                  <Input
+                    value={formData.clinical_indication}
+                    onChange={(e) => setFormData({ ...formData, clinical_indication: e.target.value })}
+                    placeholder="Justificativa do atendimento"
+                  />
+                </div>
               {/* Itens/Atendimentos */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
