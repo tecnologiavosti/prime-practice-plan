@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,13 +13,15 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2, CalendarDays, CalendarRange } from 'lucide-react';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { format } from 'date-fns';
+import { format, startOfMonth, endOfMonth, parseISO } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -46,6 +48,8 @@ interface HealthInsurance { id: string; name: string; }
 interface PrivatePackage { id: string; name: string; total_price: number; }
 interface ProcedureInsurancePrice { procedure_id: string; health_insurance_id: string; price: number; }
 interface PaymentMethod { id: string; name: string; }
+
+type ViewMode = 'daily' | 'monthly';
 
 const statusOptions = [
   { value: 'agendado', label: 'Agendado' },
@@ -90,6 +94,10 @@ export default function Appointments() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [dateFilter, setDateFilter] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [monthFilter, setMonthFilter] = useState(format(new Date(), 'yyyy-MM'));
+  const [viewMode, setViewMode] = useState<ViewMode>('daily');
+  const [filterProfessionalId, setFilterProfessionalId] = useState('');
+  const [filterPatientId, setFilterPatientId] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formData, setFormData] = useState(emptyForm);
   const [submitting, setSubmitting] = useState(false);
@@ -97,6 +105,7 @@ export default function Appointments() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   // Finalization state
   const [finalizeDialogOpen, setFinalizeDialogOpen] = useState(false);
@@ -111,7 +120,7 @@ export default function Appointments() {
 
   useEffect(() => {
     fetchData();
-  }, [dateFilter]);
+  }, [dateFilter, monthFilter, viewMode]);
 
   const fetchData = async () => {
     try {
@@ -132,7 +141,7 @@ export default function Appointments() {
   };
 
   const fetchAppointments = async () => {
-    const { data, error } = await supabase
+    let query = supabase
       .from('appointments')
       .select(`
         id, appointment_date, start_time, end_time, status, consultation_type, notes,
@@ -141,8 +150,19 @@ export default function Appointments() {
         procedure:procedures(id, name, private_price),
         health_insurance:health_insurances(id, name)
       `)
-      .eq('appointment_date', dateFilter)
+      .order('appointment_date')
       .order('start_time');
+
+    if (viewMode === 'daily') {
+      query = query.eq('appointment_date', dateFilter);
+    } else {
+      const monthDate = parseISO(monthFilter + '-01');
+      const start = format(startOfMonth(monthDate), 'yyyy-MM-dd');
+      const end = format(endOfMonth(monthDate), 'yyyy-MM-dd');
+      query = query.gte('appointment_date', start).lte('appointment_date', end);
+    }
+
+    const { data, error } = await query;
     if (error) { toast({ variant: 'destructive', title: 'Erro', description: error.message }); return; }
     setAppointments((data as any) || []);
   };
@@ -219,10 +239,15 @@ export default function Appointments() {
         patient_package_id: null,
         notes: formData.notes || null,
         status: formData.status,
-        created_by: user?.id,
       };
 
-      const { error } = await supabase.from('appointments').insert(payload);
+      let error;
+      if (editingId) {
+        ({ error } = await supabase.from('appointments').update(payload).eq('id', editingId));
+      } else {
+        ({ error } = await supabase.from('appointments').insert({ ...payload, created_by: user?.id }));
+      }
+
       if (error) {
         const msg = error.message || '';
         if (msg.includes('CONFLICT_PROFESSIONAL')) {
@@ -235,9 +260,10 @@ export default function Appointments() {
         return;
       }
 
-      toast({ title: 'Agendamento criado com sucesso!' });
+      toast({ title: editingId ? 'Agendamento atualizado!' : 'Agendamento criado com sucesso!' });
       setDialogOpen(false);
       setFormData(emptyForm);
+      setEditingId(null);
       fetchAppointments();
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Erro inesperado', description: err?.message || 'Tente novamente' });
@@ -341,7 +367,7 @@ export default function Appointments() {
 
   const openNew = () => {
     setEditingId(null);
-    setFormData({ ...emptyForm, appointment_date: dateFilter });
+    setFormData({ ...emptyForm, appointment_date: viewMode === 'daily' ? dateFilter : format(new Date(), 'yyyy-MM-dd') });
     setDialogOpen(true);
   };
 
@@ -374,11 +400,67 @@ export default function Appointments() {
     setDeleteId(null);
   };
 
-  const filtered = appointments.filter(
-    (a) =>
+  // Apply filters
+  const filtered = appointments.filter((a) => {
+    const matchSearch = !search ||
       a.patient?.full_name?.toLowerCase().includes(search.toLowerCase()) ||
-      a.professional?.full_name?.toLowerCase().includes(search.toLowerCase())
+      a.professional?.full_name?.toLowerCase().includes(search.toLowerCase());
+    const matchProfessional = !filterProfessionalId || a.professional?.id === filterProfessionalId;
+    const matchPatient = !filterPatientId || a.patient?.id === filterPatientId;
+    return matchSearch && matchProfessional && matchPatient;
+  });
+
+  // Group by date for monthly view
+  const groupedByDate = filtered.reduce<Record<string, Appointment[]>>((acc, apt) => {
+    const date = apt.appointment_date;
+    if (!acc[date]) acc[date] = [];
+    acc[date].push(apt);
+    return acc;
+  }, {});
+
+  const sortedDates = Object.keys(groupedByDate).sort();
+
+  const renderAppointmentRow = (apt: Appointment, showDate = false) => (
+    <TableRow key={apt.id}>
+      {showDate && (
+        <TableCell className="font-medium whitespace-nowrap">
+          {format(parseISO(apt.appointment_date), "dd/MM/yyyy (EEE)", { locale: ptBR })}
+        </TableCell>
+      )}
+      <TableCell className="font-mono">{apt.start_time?.slice(0, 5)} - {apt.end_time?.slice(0, 5)}</TableCell>
+      <TableCell className="font-medium">{apt.patient?.full_name || '-'}</TableCell>
+      <TableCell>{apt.professional?.full_name || '-'}</TableCell>
+      <TableCell>{apt.procedure?.name || '-'}</TableCell>
+      <TableCell className="capitalize">
+        {apt.consultation_type}
+        {apt.health_insurance && ` (${apt.health_insurance.name})`}
+      </TableCell>
+      <TableCell>
+        <Select value={apt.status} onValueChange={(v) => handleStatusChange(apt.id, v)}>
+          <SelectTrigger className={cn('w-[140px]', statusColors[apt.status])}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {statusOptions.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </TableCell>
+      <TableCell>
+        <div className="flex items-center gap-1">
+          <Button variant="ghost" size="icon" onClick={() => handleEditAppointment(apt)} title="Editar">
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="icon" onClick={() => setDeleteId(apt.id)} title="Remover" className="text-destructive hover:text-destructive">
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
   );
+
+  const colCount = viewMode === 'monthly' ? 8 : 7;
 
   return (
     <div className="p-6">
@@ -387,7 +469,7 @@ export default function Appointments() {
           <h1 className="text-3xl font-bold">Agendamentos</h1>
           <p className="text-muted-foreground">Gerencie os agendamentos da clínica</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <Dialog open={dialogOpen} onOpenChange={(open) => { if (!open) { setEditingId(null); } setDialogOpen(open); }}>
           <DialogTrigger asChild>
             <Button onClick={openNew}>
               <Plus className="mr-2 h-4 w-4" />
@@ -396,7 +478,7 @@ export default function Appointments() {
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Novo Agendamento</DialogTitle>
+              <DialogTitle>{editingId ? 'Editar Agendamento' : 'Novo Agendamento'}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
@@ -481,6 +563,19 @@ export default function Appointments() {
                     </div>
                   </div>
                 )}
+                {editingId && (
+                  <div className="space-y-2">
+                    <Label>Status</Label>
+                    <Select value={formData.status} onValueChange={(v) => setFormData({ ...formData, status: v as any })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {statusOptions.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
                 <div className="space-y-2">
                   <Label>Data *</Label>
                   <Input type="date" required value={formData.appointment_date} onChange={(e) => setFormData({ ...formData, appointment_date: e.target.value })} />
@@ -500,25 +595,68 @@ export default function Appointments() {
               </div>
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
-                <Button type="submit" disabled={submitting}>{submitting ? 'Salvando...' : 'Agendar'}</Button>
+                <Button type="submit" disabled={submitting}>{submitting ? 'Salvando...' : editingId ? 'Salvar Alterações' : 'Agendar'}</Button>
               </div>
             </form>
           </DialogContent>
         </Dialog>
       </div>
 
-      <div className="mb-4 flex flex-wrap gap-4">
-        <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Buscar..." className="pl-10" value={search} onChange={(e) => setSearch(e.target.value)} />
+      {/* View Mode Tabs + Filters */}
+      <div className="mb-4 space-y-3">
+        <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)}>
+          <TabsList>
+            <TabsTrigger value="daily" className="gap-2">
+              <CalendarDays className="h-4 w-4" />
+              Diário
+            </TabsTrigger>
+            <TabsTrigger value="monthly" className="gap-2">
+              <CalendarRange className="h-4 w-4" />
+              Mensal
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        <div className="flex flex-wrap gap-3">
+          <div className="relative max-w-sm">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input placeholder="Buscar..." className="pl-10" value={search} onChange={(e) => setSearch(e.target.value)} />
+          </div>
+
+          {viewMode === 'daily' ? (
+            <Input type="date" className="w-[180px]" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} />
+          ) : (
+            <Input type="month" className="w-[180px]" value={monthFilter} onChange={(e) => setMonthFilter(e.target.value)} />
+          )}
+
+          <Select value={filterProfessionalId} onValueChange={setFilterProfessionalId}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Todos os profissionais" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os profissionais</SelectItem>
+              {professionals.map((p) => <SelectItem key={p.id} value={p.id}>{p.full_name}</SelectItem>)}
+            </SelectContent>
+          </Select>
+
+          <Select value={filterPatientId} onValueChange={setFilterPatientId}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Todos os pacientes" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os pacientes</SelectItem>
+              {patients.map((p) => <SelectItem key={p.id} value={p.id}>{p.full_name}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </div>
-        <Input type="date" className="w-[180px]" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} />
       </div>
 
-      <div className="rounded-md border">
+      {/* Table */}
+      <div className="rounded-md border" ref={scrollRef}>
         <Table>
           <TableHeader>
             <TableRow>
+              {viewMode === 'monthly' && <TableHead>Data</TableHead>}
               <TableHead>Horário</TableHead>
               <TableHead>Paciente</TableHead>
               <TableHead>Profissional</TableHead>
@@ -530,51 +668,63 @@ export default function Appointments() {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={7} className="text-center">Carregando...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={colCount} className="text-center">Carregando...</TableCell></TableRow>
             ) : filtered.length === 0 ? (
-              <TableRow><TableCell colSpan={7} className="text-center">Nenhum agendamento encontrado</TableCell></TableRow>
+              <TableRow><TableCell colSpan={colCount} className="text-center">Nenhum agendamento encontrado</TableCell></TableRow>
+            ) : viewMode === 'daily' ? (
+              filtered.map((apt) => renderAppointmentRow(apt, false))
             ) : (
-              filtered.map((apt) => (
-                <TableRow key={apt.id}>
-                  <TableCell className="font-mono">{apt.start_time?.slice(0, 5)} - {apt.end_time?.slice(0, 5)}</TableCell>
-                  <TableCell className="font-medium">{apt.patient?.full_name || '-'}</TableCell>
-                  <TableCell>{apt.professional?.full_name || '-'}</TableCell>
-                  <TableCell>{apt.procedure?.name || '-'}</TableCell>
-                  <TableCell className="capitalize">
-                    {apt.consultation_type}
-                    {apt.health_insurance && ` (${apt.health_insurance.name})`}
-                  </TableCell>
-                  <TableCell>
-                    <Select
-                      value={apt.status}
-                      onValueChange={(v) => handleStatusChange(apt.id, v)}
-                    >
-                      <SelectTrigger className={cn('w-[140px]', statusColors[apt.status])}>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {statusOptions.map((opt) => (
-                          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => handleEditAppointment(apt)} title="Editar">
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => setDeleteId(apt.id)} title="Remover" className="text-destructive hover:text-destructive">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
+              sortedDates.map((date) => (
+                groupedByDate[date].map((apt, idx) => (
+                  <TableRow key={apt.id} className={idx === 0 ? 'border-t-2' : ''}>
+                    {idx === 0 ? (
+                      <TableCell rowSpan={groupedByDate[date].length} className="font-medium whitespace-nowrap align-top bg-muted/30">
+                        {format(parseISO(date), "dd/MM (EEE)", { locale: ptBR })}
+                      </TableCell>
+                    ) : null}
+                    <TableCell className="font-mono">{apt.start_time?.slice(0, 5)} - {apt.end_time?.slice(0, 5)}</TableCell>
+                    <TableCell className="font-medium">{apt.patient?.full_name || '-'}</TableCell>
+                    <TableCell>{apt.professional?.full_name || '-'}</TableCell>
+                    <TableCell>{apt.procedure?.name || '-'}</TableCell>
+                    <TableCell className="capitalize">
+                      {apt.consultation_type}
+                      {apt.health_insurance && ` (${apt.health_insurance.name})`}
+                    </TableCell>
+                    <TableCell>
+                      <Select value={apt.status} onValueChange={(v) => handleStatusChange(apt.id, v)}>
+                        <SelectTrigger className={cn('w-[140px]', statusColors[apt.status])}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {statusOptions.map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => handleEditAppointment(apt)} title="Editar">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => setDeleteId(apt.id)} title="Remover" className="text-destructive hover:text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
               ))
             )}
           </TableBody>
         </Table>
       </div>
+
+      {viewMode === 'monthly' && filtered.length > 0 && (
+        <div className="mt-2 text-sm text-muted-foreground">
+          Total: {filtered.length} agendamento(s) em {sortedDates.length} dia(s)
+        </div>
+      )}
 
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>
