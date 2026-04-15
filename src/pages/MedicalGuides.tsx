@@ -778,7 +778,23 @@ export default function MedicalGuides() {
                 </div>
               </div>
 
-              {/* Campos Clínicos */}
+              {/* Profissional Executante */}
+              <div className="space-y-2">
+                <Label>Profissional Executante *</Label>
+                <Select
+                  value={formData.professional_id}
+                  onValueChange={(v) => setFormData({ ...formData, professional_id: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o profissional" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {professionals.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>{p.full_name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label>CID-10 Principal</Label>
