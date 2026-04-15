@@ -521,17 +521,18 @@ export default function ProfessionalPayouts() {
               <TableHead>Data Ref.</TableHead>
               <TableHead>Valor</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Ações</TableHead>
+              <TableHead>Data Pgto.</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center">Carregando...</TableCell>
+                <TableCell colSpan={8} className="text-center">Carregando...</TableCell>
               </TableRow>
             ) : filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center">Nenhum repasse encontrado</TableCell>
+                <TableCell colSpan={8} className="text-center">Nenhum repasse encontrado</TableCell>
               </TableRow>
             ) : (
               filtered.map((p) => (
@@ -546,11 +547,13 @@ export default function ProfessionalPayouts() {
                       {p.status}
                     </span>
                   </TableCell>
+                  <TableCell>{p.payment_date ? format(new Date(p.payment_date), 'dd/MM/yyyy') : '-'}</TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center justify-end gap-1">
                       {p.status === 'pendente' && (
-                        <Button size="sm" variant="outline" onClick={() => handlePayoutStatus(p.id, 'pago')}>
-                          Pagar
+                        <Button size="sm" variant="default" className="gap-1" onClick={() => handlePayoutStatus(p.id, 'pago')}>
+                          <CheckCircle className="h-4 w-4" />
+                          Confirmar Pgto.
                         </Button>
                       )}
                       <Button variant="ghost" size="icon" onClick={() => handleEditPayout(p)} title="Editar">
