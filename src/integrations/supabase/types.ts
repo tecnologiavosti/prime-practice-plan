@@ -1455,10 +1455,9 @@ export type Database = {
           address: string | null
           birth_date: string | null
           city: string | null
-          council_number: string | null
-          council_state: string | null
           cpf: string | null
           created_at: string
+          crm: string | null
           email: string | null
           full_name: string
           id: string
@@ -1468,6 +1467,7 @@ export type Database = {
           service_type: Database["public"]["Enums"]["service_type"]
           specialty_id: string | null
           state: string | null
+          uf_crm: string | null
           updated_at: string
           user_id: string | null
           zip_code: string | null
@@ -1477,10 +1477,9 @@ export type Database = {
           address?: string | null
           birth_date?: string | null
           city?: string | null
-          council_number?: string | null
-          council_state?: string | null
           cpf?: string | null
           created_at?: string
+          crm?: string | null
           email?: string | null
           full_name: string
           id?: string
@@ -1490,6 +1489,7 @@ export type Database = {
           service_type?: Database["public"]["Enums"]["service_type"]
           specialty_id?: string | null
           state?: string | null
+          uf_crm?: string | null
           updated_at?: string
           user_id?: string | null
           zip_code?: string | null
@@ -1499,10 +1499,9 @@ export type Database = {
           address?: string | null
           birth_date?: string | null
           city?: string | null
-          council_number?: string | null
-          council_state?: string | null
           cpf?: string | null
           created_at?: string
+          crm?: string | null
           email?: string | null
           full_name?: string
           id?: string
@@ -1512,6 +1511,7 @@ export type Database = {
           service_type?: Database["public"]["Enums"]["service_type"]
           specialty_id?: string | null
           state?: string | null
+          uf_crm?: string | null
           updated_at?: string
           user_id?: string | null
           zip_code?: string | null
