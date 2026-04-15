@@ -450,43 +450,7 @@ export default function ProfessionalPayouts() {
         </Card>
       </div>
 
-      {/* Fee Configurations */}
-      {fees.length > 0 && (
-        <div className="mb-6">
-          <h2 className="mb-2 text-lg font-semibold">Configurações de Repasse</h2>
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Profissional</TableHead>
-                  <TableHead>Procedimento</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {fees.map((fee) => (
-                  <TableRow key={fee.id}>
-                    <TableCell>{fee.professional?.full_name}</TableCell>
-                    <TableCell>{fee.procedure?.name || 'Todos'}</TableCell>
-                    <TableCell>{getFeeDescription(fee)}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Button variant="ghost" size="icon" onClick={() => handleEditFee(fee)} title="Editar">
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => setDeleteFeeId(fee.id)} title="Remover" className="text-destructive hover:text-destructive">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </div>
-      )}
+      {/* Fee configurations managed via dialog only */}
 
       {/* Filters */}
       <div className="mb-4 flex flex-wrap gap-4">
