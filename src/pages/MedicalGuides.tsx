@@ -320,6 +320,7 @@ export default function MedicalGuides() {
       guide_number: formData.guide_number || generateGuideNumber(),
       patient_id: formData.patient_id,
       health_insurance_id: formData.health_insurance_id,
+      professional_id: formData.professional_id || null,
       guide_date: formData.guide_date,
       validity_date: formData.validity_date,
       quantity: items.reduce((sum, i) => sum + i.quantity, 0),
