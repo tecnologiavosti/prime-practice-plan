@@ -315,7 +315,6 @@ export default function MedicalGuides() {
 
     const totalValue = getTotalValue();
 
-    // Create the guide
     const payload = {
       guide_number: formData.guide_number || generateGuideNumber(),
       patient_id: formData.patient_id,
@@ -326,28 +325,59 @@ export default function MedicalGuides() {
       quantity: items.reduce((sum, i) => sum + i.quantity, 0),
       unit_value: 0,
       total_value: totalValue,
-      status: 'pendente',
       attachment_url: attachmentUrl || null,
       cid_10: formData.cid_10 || null,
       clinical_indication: formData.clinical_indication || null,
     };
 
-    const { data: guideData, error } = await supabase
-      .from('medical_guides')
-      .insert([payload])
-      .select()
-      .single();
+    let guideId: string;
 
-    if (error) {
-      toast({ variant: 'destructive', title: 'Erro', description: error.message });
-      return;
+    if (editingId) {
+      // Update existing guide
+      const { error } = await supabase
+        .from('medical_guides')
+        .update(payload)
+        .eq('id', editingId);
+
+      if (error) {
+        toast({ variant: 'destructive', title: 'Erro', description: error.message });
+        return;
+      }
+      guideId = editingId;
+
+      // Remove old items and re-insert
+      await supabase.from('medical_guide_items').delete().eq('medical_guide_id', editingId);
+    } else {
+      // Create new guide
+      const { data: guideData, error } = await supabase
+        .from('medical_guides')
+        .insert([{ ...payload, status: 'pendente' }])
+        .select()
+        .single();
+
+      if (error) {
+        toast({ variant: 'destructive', title: 'Erro', description: error.message });
+        return;
+      }
+      guideId = guideData.id;
+
+      // Create financial transaction only for new guides
+      await supabase.from('financial_transactions').insert([{
+        transaction_type: 'convenio',
+        patient_id: formData.patient_id,
+        health_insurance_id: formData.health_insurance_id,
+        medical_guide_id: guideId,
+        amount: totalValue,
+        due_date: formData.guide_date,
+        status: 'pendente',
+      }]);
     }
 
-    // Create guide items
+    // Insert guide items
     const validItems = items.filter(item => item.procedure_id);
-    if (validItems.length > 0 && guideData) {
+    if (validItems.length > 0) {
       const itemsPayload = validItems.map(item => ({
-        medical_guide_id: guideData.id,
+        medical_guide_id: guideId,
         procedure_id: item.procedure_id,
         professional_id: item.professional_id || null,
         service_date: item.service_date,
@@ -366,20 +396,7 @@ export default function MedicalGuides() {
       }
     }
 
-    // Create financial transaction
-    if (guideData) {
-      await supabase.from('financial_transactions').insert([{
-        transaction_type: 'convenio',
-        patient_id: formData.patient_id,
-        health_insurance_id: formData.health_insurance_id,
-        medical_guide_id: guideData.id,
-        amount: totalValue,
-        due_date: formData.guide_date,
-        status: 'pendente',
-      }]);
-    }
-
-    toast({ title: 'Guia criada com sucesso!' });
+    toast({ title: editingId ? 'Guia atualizada com sucesso!' : 'Guia criada com sucesso!' });
     setDialogOpen(false);
     setFormData(emptyForm);
     setItems([{ ...emptyItem }]);
