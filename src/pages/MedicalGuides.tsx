@@ -326,6 +326,8 @@ export default function MedicalGuides() {
       total_value: totalValue,
       status: 'pendente',
       attachment_url: attachmentUrl || null,
+      cid_10: formData.cid_10 || null,
+      clinical_indication: formData.clinical_indication || null,
     };
 
     const { data: guideData, error } = await supabase
@@ -440,6 +442,8 @@ export default function MedicalGuides() {
       health_insurance_id: g.health_insurance?.id || '',
       guide_date: g.guide_date,
       validity_date: g.validity_date || '',
+      cid_10: g.cid_10 || '',
+      clinical_indication: g.clinical_indication || '',
     });
     setItems([{ ...emptyItem }]);
     setAttachmentUrl(g.attachment_url || '');
