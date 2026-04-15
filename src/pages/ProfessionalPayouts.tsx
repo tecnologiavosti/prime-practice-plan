@@ -450,7 +450,21 @@ export default function ProfessionalPayouts() {
         </Card>
       </div>
 
-      {/* Fee configurations managed via dialog only */}
+      {/* Tabs: Repasses vs Configurações */}
+      <div className="mb-4 flex gap-2">
+        <Button
+          variant={activeTab === 'payouts' ? 'default' : 'outline'}
+          onClick={() => setActiveTab('payouts')}
+        >
+          Repasses
+        </Button>
+        <Button
+          variant={activeTab === 'configs' ? 'default' : 'outline'}
+          onClick={() => setActiveTab('configs')}
+        >
+          Configurações de Repasse
+        </Button>
+      </div>
 
       {/* Filters */}
       <div className="mb-4 flex flex-wrap gap-4">
