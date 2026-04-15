@@ -124,6 +124,7 @@ const emptyForm = {
   guide_number: '',
   patient_id: '',
   health_insurance_id: '',
+  professional_id: '',
   guide_date: format(new Date(), 'yyyy-MM-dd'),
   validity_date: format(addDays(new Date(), 30), 'yyyy-MM-dd'),
   cid_10: '',
