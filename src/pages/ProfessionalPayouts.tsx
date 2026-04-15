@@ -82,6 +82,7 @@ export default function ProfessionalPayouts() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pendente' | 'pago'>('all');
+  const [activeTab, setActiveTab] = useState<'payouts' | 'configs'>('payouts');
   const [feeDialogOpen, setFeeDialogOpen] = useState(false);
   const [editingFeeId, setEditingFeeId] = useState<string | null>(null);
   const [feeForm, setFeeForm] = useState({
@@ -450,90 +451,148 @@ export default function ProfessionalPayouts() {
         </Card>
       </div>
 
-      {/* Fee configurations managed via dialog only */}
-
-      {/* Filters */}
-      <div className="mb-4 flex flex-wrap gap-4">
-        <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Buscar..."
-            className="pl-10"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
-          <SelectTrigger className="w-[150px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="pendente">Pendente</SelectItem>
-            <SelectItem value="pago">Pago</SelectItem>
-          </SelectContent>
-        </Select>
+      {/* Tabs: Repasses vs Configurações */}
+      <div className="mb-4 flex gap-2">
+        <Button
+          variant={activeTab === 'payouts' ? 'default' : 'outline'}
+          onClick={() => setActiveTab('payouts')}
+        >
+          Repasses
+        </Button>
+        <Button
+          variant={activeTab === 'configs' ? 'default' : 'outline'}
+          onClick={() => setActiveTab('configs')}
+        >
+          Configurações de Repasse
+        </Button>
       </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Profissional</TableHead>
-              <TableHead>Guia</TableHead>
-              <TableHead>Procedimento</TableHead>
-              <TableHead>Data Ref.</TableHead>
-              <TableHead>Valor</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Data Pgto.</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell colSpan={8} className="text-center">Carregando...</TableCell>
-              </TableRow>
-            ) : filtered.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={8} className="text-center">Nenhum repasse encontrado</TableCell>
-              </TableRow>
-            ) : (
-              filtered.map((p) => (
-                <TableRow key={p.id}>
-                  <TableCell className="font-medium">{p.professional?.full_name || '-'}</TableCell>
-                  <TableCell className="font-mono">{p.medical_guide?.guide_number || '-'}</TableCell>
-                  <TableCell>{p.procedure?.name || '-'}</TableCell>
-                  <TableCell>{format(new Date(p.reference_date), 'dd/MM/yyyy')}</TableCell>
-                  <TableCell className="font-medium">{formatCurrency(Number(p.payout_amount))}</TableCell>
-                  <TableCell>
-                    <span className={cn('rounded-full px-2 py-1 text-xs capitalize', statusColors[p.status])}>
-                      {p.status}
-                    </span>
-                  </TableCell>
-                  <TableCell>{p.payment_date ? format(new Date(p.payment_date), 'dd/MM/yyyy') : '-'}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center justify-end gap-1">
-                      {p.status === 'pendente' && (
-                        <Button size="sm" variant="default" className="gap-1" onClick={() => handlePayoutStatus(p.id, 'pago')}>
-                          <CheckCircle className="h-4 w-4" />
-                          Confirmar Pgto.
-                        </Button>
-                      )}
-                      <Button variant="ghost" size="icon" onClick={() => handleEditPayout(p)} title="Editar">
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => setDeletePayoutId(p.id)} title="Remover" className="text-destructive hover:text-destructive">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+      {activeTab === 'payouts' && (
+        <>
+          {/* Filters */}
+          <div className="mb-4 flex flex-wrap gap-4">
+            <div className="relative max-w-sm">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Buscar..."
+                className="pl-10"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
+              <SelectTrigger className="w-[150px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="pendente">Pendente</SelectItem>
+                <SelectItem value="pago">Pago</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Profissional</TableHead>
+                  <TableHead>Guia</TableHead>
+                  <TableHead>Procedimento</TableHead>
+                  <TableHead>Data Ref.</TableHead>
+                  <TableHead>Valor</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Data Pgto.</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center">Carregando...</TableCell>
+                  </TableRow>
+                ) : filtered.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center">Nenhum repasse encontrado</TableCell>
+                  </TableRow>
+                ) : (
+                  filtered.map((p) => (
+                    <TableRow key={p.id}>
+                      <TableCell className="font-medium">{p.professional?.full_name || '-'}</TableCell>
+                      <TableCell className="font-mono">{p.medical_guide?.guide_number || '-'}</TableCell>
+                      <TableCell>{p.procedure?.name || '-'}</TableCell>
+                      <TableCell>{format(new Date(p.reference_date), 'dd/MM/yyyy')}</TableCell>
+                      <TableCell className="font-medium">{formatCurrency(Number(p.payout_amount))}</TableCell>
+                      <TableCell>
+                        <span className={cn('rounded-full px-2 py-1 text-xs capitalize', statusColors[p.status])}>
+                          {p.status}
+                        </span>
+                      </TableCell>
+                      <TableCell>{p.payment_date ? format(new Date(p.payment_date), 'dd/MM/yyyy') : '-'}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center justify-end gap-1">
+                          {p.status === 'pendente' && (
+                            <Button size="sm" variant="default" className="gap-1" onClick={() => handlePayoutStatus(p.id, 'pago')}>
+                              <CheckCircle className="h-4 w-4" />
+                              Confirmar Pgto.
+                            </Button>
+                          )}
+                          <Button variant="ghost" size="icon" onClick={() => handleEditPayout(p)} title="Editar">
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => setDeletePayoutId(p.id)} title="Remover" className="text-destructive hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </>
+      )}
+
+      {activeTab === 'configs' && (
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Profissional</TableHead>
+                <TableHead>Procedimento</TableHead>
+                <TableHead>Tipo / Valor</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {fees.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center">Nenhuma configuração de repasse</TableCell>
+                </TableRow>
+              ) : (
+                fees.map((fee) => (
+                  <TableRow key={fee.id}>
+                    <TableCell className="font-medium">{fee.professional?.full_name}</TableCell>
+                    <TableCell>{fee.procedure?.name || 'Todos'}</TableCell>
+                    <TableCell>{getFeeDescription(fee)}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => handleEditFee(fee)} title="Editar">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => setDeleteFeeId(fee.id)} title="Remover" className="text-destructive hover:text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      )}
 
       <Dialog open={editPayoutDialogOpen} onOpenChange={setEditPayoutDialogOpen}>
         <DialogContent>
