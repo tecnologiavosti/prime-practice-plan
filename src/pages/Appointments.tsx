@@ -629,7 +629,7 @@ export default function Appointments() {
             <Input type="month" className="w-[180px]" value={monthFilter} onChange={(e) => setMonthFilter(e.target.value)} />
           )}
 
-          <Select value={filterProfessionalId} onValueChange={setFilterProfessionalId}>
+          <Select value={filterProfessionalId || 'all'} onValueChange={(v) => setFilterProfessionalId(v === 'all' ? '' : v)}>
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Todos os profissionais" />
             </SelectTrigger>
@@ -639,7 +639,7 @@ export default function Appointments() {
             </SelectContent>
           </Select>
 
-          <Select value={filterPatientId} onValueChange={setFilterPatientId}>
+          <Select value={filterPatientId || 'all'} onValueChange={(v) => setFilterPatientId(v === 'all' ? '' : v)}>
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Todos os pacientes" />
             </SelectTrigger>
