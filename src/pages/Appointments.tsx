@@ -329,6 +329,46 @@ export default function Appointments() {
         notes: finalizeNotes || null,
       });
 
+      // Generate professional payout based on fee configuration
+      if (finalizingAppointment.professional?.id) {
+        const profId = finalizingAppointment.professional.id;
+        const procId = finalizingAppointment.procedure?.id || null;
+
+        // Try to find a specific fee for this procedure, then fallback to general fee
+        let feeQuery = supabase.from('professional_fees')
+          .select('*')
+          .eq('professional_id', profId)
+          .eq('active', true);
+
+        const { data: specificFees } = await feeQuery;
+        
+        // Prioritize procedure-specific fee, fallback to general (null procedure_id)
+        const fee = specificFees?.find(f => f.procedure_id === procId) 
+          || specificFees?.find(f => !f.procedure_id);
+
+        if (fee) {
+          let payoutAmount = 0;
+          if (fee.fee_type === 'fixed') {
+            payoutAmount = Number(fee.fixed_value);
+          } else if (fee.fee_type === 'percentage') {
+            payoutAmount = finalizeAmount * (Number(fee.percentage_value) / 100);
+          } else if (fee.fee_type === 'per_procedure') {
+            payoutAmount = Number(fee.per_procedure_value);
+          }
+
+          if (payoutAmount > 0) {
+            await supabase.from('professional_payouts').insert({
+              professional_id: profId,
+              appointment_id: finalizingAppointment.id,
+              procedure_id: procId,
+              payout_amount: payoutAmount,
+              reference_date: finalizingAppointment.appointment_date,
+              status: 'pendente',
+            });
+          }
+        }
+      }
+
       const pmName = paymentMethods.find(m => m.id === finalizePaymentMethodId)?.name || '';
 
       setReceiptData({
