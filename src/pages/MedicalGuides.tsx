@@ -55,7 +55,7 @@ interface GuideItem {
   total_value: number;
   status: string;
   procedure?: { id: string; name: string; code: string } | null;
-  professional?: { id: string; full_name: string } | null;
+  professional?: { id: string; full_name: string; crm?: string | null; uf_crm?: string | null } | null;
 }
 
 interface MedicalGuide {
@@ -70,7 +70,7 @@ interface MedicalGuide {
   patient: { id: string; full_name: string } | null;
   health_insurance: { id: string; name: string } | null;
   procedure: { id: string; name: string } | null;
-  professional: { id: string; full_name: string } | null;
+  professional: { id: string; full_name: string; crm?: string | null; uf_crm?: string | null } | null;
   items?: GuideItem[];
   attachment_url?: string | null;
 }
@@ -180,7 +180,7 @@ export default function MedicalGuides() {
         patient:patients(id, full_name),
         health_insurance:health_insurances(id, name),
         procedure:procedures(id, name),
-        professional:professionals(id, full_name)
+        professional:professionals(id, full_name, crm, uf_crm)
       `)
       .order('created_at', { ascending: false });
 
@@ -202,7 +202,7 @@ export default function MedicalGuides() {
       .select(`
         *,
         procedure:procedures(id, name, code),
-        professional:professionals(id, full_name)
+        professional:professionals(id, full_name, crm, uf_crm)
       `)
       .eq('medical_guide_id', guideId)
       .order('service_date', { ascending: true });
