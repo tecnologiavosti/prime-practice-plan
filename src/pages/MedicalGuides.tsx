@@ -527,7 +527,7 @@ export default function MedicalGuides() {
 
     addFieldLine('Paciente', g.patient?.full_name || '-');
 
-    const cpfRaw = g.patient?.cpf || '';
+    const cpfRaw = (g.patient?.cpf || '').replace(/\D/g, '');
     const cpfFormatted = cpfRaw.length === 11
       ? cpfRaw.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')
       : cpfRaw || '-';
