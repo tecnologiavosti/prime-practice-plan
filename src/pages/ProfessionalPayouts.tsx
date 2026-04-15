@@ -82,6 +82,7 @@ export default function ProfessionalPayouts() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pendente' | 'pago'>('all');
+  const [activeTab, setActiveTab] = useState<'payouts' | 'configs'>('payouts');
   const [feeDialogOpen, setFeeDialogOpen] = useState(false);
   const [editingFeeId, setEditingFeeId] = useState<string | null>(null);
   const [feeForm, setFeeForm] = useState({
