@@ -226,12 +226,12 @@ export default function Procedures() {
     setDialogOpen(true);
   };
 
-  const openNew = () => {
+  const openNew = async () => {
     setEditingProcedure(null);
-    setFormData(emptyProcedure);
+    const nextCode = await generateNextCode();
+    setFormData({ ...emptyProcedure, code: nextCode });
     setIsParticular(true);
     setIsConvenio(false);
-    // Initialize empty insurance prices
     setInsurancePrices(insurances.map((ins) => ({
       health_insurance_id: ins.id,
       price: 0,
