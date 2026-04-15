@@ -466,6 +466,9 @@ export default function MedicalGuides() {
     addField('Paciente', g.patient?.full_name || '-');
     addField('Convênio', g.health_insurance?.name || '-');
     addField('Profissional', g.professional?.full_name || '-');
+    if (g.professional?.crm) {
+      addField('CRM', `${g.professional.crm}${g.professional.uf_crm ? ' - ' + g.professional.uf_crm : ''}`);
+    }
     addField('Procedimento', g.procedure?.name || '-');
     addField('Valor Total', formatCurrency(Number(g.total_value)));
     addField('Status', statusLabels[g.status] || g.status);
