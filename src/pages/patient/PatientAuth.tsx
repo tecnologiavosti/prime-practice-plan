@@ -273,6 +273,16 @@ export default function PatientAuth({ mode }: PatientAuthProps) {
                 </button>
               </div>
               {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+              {!isLogin && formData.password.length > 0 && (
+                <div className="space-y-1 text-xs">
+                  <p className={formData.password.length >= 6 ? 'text-green-600' : 'text-muted-foreground'}>
+                    {formData.password.length >= 6 ? '✓' : '○'} Mínimo 6 caracteres
+                  </p>
+                  <p className={/\d/.test(formData.password) ? 'text-green-600' : 'text-muted-foreground'}>
+                    {/\d/.test(formData.password) ? '✓' : '○'} Pelo menos um número
+                  </p>
+                </div>
+              )}
             </div>
 
             {!isLogin && (
