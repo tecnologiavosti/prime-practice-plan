@@ -67,9 +67,11 @@ interface MedicalGuide {
   unit_value: number;
   total_value: number;
   status: string;
-  patient: { id: string; full_name: string } | null;
+  cid_10: string | null;
+  clinical_indication: string | null;
+  patient: { id: string; full_name: string; cpf?: string | null } | null;
   health_insurance: { id: string; name: string } | null;
-  procedure: { id: string; name: string } | null;
+  procedure: { id: string; name: string; code?: string } | null;
   professional: { id: string; full_name: string; crm?: string | null; uf_crm?: string | null } | null;
   items?: GuideItem[];
   attachment_url?: string | null;
@@ -124,6 +126,8 @@ const emptyForm = {
   health_insurance_id: '',
   guide_date: format(new Date(), 'yyyy-MM-dd'),
   validity_date: format(addDays(new Date(), 30), 'yyyy-MM-dd'),
+  cid_10: '',
+  clinical_indication: '',
 };
 
 const emptyItem: Omit<GuideItem, 'id' | 'procedure' | 'professional'> = {
@@ -177,9 +181,9 @@ export default function MedicalGuides() {
       .from('medical_guides')
       .select(`
         *,
-        patient:patients(id, full_name),
+        patient:patients(id, full_name, cpf),
         health_insurance:health_insurances(id, name),
-        procedure:procedures(id, name),
+        procedure:procedures(id, name, code),
         professional:professionals(id, full_name, crm, uf_crm)
       `)
       .order('created_at', { ascending: false });
