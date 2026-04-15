@@ -453,6 +453,11 @@ export default function MedicalGuides() {
     setDialogOpen(true);
   };
   const handleDownloadPDF = async (g: MedicalGuide) => {
+    if (!g.professional) {
+      toast({ variant: 'destructive', title: 'Profissional não vinculado', description: 'Esta guia não possui um profissional associado. Edite a guia e selecione o profissional antes de gerar o PDF.' });
+      return;
+    }
+
     const doc = new jsPDF();
     const margin = 15;
     const pageWidth = 210;
