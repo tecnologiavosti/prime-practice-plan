@@ -121,9 +121,7 @@ export default function PatientAuth({ mode }: PatientAuthProps) {
         toast({
           variant: 'destructive',
           title: 'Erro ao entrar',
-          description: error.message === 'Invalid login credentials' 
-            ? 'Email ou senha incorretos' 
-            : error.message,
+          description: translateAuthError(error.message),
         });
         return;
       }
@@ -145,14 +143,10 @@ export default function PatientAuth({ mode }: PatientAuthProps) {
 
       if (error) {
         setIsLoading(false);
-        let message = error.message;
-        if (error.message.includes('already registered')) {
-          message = 'Este email já está cadastrado';
-        }
         toast({
           variant: 'destructive',
           title: 'Erro ao cadastrar',
-          description: message,
+          description: translateAuthError(error.message),
         });
         return;
       }
