@@ -18,12 +18,44 @@ const signupSchema = z.object({
   fullName: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
   cpf: z.string().min(11, 'CPF inválido').max(14, 'CPF inválido'),
   email: z.string().email('Email inválido'),
-  password: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres'),
+  password: z.string()
+    .min(6, 'A senha precisa de no mínimo 6 caracteres')
+    .regex(/\d/, 'A senha deve conter pelo menos um número'),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: 'Senhas não conferem',
   path: ['confirmPassword'],
 });
+
+const translateAuthError = (message: string): string => {
+  const translations: Record<string, string> = {
+    'Invalid login credentials': 'Email ou senha incorretos',
+    'Email not confirmed': 'Email ainda não confirmado. Verifique sua caixa de entrada.',
+    'User already registered': 'Este email já está cadastrado',
+    'Password should be at least 6 characters': 'A senha precisa de no mínimo 6 caracteres',
+    'Signup requires a valid password': 'A senha informada é inválida',
+    'Email rate limit exceeded': 'Muitas tentativas. Aguarde alguns minutos.',
+    'For security purposes, you can only request this after': 'Por segurança, aguarde antes de tentar novamente.',
+    'Unable to validate email address: invalid format': 'Formato de email inválido',
+    'Password should contain at least one character of each': 'A senha precisa de no mínimo 6 caracteres e um número',
+  };
+
+  for (const [key, value] of Object.entries(translations)) {
+    if (message.includes(key)) return value;
+  }
+
+  if (message.includes('password') || message.includes('Password')) {
+    return 'A senha informada não atende aos requisitos. Use no mínimo 6 caracteres e um número.';
+  }
+  if (message.includes('already registered') || message.includes('already been registered')) {
+    return 'Este email já está cadastrado';
+  }
+  if (message.includes('rate limit') || message.includes('too many')) {
+    return 'Muitas tentativas. Aguarde alguns minutos.';
+  }
+
+  return message;
+};
 
 interface PatientAuthProps {
   mode: 'login' | 'signup';
@@ -89,9 +121,7 @@ export default function PatientAuth({ mode }: PatientAuthProps) {
         toast({
           variant: 'destructive',
           title: 'Erro ao entrar',
-          description: error.message === 'Invalid login credentials' 
-            ? 'Email ou senha incorretos' 
-            : error.message,
+          description: translateAuthError(error.message),
         });
         return;
       }
@@ -113,14 +143,10 @@ export default function PatientAuth({ mode }: PatientAuthProps) {
 
       if (error) {
         setIsLoading(false);
-        let message = error.message;
-        if (error.message.includes('already registered')) {
-          message = 'Este email já está cadastrado';
-        }
         toast({
           variant: 'destructive',
           title: 'Erro ao cadastrar',
-          description: message,
+          description: translateAuthError(error.message),
         });
         return;
       }
@@ -247,6 +273,16 @@ export default function PatientAuth({ mode }: PatientAuthProps) {
                 </button>
               </div>
               {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+              {!isLogin && formData.password.length > 0 && (
+                <div className="space-y-1 text-xs">
+                  <p className={formData.password.length >= 6 ? 'text-green-600' : 'text-muted-foreground'}>
+                    {formData.password.length >= 6 ? '✓' : '○'} Mínimo 6 caracteres
+                  </p>
+                  <p className={/\d/.test(formData.password) ? 'text-green-600' : 'text-muted-foreground'}>
+                    {/\d/.test(formData.password) ? '✓' : '○'} Pelo menos um número
+                  </p>
+                </div>
+              )}
             </div>
 
             {!isLogin && (
