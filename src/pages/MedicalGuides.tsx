@@ -729,7 +729,7 @@ export default function MedicalGuides() {
           </DialogTrigger>
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Nova Guia</DialogTitle>
+              <DialogTitle>{editingId ? 'Editar Guia' : 'Nova Guia'}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Header da Guia */}
