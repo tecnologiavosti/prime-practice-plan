@@ -513,7 +513,9 @@ export default function ProfessionalPayouts() {
                   </TableRow>
                 ) : filtered.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center">Nenhum repasse encontrado</TableCell>
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                      Os repasses aparecerão aqui assim que as consultas forem finalizadas na agenda.
+                    </TableCell>
                   </TableRow>
                 ) : (
                   filtered.map((p) => (
