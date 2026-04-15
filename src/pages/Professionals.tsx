@@ -41,8 +41,8 @@ interface Professional {
   phone: string | null;
   email: string | null;
   specialty_id: string | null;
-  council_number: string | null;
-  council_state: string | null;
+  crm: string | null;
+  uf_crm: string | null;
   service_type: string;
   active: boolean;
 }
@@ -64,8 +64,8 @@ const emptyProfessional = {
   phone: '',
   email: '',
   specialty_id: '',
-  council_number: '',
-  council_state: '',
+  crm: '',
+  uf_crm: '',
   service_type: 'ambos' as 'ambos' | 'particular' | 'convenio',
   address: '',
   city: '',
@@ -209,8 +209,8 @@ export default function Professionals() {
       phone: professional.phone || '',
       email: professional.email || '',
       specialty_id: professional.specialty_id || '',
-      council_number: professional.council_number || '',
-      council_state: professional.council_state || '',
+      crm: professional.crm || '',
+      uf_crm: professional.uf_crm || '',
       service_type: professional.service_type as 'ambos' | 'particular' | 'convenio',
       address: '',
       city: '',
@@ -325,17 +325,17 @@ export default function Professionals() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label>Nº Conselho</Label>
+                      <Label>CRM</Label>
                       <Input
-                        value={formData.council_number}
-                        onChange={(e) => setFormData({ ...formData, council_number: e.target.value })}
+                        value={formData.crm}
+                        onChange={(e) => setFormData({ ...formData, crm: e.target.value })}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>UF Conselho</Label>
+                      <Label>UF do CRM</Label>
                       <Input
-                        value={formData.council_state}
-                        onChange={(e) => setFormData({ ...formData, council_state: e.target.value })}
+                        value={formData.uf_crm}
+                        onChange={(e) => setFormData({ ...formData, uf_crm: e.target.value })}
                       />
                     </div>
                   </div>
