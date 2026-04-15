@@ -695,6 +695,8 @@ export type Database = {
         Row: {
           appointment_id: string | null
           attachment_url: string | null
+          cid_10: string | null
+          clinical_indication: string | null
           created_at: string
           guide_date: string
           guide_number: string
@@ -714,6 +716,8 @@ export type Database = {
         Insert: {
           appointment_id?: string | null
           attachment_url?: string | null
+          cid_10?: string | null
+          clinical_indication?: string | null
           created_at?: string
           guide_date?: string
           guide_number: string
@@ -733,6 +737,8 @@ export type Database = {
         Update: {
           appointment_id?: string | null
           attachment_url?: string | null
+          cid_10?: string | null
+          clinical_indication?: string | null
           created_at?: string
           guide_date?: string
           guide_number?: string
