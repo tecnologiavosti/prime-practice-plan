@@ -78,6 +78,22 @@ export default function Procedures() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const { toast } = useToast();
 
+  const generateNextCode = async (): Promise<string> => {
+    const { data } = await supabase
+      .from('procedures')
+      .select('code')
+      .order('code', { ascending: false })
+      .limit(100);
+
+    let maxNum = 0;
+    (data || []).forEach((row) => {
+      const num = parseInt(row.code, 10);
+      if (!isNaN(num) && num > maxNum) maxNum = num;
+    });
+
+    return String(maxNum + 1).padStart(3, '0');
+  };
+
   const handleDeleteProcedure = async () => {
     if (!deleteId) return;
     const { error } = await supabase.from('procedures').delete().eq('id', deleteId);
@@ -141,6 +157,18 @@ export default function Procedures() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate unique code
+    const { data: existing } = await supabase
+      .from('procedures')
+      .select('id')
+      .eq('code', formData.code)
+      .maybeSingle();
+
+    if (existing && existing.id !== editingProcedure?.id) {
+      toast({ variant: 'destructive', title: 'Erro', description: `O código "${formData.code}" já está em uso por outro procedimento.` });
+      return;
+    }
 
     const payload = {
       ...formData,
@@ -223,12 +251,12 @@ export default function Procedures() {
     setDialogOpen(true);
   };
 
-  const openNew = () => {
+  const openNew = async () => {
     setEditingProcedure(null);
-    setFormData(emptyProcedure);
+    const nextCode = await generateNextCode();
+    setFormData({ ...emptyProcedure, code: nextCode });
     setIsParticular(true);
     setIsConvenio(false);
-    // Initialize empty insurance prices
     setInsurancePrices(insurances.map((ins) => ({
       health_insurance_id: ins.id,
       price: 0,
