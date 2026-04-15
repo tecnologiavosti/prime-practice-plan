@@ -379,7 +379,7 @@ export default function MedicalGuides() {
       const itemsPayload = validItems.map(item => ({
         medical_guide_id: guideId,
         procedure_id: item.procedure_id,
-        professional_id: item.professional_id || null,
+        professional_id: formData.professional_id || null,
         service_date: item.service_date,
         quantity: item.quantity,
         unit_value: item.unit_value,
@@ -858,8 +858,8 @@ export default function MedicalGuides() {
                         )}
                       </div>
                       
-                      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-                        <div className="space-y-1">
+                      <div className="grid gap-3 md:grid-cols-3">
+                        <div className="space-y-1 md:col-span-1">
                           <Label className="text-xs">Procedimento *</Label>
                           <Select
                             value={item.procedure_id}
@@ -873,23 +873,6 @@ export default function MedicalGuides() {
                                 <SelectItem key={p.id} value={p.id}>
                                   {p.code} - {p.name}
                                 </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        
-                        <div className="space-y-1">
-                          <Label className="text-xs">Profissional</Label>
-                          <Select
-                            value={item.professional_id}
-                            onValueChange={(v) => updateItem(index, 'professional_id', v)}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecione" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {professionals.map((p) => (
-                                <SelectItem key={p.id} value={p.id}>{p.full_name}</SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
