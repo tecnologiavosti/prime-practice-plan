@@ -94,6 +94,19 @@ export default function Procedures() {
     return String(maxNum + 1).padStart(3, '0');
   };
 
+  const handleDeleteProcedure = async () => {
+    if (!deleteId) return;
+    const { error } = await supabase.from('procedures').delete().eq('id', deleteId);
+    if (error) {
+      toast({ variant: 'destructive', title: 'Erro', description: error.message });
+    } else {
+      toast({ title: 'Procedimento removido com sucesso!' });
+      fetchProcedures();
+      fetchAllProcedurePrices();
+    }
+    setDeleteId(null);
+  };
+
   useEffect(() => {
     fetchProcedures();
     fetchInsurances();
