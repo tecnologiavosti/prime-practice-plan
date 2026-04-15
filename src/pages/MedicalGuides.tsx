@@ -654,6 +654,8 @@ export default function MedicalGuides() {
                     placeholder="Justificativa do atendimento"
                   />
                 </div>
+              </div>
+
               {/* Itens/Atendimentos */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
