@@ -303,8 +303,8 @@ export default function MedicalGuides() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.patient_id || !formData.health_insurance_id) {
-      toast({ variant: 'destructive', title: 'Erro', description: 'Preencha paciente e convênio' });
+    if (!formData.patient_id || !formData.health_insurance_id || !formData.professional_id) {
+      toast({ variant: 'destructive', title: 'Erro', description: 'Preencha paciente, convênio e profissional executante' });
       return;
     }
 
