@@ -544,13 +544,13 @@ export default function MedicalGuides() {
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(60, 120, 120);
-    doc.text('PROFISSIONAL SOLICITANTE', margin, y);
+    doc.text('PROFISSIONAL EXECUTANTE', margin, y);
     doc.setTextColor(0);
     y += 7;
 
     const profName = g.professional?.full_name || '-';
     const crmText = g.professional?.crm
-      ? `CRM/${g.professional.uf_crm || 'XX'} ${g.professional.crm}`
+      ? `${g.professional.crm} / ${g.professional.uf_crm || 'XX'}`
       : '-';
     addField('Nome', profName);
     y += 7;
