@@ -1688,6 +1688,16 @@ export type Database = {
       }
     }
     Functions: {
+      get_professionals_for_patients: {
+        Args: never
+        Returns: {
+          active: boolean
+          full_name: string
+          id: string
+          service_type: Database["public"]["Enums"]["service_type"]
+          specialty_id: string
+        }[]
+      }
       has_any_role: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
