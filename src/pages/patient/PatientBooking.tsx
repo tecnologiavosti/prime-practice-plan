@@ -73,13 +73,33 @@ export default function PatientBooking() {
   }, [selectedProfessional, selectedDate, selectedProcedure]);
 
   const fetchProfessionals = async () => {
-    const { data } = await supabase
-      .from('professionals_public')
-      .select('id, full_name, specialty:specialties(name)')
-      .eq('active', true)
-      .order('full_name');
+    const { data } = await supabase.rpc('get_professionals_for_patients');
     
-    setProfessionals(data || []);
+    if (data) {
+      // Fetch specialty names for the returned professionals
+      const specialtyIds = [...new Set(data.filter(p => p.specialty_id).map(p => p.specialty_id))];
+      let specialtiesMap: Record<string, string> = {};
+      
+      if (specialtyIds.length > 0) {
+        const { data: specs } = await supabase
+          .from('specialties')
+          .select('id, name')
+          .in('id', specialtyIds as string[]);
+        if (specs) {
+          specialtiesMap = Object.fromEntries(specs.map(s => [s.id, s.name]));
+        }
+      }
+      
+      const mapped = data.map(p => ({
+        id: p.id,
+        full_name: p.full_name,
+        specialty: p.specialty_id ? { name: specialtiesMap[p.specialty_id] || null } : null
+      }));
+      
+      setProfessionals(mapped.sort((a, b) => a.full_name.localeCompare(b.full_name)));
+    } else {
+      setProfessionals([]);
+    }
   };
 
   const fetchProcedures = async () => {
