@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
-import { Calendar, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import logoPacem from '@/assets/logoPacem-2.png';
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -194,8 +195,8 @@ export default function PatientAuth({ mode }: PatientAuthProps) {
             <ArrowLeft className="h-4 w-4" />
             Voltar
           </Link>
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 shadow-lg shadow-primary/25 transition-transform hover:scale-105">
-            <Calendar className="h-10 w-10 text-primary-foreground" />
+          <div className="mx-auto">
+            <img src={logoPacem} alt="Pacem Logo" className="w-[180px] h-auto mx-auto" />
           </div>
           <div className="space-y-1">
             <CardTitle className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
