@@ -8,7 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
-import { Stethoscope, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
+import logoPacem from '@/assets/logoPacem-2.png';
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -125,8 +126,8 @@ export default function Auth() {
 
       <Card className="w-full max-w-md relative z-10 border-0 shadow-2xl bg-card/80 backdrop-blur-xl">
         <CardHeader className="text-center space-y-4 pb-2">
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 shadow-lg shadow-primary/25 transition-transform hover:scale-105">
-            <Stethoscope className="h-10 w-10 text-primary-foreground" />
+          <div className="mx-auto">
+            <img src={logoPacem} alt="Pacem Logo" className="w-[180px] h-auto mx-auto" />
           </div>
           <div className="space-y-1">
             <CardTitle className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
