@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 import { Eye, EyeOff } from 'lucide-react';
 import logoPacem from '@/assets/logoPacem-2.png';
+import { useClinicSettings } from '@/hooks/useClinicSettings';
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -35,8 +36,11 @@ export default function Auth() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   const { signIn, signUp } = useAuth();
+  const { settings } = useClinicSettings();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const logoSrc = settings?.logo_url || logoPacem;
+  const clinicName = settings?.nome_fantasia || 'Sistema Clínico';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,11 +131,11 @@ export default function Auth() {
       <Card className="w-full max-w-md relative z-10 border-0 shadow-2xl bg-card/80 backdrop-blur-xl">
         <CardHeader className="text-center space-y-4 pb-2">
           <div className="mx-auto">
-            <img src={logoPacem} alt="Pacem Logo" className="w-[180px] h-auto mx-auto" />
+            <img src={logoSrc} alt={clinicName} className="w-[180px] h-auto mx-auto object-contain" />
           </div>
           <div className="space-y-1">
             <CardTitle className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-              Sistema Clínico
+              {clinicName}
             </CardTitle>
             <CardDescription className="text-base">
               Gestão inteligente de clínica e agenda médica
