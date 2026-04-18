@@ -60,7 +60,7 @@ interface MedicalGuide {
 interface HealthInsurance {
   id: string;
   name: string;
-  administrator_id: string | null;
+  administrator_ids: string[];
 }
 
 interface Administrator {
@@ -149,8 +149,17 @@ export default function BillingBatches() {
   };
 
   const fetchInsurances = async () => {
-    const { data } = await supabase.from('health_insurances').select('id, name, administrator_id').eq('active', true).order('name');
-    setInsurances(data || []);
+    const { data } = await supabase
+      .from('health_insurances')
+      .select('id, name, insurance_administrators_map(administrator_id)')
+      .eq('active', true)
+      .order('name');
+    const mapped: HealthInsurance[] = (data || []).map((i: any) => ({
+      id: i.id,
+      name: i.name,
+      administrator_ids: (i.insurance_administrators_map || []).map((m: any) => m.administrator_id),
+    }));
+    setInsurances(mapped);
   };
 
   const fetchAdministrators = async () => {
@@ -176,7 +185,7 @@ export default function BillingBatches() {
     const payload = {
       batch_number: generateBatchNumber(),
       health_insurance_id: selectedInsurance,
-      administrator_id: insurance?.administrator_id || null,
+      administrator_id: insurance?.administrator_ids[0] || null,
       period_start: periodStart,
       period_end: periodEnd,
       total_amount: totalAmount,

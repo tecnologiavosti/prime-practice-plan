@@ -42,9 +42,9 @@ interface HealthInsurance {
   id: string;
   name: string;
   code: string | null;
-  administrator_id: string | null;
   billing_rate: number | null;
   active: boolean;
+  administrator_ids: string[];
 }
 
 interface InsuranceWithValue {
@@ -112,7 +112,7 @@ export default function Administrators() {
   const fetchHealthInsurances = async () => {
     const { data, error } = await supabase
       .from('health_insurances')
-      .select('id, name, code, administrator_id, billing_rate, active')
+      .select('id, name, code, billing_rate, active, insurance_administrators_map(administrator_id)')
       .eq('active', true)
       .order('name');
 
@@ -120,7 +120,15 @@ export default function Administrators() {
       toast({ variant: 'destructive', title: 'Erro', description: error.message });
       return;
     }
-    setHealthInsurances(data || []);
+    const mapped: HealthInsurance[] = (data || []).map((i: any) => ({
+      id: i.id,
+      name: i.name,
+      code: i.code,
+      billing_rate: i.billing_rate,
+      active: i.active,
+      administrator_ids: (i.insurance_administrators_map || []).map((m: any) => m.administrator_id),
+    }));
+    setHealthInsurances(mapped);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -177,10 +185,11 @@ export default function Administrators() {
     // Initialize settings for all insurances
     const settings = new Map<string, InsuranceWithValue>();
     healthInsurances.forEach(ins => {
+      const linked = ins.administrator_ids.includes(admin.id);
       settings.set(ins.id, {
         id: ins.id,
-        selected: ins.administrator_id === admin.id,
-        billing_rate: ins.administrator_id === admin.id ? Number(ins.billing_rate || 0) : 0,
+        selected: linked,
+        billing_rate: linked ? Number(ins.billing_rate || 0) : 0,
       });
     });
     setInsuranceSettings(settings);
@@ -218,10 +227,10 @@ export default function Administrators() {
   const handleSaveInsurances = async () => {
     if (!selectedAdmin) return;
 
-    // First, unlink all insurances from this admin
+    // Remove all current links for this admin
     const { error: unlinkError } = await supabase
-      .from('health_insurances')
-      .update({ administrator_id: null, billing_rate: 0 })
+      .from('insurance_administrators_map')
+      .delete()
       .eq('administrator_id', selectedAdmin.id);
 
     if (unlinkError) {
@@ -229,22 +238,26 @@ export default function Administrators() {
       return;
     }
 
-    // Then, update each selected insurance with its billing rate
+    // Insert new links and update billing rates
     const selectedInsurances = Array.from(insuranceSettings.entries())
       .filter(([_, settings]) => settings.selected);
 
-    for (const [insuranceId, settings] of selectedInsurances) {
-      const { error } = await supabase
-        .from('health_insurances')
-        .update({ 
-          administrator_id: selectedAdmin.id,
-          billing_rate: settings.billing_rate 
-        })
-        .eq('id', insuranceId);
-
-      if (error) {
-        toast({ variant: 'destructive', title: 'Erro', description: error.message });
+    if (selectedInsurances.length > 0) {
+      const links = selectedInsurances.map(([insuranceId]) => ({
+        insurance_id: insuranceId,
+        administrator_id: selectedAdmin.id,
+      }));
+      const { error: linkErr } = await supabase.from('insurance_administrators_map').insert(links);
+      if (linkErr) {
+        toast({ variant: 'destructive', title: 'Erro', description: linkErr.message });
         return;
+      }
+
+      for (const [insuranceId, settings] of selectedInsurances) {
+        await supabase
+          .from('health_insurances')
+          .update({ billing_rate: settings.billing_rate })
+          .eq('id', insuranceId);
       }
     }
 
@@ -255,7 +268,7 @@ export default function Administrators() {
   };
 
   const getLinkedInsurances = (adminId: string) => {
-    return healthInsurances.filter(ins => ins.administrator_id === adminId);
+    return healthInsurances.filter(ins => ins.administrator_ids.includes(adminId));
   };
 
   const formatCurrency = (value: number) => {
@@ -480,11 +493,11 @@ export default function Administrators() {
               ) : (
                 healthInsurances.map(insurance => {
                   const settings = insuranceSettings.get(insurance.id);
-                  const isLinkedToOther = insurance.administrator_id && 
-                    insurance.administrator_id !== selectedAdmin?.id;
-                  const otherAdmin = isLinkedToOther 
-                    ? administrators.find(a => a.id === insurance.administrator_id)
-                    : null;
+                  const otherAdminIds = insurance.administrator_ids.filter(id => id !== selectedAdmin?.id);
+                  const isLinkedToOther = otherAdminIds.length > 0;
+                  const otherAdminNames = otherAdminIds
+                    .map(id => administrators.find(a => a.id === id)?.name)
+                    .filter(Boolean) as string[];
 
                   return (
                     <div
@@ -519,11 +532,9 @@ export default function Administrators() {
                         </div>
                         
                         <div className="flex items-center gap-2">
-                          {isLinkedToOther && (
-                            <Badge variant="outline" className="text-xs">
-                              {otherAdmin?.name}
-                            </Badge>
-                          )}
+                          {isLinkedToOther && otherAdminNames.map(n => (
+                            <Badge key={n} variant="outline" className="text-xs">{n}</Badge>
+                          ))}
                           
                           {settings?.selected && (
                             <div className="flex items-center gap-2">

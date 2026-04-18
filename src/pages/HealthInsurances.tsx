@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
 import {
   Table,
   TableBody,
@@ -18,13 +20,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 import {
@@ -38,12 +33,12 @@ interface HealthInsurance {
   id: string;
   name: string;
   code: string | null;
-  administrator_id: string | null;
   ans_registration: string | null;
   contact_phone: string | null;
   contact_email: string | null;
   notes: string | null;
   active: boolean;
+  administrator_ids: string[];
 }
 
 interface Administrator {
@@ -54,12 +49,12 @@ interface Administrator {
 const emptyInsurance = {
   name: '',
   code: '',
-  administrator_id: '',
   ans_registration: '',
   contact_phone: '',
   contact_email: '',
   notes: '',
   active: true,
+  administrator_ids: [] as string[],
 };
 
 export default function HealthInsurances() {
@@ -93,14 +88,25 @@ export default function HealthInsurances() {
   const fetchInsurances = async () => {
     const { data, error } = await supabase
       .from('health_insurances')
-      .select('*')
+      .select('*, insurance_administrators_map(administrator_id)')
       .order('name');
 
     if (error) {
       toast({ variant: 'destructive', title: 'Erro', description: error.message });
       return;
     }
-    setInsurances(data || []);
+    const mapped: HealthInsurance[] = (data || []).map((i: any) => ({
+      id: i.id,
+      name: i.name,
+      code: i.code,
+      ans_registration: i.ans_registration,
+      contact_phone: i.contact_phone,
+      contact_email: i.contact_email,
+      notes: i.notes,
+      active: i.active,
+      administrator_ids: (i.insurance_administrators_map || []).map((m: any) => m.administrator_id),
+    }));
+    setInsurances(mapped);
     setLoading(false);
   };
 
@@ -112,11 +118,10 @@ export default function HealthInsurances() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const payload = {
-      ...formData,
-      administrator_id: formData.administrator_id || null,
-      active: formData.active,
-    };
+    const { administrator_ids, ...rest } = formData;
+    const payload = { ...rest };
+
+    let insuranceId = editingInsurance?.id;
 
     if (editingInsurance) {
       const { error } = await supabase
@@ -128,17 +133,33 @@ export default function HealthInsurances() {
         toast({ variant: 'destructive', title: 'Erro', description: error.message });
         return;
       }
-      toast({ title: 'Convênio atualizado com sucesso!' });
     } else {
-      const { error } = await supabase.from('health_insurances').insert(payload);
+      const { data, error } = await supabase.from('health_insurances').insert(payload).select().single();
 
       if (error) {
         toast({ variant: 'destructive', title: 'Erro', description: error.message });
         return;
       }
-      toast({ title: 'Convênio cadastrado com sucesso!' });
+      insuranceId = data.id;
     }
 
+    // Sync administrator links
+    if (insuranceId) {
+      await supabase.from('insurance_administrators_map').delete().eq('insurance_id', insuranceId);
+      if (administrator_ids.length > 0) {
+        const links = administrator_ids.map((aid) => ({
+          insurance_id: insuranceId!,
+          administrator_id: aid,
+        }));
+        const { error: linkErr } = await supabase.from('insurance_administrators_map').insert(links);
+        if (linkErr) {
+          toast({ variant: 'destructive', title: 'Erro ao vincular administradoras', description: linkErr.message });
+          return;
+        }
+      }
+    }
+
+    toast({ title: editingInsurance ? 'Convênio atualizado!' : 'Convênio cadastrado!' });
     setDialogOpen(false);
     setEditingInsurance(null);
     setFormData(emptyInsurance);
@@ -150,12 +171,12 @@ export default function HealthInsurances() {
     setFormData({
       name: insurance.name,
       code: insurance.code || '',
-      administrator_id: insurance.administrator_id || '',
       ans_registration: insurance.ans_registration || '',
       contact_phone: insurance.contact_phone || '',
       contact_email: insurance.contact_email || '',
       notes: insurance.notes || '',
       active: insurance.active,
+      administrator_ids: insurance.administrator_ids,
     });
     setDialogOpen(true);
   };
@@ -166,9 +187,21 @@ export default function HealthInsurances() {
     setDialogOpen(true);
   };
 
+  const toggleAdmin = (adminId: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      administrator_ids: prev.administrator_ids.includes(adminId)
+        ? prev.administrator_ids.filter((id) => id !== adminId)
+        : [...prev.administrator_ids, adminId],
+    }));
+  };
+
   const filtered = insurances.filter((i) =>
     i.name.toLowerCase().includes(search.toLowerCase()) || i.code?.includes(search)
   );
+
+  const getAdminNames = (ids: string[]) =>
+    ids.map((id) => administrators.find((a) => a.id === id)?.name).filter(Boolean) as string[];
 
   return (
     <div className="p-6">
@@ -184,7 +217,7 @@ export default function HealthInsurances() {
               Novo Convênio
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingInsurance ? 'Editar Convênio' : 'Novo Convênio'}
@@ -207,21 +240,26 @@ export default function HealthInsurances() {
                     onChange={(e) => setFormData({ ...formData, code: e.target.value })}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label>Administradora</Label>
-                  <Select
-                    value={formData.administrator_id}
-                    onValueChange={(v) => setFormData({ ...formData, administrator_id: v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {administrators.map((adm) => (
-                        <SelectItem key={adm.id} value={adm.id}>{adm.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <div className="space-y-2 md:col-span-2">
+                  <Label>Administradoras</Label>
+                  <div className="rounded-md border p-3 max-h-48 overflow-y-auto space-y-2">
+                    {administrators.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">Nenhuma administradora cadastrada</p>
+                    ) : (
+                      administrators.map((adm) => (
+                        <div key={adm.id} className="flex items-center gap-2">
+                          <Checkbox
+                            id={`adm-${adm.id}`}
+                            checked={formData.administrator_ids.includes(adm.id)}
+                            onCheckedChange={() => toggleAdmin(adm.id)}
+                          />
+                          <label htmlFor={`adm-${adm.id}`} className="text-sm cursor-pointer">
+                            {adm.name}
+                          </label>
+                        </div>
+                      ))
+                    )}
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label>Registro ANS</Label>
@@ -289,7 +327,7 @@ export default function HealthInsurances() {
             <TableRow>
               <TableHead>Nome</TableHead>
               <TableHead>Código</TableHead>
-              <TableHead>Administradora</TableHead>
+              <TableHead>Administradoras</TableHead>
               <TableHead>Registro ANS</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="w-[80px]">Ações</TableHead>
@@ -305,31 +343,42 @@ export default function HealthInsurances() {
                 <TableCell colSpan={6} className="text-center">Nenhum convênio encontrado</TableCell>
               </TableRow>
             ) : (
-              filtered.map((ins) => (
-                <TableRow key={ins.id}>
-                  <TableCell className="font-medium">{ins.name}</TableCell>
-                  <TableCell>{ins.code || '-'}</TableCell>
-                  <TableCell>
-                    {administrators.find((a) => a.id === ins.administrator_id)?.name || '-'}
-                  </TableCell>
-                  <TableCell>{ins.ans_registration || '-'}</TableCell>
-                  <TableCell>
-                    <span className={`rounded-full px-2 py-1 text-xs ${ins.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                      {ins.active ? 'Ativo' : 'Inativo'}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => openEdit(ins)} title="Editar">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => setDeleteId(ins.id)} title="Remover" className="text-destructive hover:text-destructive">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
+              filtered.map((ins) => {
+                const names = getAdminNames(ins.administrator_ids);
+                return (
+                  <TableRow key={ins.id}>
+                    <TableCell className="font-medium">{ins.name}</TableCell>
+                    <TableCell>{ins.code || '-'}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {names.length === 0 ? (
+                          <span className="text-muted-foreground text-sm">-</span>
+                        ) : (
+                          names.map((n) => (
+                            <Badge key={n} variant="secondary" className="text-xs">{n}</Badge>
+                          ))
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>{ins.ans_registration || '-'}</TableCell>
+                    <TableCell>
+                      <span className={`rounded-full px-2 py-1 text-xs ${ins.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                        {ins.active ? 'Ativo' : 'Inativo'}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => openEdit(ins)} title="Editar">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => setDeleteId(ins.id)} title="Remover" className="text-destructive hover:text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>
