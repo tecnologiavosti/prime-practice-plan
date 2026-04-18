@@ -21,7 +21,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search, Edit, Trash2 } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Link2, ShieldCheck } from 'lucide-react';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -54,7 +54,6 @@ const emptyInsurance = {
   contact_email: '',
   notes: '',
   active: true,
-  administrator_ids: [] as string[],
 };
 
 export default function HealthInsurances() {
@@ -66,19 +65,10 @@ export default function HealthInsurances() {
   const [editingInsurance, setEditingInsurance] = useState<HealthInsurance | null>(null);
   const [formData, setFormData] = useState(emptyInsurance);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [adminDialogOpen, setAdminDialogOpen] = useState(false);
+  const [selectedInsurance, setSelectedInsurance] = useState<HealthInsurance | null>(null);
+  const [selectedAdminIds, setSelectedAdminIds] = useState<Set<string>>(new Set());
   const { toast } = useToast();
-
-  const handleDelete = async () => {
-    if (!deleteId) return;
-    const { error } = await supabase.from('health_insurances').delete().eq('id', deleteId);
-    if (error) {
-      toast({ variant: 'destructive', title: 'Erro', description: error.message });
-    } else {
-      toast({ title: 'Convênio removido com sucesso!' });
-      fetchInsurances();
-    }
-    setDeleteId(null);
-  };
 
   useEffect(() => {
     fetchInsurances();
@@ -118,52 +108,42 @@ export default function HealthInsurances() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const { administrator_ids, ...rest } = formData;
-    const payload = { ...rest };
-
-    let insuranceId = editingInsurance?.id;
-
     if (editingInsurance) {
       const { error } = await supabase
         .from('health_insurances')
-        .update(payload)
+        .update(formData)
         .eq('id', editingInsurance.id);
 
       if (error) {
         toast({ variant: 'destructive', title: 'Erro', description: error.message });
         return;
       }
+      toast({ title: 'Convênio atualizado!' });
     } else {
-      const { data, error } = await supabase.from('health_insurances').insert(payload).select().single();
-
+      const { error } = await supabase.from('health_insurances').insert(formData);
       if (error) {
         toast({ variant: 'destructive', title: 'Erro', description: error.message });
         return;
       }
-      insuranceId = data.id;
+      toast({ title: 'Convênio cadastrado!' });
     }
 
-    // Sync administrator links
-    if (insuranceId) {
-      await supabase.from('insurance_administrators_map').delete().eq('insurance_id', insuranceId);
-      if (administrator_ids.length > 0) {
-        const links = administrator_ids.map((aid) => ({
-          insurance_id: insuranceId!,
-          administrator_id: aid,
-        }));
-        const { error: linkErr } = await supabase.from('insurance_administrators_map').insert(links);
-        if (linkErr) {
-          toast({ variant: 'destructive', title: 'Erro ao vincular administradoras', description: linkErr.message });
-          return;
-        }
-      }
-    }
-
-    toast({ title: editingInsurance ? 'Convênio atualizado!' : 'Convênio cadastrado!' });
     setDialogOpen(false);
     setEditingInsurance(null);
     setFormData(emptyInsurance);
     fetchInsurances();
+  };
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    const { error } = await supabase.from('health_insurances').delete().eq('id', deleteId);
+    if (error) {
+      toast({ variant: 'destructive', title: 'Erro', description: error.message });
+    } else {
+      toast({ title: 'Convênio removido com sucesso!' });
+      fetchInsurances();
+    }
+    setDeleteId(null);
   };
 
   const openEdit = (insurance: HealthInsurance) => {
@@ -176,7 +156,6 @@ export default function HealthInsurances() {
       contact_email: insurance.contact_email || '',
       notes: insurance.notes || '',
       active: insurance.active,
-      administrator_ids: insurance.administrator_ids,
     });
     setDialogOpen(true);
   };
@@ -187,21 +166,58 @@ export default function HealthInsurances() {
     setDialogOpen(true);
   };
 
+  const openAdminDialog = (insurance: HealthInsurance) => {
+    setSelectedInsurance(insurance);
+    setSelectedAdminIds(new Set(insurance.administrator_ids));
+    setAdminDialogOpen(true);
+  };
+
   const toggleAdmin = (adminId: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      administrator_ids: prev.administrator_ids.includes(adminId)
-        ? prev.administrator_ids.filter((id) => id !== adminId)
-        : [...prev.administrator_ids, adminId],
-    }));
+    setSelectedAdminIds(prev => {
+      const next = new Set(prev);
+      if (next.has(adminId)) next.delete(adminId);
+      else next.add(adminId);
+      return next;
+    });
+  };
+
+  const handleSaveAdmins = async () => {
+    if (!selectedInsurance) return;
+
+    const { error: delErr } = await supabase
+      .from('insurance_administrators_map')
+      .delete()
+      .eq('insurance_id', selectedInsurance.id);
+
+    if (delErr) {
+      toast({ variant: 'destructive', title: 'Erro', description: delErr.message });
+      return;
+    }
+
+    if (selectedAdminIds.size > 0) {
+      const links = Array.from(selectedAdminIds).map(aid => ({
+        insurance_id: selectedInsurance.id,
+        administrator_id: aid,
+      }));
+      const { error } = await supabase.from('insurance_administrators_map').insert(links);
+      if (error) {
+        toast({ variant: 'destructive', title: 'Erro', description: error.message });
+        return;
+      }
+    }
+
+    toast({ title: 'Administradoras vinculadas com sucesso!' });
+    setAdminDialogOpen(false);
+    setSelectedInsurance(null);
+    fetchInsurances();
   };
 
   const filtered = insurances.filter((i) =>
     i.name.toLowerCase().includes(search.toLowerCase()) || i.code?.includes(search)
   );
 
-  const getAdminNames = (ids: string[]) =>
-    ids.map((id) => administrators.find((a) => a.id === id)?.name).filter(Boolean) as string[];
+  const getLinkedAdmins = (ids: string[]) =>
+    administrators.filter(a => ids.includes(a.id));
 
   return (
     <div className="p-6">
@@ -240,27 +256,6 @@ export default function HealthInsurances() {
                     onChange={(e) => setFormData({ ...formData, code: e.target.value })}
                   />
                 </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label>Administradoras</Label>
-                  <div className="rounded-md border p-3 max-h-48 overflow-y-auto space-y-2">
-                    {administrators.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">Nenhuma administradora cadastrada</p>
-                    ) : (
-                      administrators.map((adm) => (
-                        <div key={adm.id} className="flex items-center gap-2">
-                          <Checkbox
-                            id={`adm-${adm.id}`}
-                            checked={formData.administrator_ids.includes(adm.id)}
-                            onCheckedChange={() => toggleAdmin(adm.id)}
-                          />
-                          <label htmlFor={`adm-${adm.id}`} className="text-sm cursor-pointer">
-                            {adm.name}
-                          </label>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
                 <div className="space-y-2">
                   <Label>Registro ANS</Label>
                   <Input
@@ -275,7 +270,7 @@ export default function HealthInsurances() {
                     onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })}
                   />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 md:col-span-2">
                   <Label>Email</Label>
                   <Input
                     type="email"
@@ -298,6 +293,9 @@ export default function HealthInsurances() {
                   <Label>{formData.active ? 'Ativo' : 'Inativo'}</Label>
                 </div>
               </div>
+              <p className="text-xs text-muted-foreground">
+                Após salvar, use o botão <Link2 className="inline h-3 w-3" /> na lista para vincular administradoras.
+              </p>
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                   Cancelar
@@ -327,10 +325,10 @@ export default function HealthInsurances() {
             <TableRow>
               <TableHead>Nome</TableHead>
               <TableHead>Código</TableHead>
-              <TableHead>Administradoras</TableHead>
+              <TableHead>Administradoras Vinculadas</TableHead>
               <TableHead>Registro ANS</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="w-[80px]">Ações</TableHead>
+              <TableHead className="w-[120px]">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -344,34 +342,56 @@ export default function HealthInsurances() {
               </TableRow>
             ) : (
               filtered.map((ins) => {
-                const names = getAdminNames(ins.administrator_ids);
+                const linked = getLinkedAdmins(ins.administrator_ids);
                 return (
                   <TableRow key={ins.id}>
-                    <TableCell className="font-medium">{ins.name}</TableCell>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck className="h-4 w-4 text-muted-foreground" />
+                        {ins.name}
+                      </div>
+                    </TableCell>
                     <TableCell>{ins.code || '-'}</TableCell>
                     <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {names.length === 0 ? (
-                          <span className="text-muted-foreground text-sm">-</span>
+                      <div className="flex flex-wrap gap-1 max-w-[300px]">
+                        {linked.length === 0 ? (
+                          <span className="text-muted-foreground text-sm">Nenhuma administradora</span>
                         ) : (
-                          names.map((n) => (
-                            <Badge key={n} variant="secondary" className="text-xs">{n}</Badge>
+                          linked.slice(0, 3).map(a => (
+                            <Badge key={a.id} variant="secondary" className="text-xs">{a.name}</Badge>
                           ))
+                        )}
+                        {linked.length > 3 && (
+                          <Badge variant="outline" className="text-xs">+{linked.length - 3}</Badge>
                         )}
                       </div>
                     </TableCell>
                     <TableCell>{ins.ans_registration || '-'}</TableCell>
                     <TableCell>
-                      <span className={`rounded-full px-2 py-1 text-xs ${ins.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      <Badge variant={ins.active ? 'default' : 'destructive'}>
                         {ins.active ? 'Ativo' : 'Inativo'}
-                      </span>
+                      </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => openAdminDialog(ins)}
+                          title="Gerenciar Administradoras"
+                        >
+                          <Link2 className="h-4 w-4" />
+                        </Button>
                         <Button variant="ghost" size="icon" onClick={() => openEdit(ins)} title="Editar">
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => setDeleteId(ins.id)} title="Remover" className="text-destructive hover:text-destructive">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setDeleteId(ins.id)}
+                          title="Remover"
+                          className="text-destructive hover:text-destructive"
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -383,6 +403,64 @@ export default function HealthInsurances() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Dialog para gerenciar administradoras */}
+      <Dialog open={adminDialogOpen} onOpenChange={setAdminDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Link2 className="h-5 w-5" />
+              Administradoras - {selectedInsurance?.name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Selecione as administradoras que aceitam este convênio:
+            </p>
+            <div className="max-h-[400px] overflow-y-auto space-y-2 border rounded-lg p-3">
+              {administrators.length === 0 ? (
+                <p className="text-center text-muted-foreground py-4">
+                  Nenhuma administradora cadastrada
+                </p>
+              ) : (
+                administrators.map(adm => {
+                  const checked = selectedAdminIds.has(adm.id);
+                  return (
+                    <div
+                      key={adm.id}
+                      className={`p-4 rounded-lg border transition-colors ${
+                        checked ? 'bg-primary/5 border-primary/30' : 'hover:bg-muted/50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Checkbox
+                          id={`adm-${adm.id}`}
+                          checked={checked}
+                          onCheckedChange={() => toggleAdmin(adm.id)}
+                        />
+                        <label htmlFor={`adm-${adm.id}`} className="cursor-pointer flex-1 font-medium">
+                          {adm.name}
+                        </label>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+            <div className="flex items-center justify-between pt-2">
+              <p className="text-sm text-muted-foreground">
+                {selectedAdminIds.size} administradora(s) selecionada(s)
+              </p>
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" onClick={() => setAdminDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={handleSaveAdmins}>Salvar Vínculos</Button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>
