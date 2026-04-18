@@ -28,6 +28,7 @@ import PaymentMethods from "./pages/PaymentMethods";
 import InsuranceReimbursements from "./pages/InsuranceReimbursements";
 
 import ScheduleConfig from "./pages/ScheduleConfig";
+import ClinicProfile from "./pages/ClinicProfile";
 import NotFound from "./pages/NotFound";
 // Patient Portal
 import LandingPage from "./pages/LandingPage";
@@ -86,6 +87,7 @@ const App = () => (
               <Route path="/admin/formas-pagamento" element={<PaymentMethods />} />
               
               <Route path="/admin/escalas" element={<ScheduleConfig />} />
+              <Route path="/admin/perfil-clinica" element={<ClinicProfile />} />
             </Route>
             
             <Route path="*" element={<NotFound />} />
