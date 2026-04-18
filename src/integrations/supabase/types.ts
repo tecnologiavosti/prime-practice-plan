@@ -517,7 +517,6 @@ export type Database = {
       health_insurances: {
         Row: {
           active: boolean
-          administrator_id: string | null
           ans_registration: string | null
           billing_rate: number | null
           code: string | null
@@ -531,7 +530,6 @@ export type Database = {
         }
         Insert: {
           active?: boolean
-          administrator_id?: string | null
           ans_registration?: string | null
           billing_rate?: number | null
           code?: string | null
@@ -545,7 +543,6 @@ export type Database = {
         }
         Update: {
           active?: boolean
-          administrator_id?: string | null
           ans_registration?: string | null
           billing_rate?: number | null
           code?: string | null
@@ -557,12 +554,40 @@ export type Database = {
           notes?: string | null
           updated_at?: string
         }
+        Relationships: []
+      }
+      insurance_administrators_map: {
+        Row: {
+          administrator_id: string
+          created_at: string
+          id: string
+          insurance_id: string
+        }
+        Insert: {
+          administrator_id: string
+          created_at?: string
+          id?: string
+          insurance_id: string
+        }
+        Update: {
+          administrator_id?: string
+          created_at?: string
+          id?: string
+          insurance_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "health_insurances_administrator_id_fkey"
+            foreignKeyName: "insurance_administrators_map_administrator_id_fkey"
             columns: ["administrator_id"]
             isOneToOne: false
             referencedRelation: "administrators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "insurance_administrators_map_insurance_id_fkey"
+            columns: ["insurance_id"]
+            isOneToOne: false
+            referencedRelation: "health_insurances"
             referencedColumns: ["id"]
           },
         ]
