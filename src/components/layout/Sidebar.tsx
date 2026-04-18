@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import logoPacem from '@/assets/logoPacem.png';
+import { useClinicSettings } from '@/hooks/useClinicSettings';
 import {
   Calendar,
   Users,
@@ -20,6 +21,7 @@ import {
   Wallet,
   FileBarChart,
   Banknote,
+  Settings,
 } from 'lucide-react';
 
 const menuItems = [
@@ -41,11 +43,15 @@ const menuItems = [
   { to: '/admin/relatorios-financeiros', icon: FileBarChart, label: 'Relatórios', roles: ['administrador', 'financeiro'] },
   { to: '/admin/formas-pagamento', icon: Banknote, label: 'Formas Pgto', roles: ['administrador'] },
   { to: '/admin/escalas', icon: Calendar, label: 'Configurar Escalas', roles: ['administrador'] },
+  { to: '/admin/perfil-clinica', icon: Settings, label: 'Perfil da Clínica', roles: ['administrador'] },
 ];
 
 export function Sidebar() {
   const { signOut, roles, user } = useAuth();
+  const { settings } = useClinicSettings();
   const navigate = useNavigate();
+  const logoSrc = settings?.logo_url || logoPacem;
+  const clinicName = settings?.nome_fantasia || 'Pacem';
 
   const handleSignOut = async () => {
     await signOut();
@@ -60,10 +66,9 @@ export function Sidebar() {
     <aside className="flex h-screen w-60 flex-col bg-sidebar border-r border-sidebar-border">
       {/* Brand */}
       <div className="flex h-14 items-center gap-2.5 border-b border-sidebar-border px-4">
-        <img src={logoPacem} alt="Clínica Pacem" className="h-8 w-auto rounded" />
-        <div className="flex items-baseline gap-1.5">
-          <span className="text-sm font-bold text-sidebar-primary-foreground tracking-tight">Pacem</span>
-          <span className="text-[10px] font-medium text-sidebar-foreground/60 tracking-widest uppercase">Gestão</span>
+        <img src={logoSrc} alt={clinicName} className="h-8 w-auto rounded object-contain" />
+        <div className="flex items-baseline gap-1.5 min-w-0">
+          <span className="text-sm font-bold text-sidebar-primary-foreground tracking-tight truncate">{clinicName}</span>
         </div>
       </div>
 

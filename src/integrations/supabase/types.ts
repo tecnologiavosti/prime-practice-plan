@@ -345,6 +345,48 @@ export type Database = {
           },
         ]
       }
+      clinic_settings: {
+        Row: {
+          cnpj: string | null
+          created_at: string
+          email_contato: string | null
+          endereco_completo: string | null
+          id: string
+          logo_url: string | null
+          nome_fantasia: string
+          razao_social: string | null
+          singleton: boolean
+          telefone: string | null
+          updated_at: string
+        }
+        Insert: {
+          cnpj?: string | null
+          created_at?: string
+          email_contato?: string | null
+          endereco_completo?: string | null
+          id?: string
+          logo_url?: string | null
+          nome_fantasia?: string
+          razao_social?: string | null
+          singleton?: boolean
+          telefone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cnpj?: string | null
+          created_at?: string
+          email_contato?: string | null
+          endereco_completo?: string | null
+          id?: string
+          logo_url?: string | null
+          nome_fantasia?: string
+          razao_social?: string | null
+          singleton?: boolean
+          telefone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       financial_transactions: {
         Row: {
           amount: number
