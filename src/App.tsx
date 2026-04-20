@@ -29,6 +29,7 @@ import InsuranceReimbursements from "./pages/InsuranceReimbursements";
 
 import ScheduleConfig from "./pages/ScheduleConfig";
 import ClinicProfile from "./pages/ClinicProfile";
+import TeamUsers from "./pages/TeamUsers";
 import NotFound from "./pages/NotFound";
 // Patient Portal
 import LandingPage from "./pages/LandingPage";
@@ -88,6 +89,7 @@ const App = () => (
               
               <Route path="/admin/escalas" element={<ScheduleConfig />} />
               <Route path="/admin/perfil-clinica" element={<ClinicProfile />} />
+              <Route path="/admin/equipe" element={<TeamUsers />} />
             </Route>
             
             <Route path="*" element={<NotFound />} />

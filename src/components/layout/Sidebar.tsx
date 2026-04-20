@@ -22,6 +22,7 @@ import {
   FileBarChart,
   Banknote,
   Settings,
+  UsersRound,
 } from 'lucide-react';
 
 const menuItems = [
@@ -44,6 +45,7 @@ const menuItems = [
   { to: '/admin/formas-pagamento', icon: Banknote, label: 'Formas Pgto', roles: ['administrador'] },
   { to: '/admin/escalas', icon: Calendar, label: 'Configurar Escalas', roles: ['administrador'] },
   { to: '/admin/perfil-clinica', icon: Settings, label: 'Perfil da Clínica', roles: ['administrador'] },
+  { to: '/admin/equipe', icon: UsersRound, label: 'Equipe / Usuários', roles: ['administrador'] },
 ];
 
 export function Sidebar() {

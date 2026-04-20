@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 import { Eye, EyeOff } from 'lucide-react';
@@ -30,12 +29,10 @@ const signupSchema = z.object({
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const [loginData, setLoginData] = useState({ email: '', password: '' });
-  const [signupData, setSignupData] = useState({ fullName: '', email: '', password: '', confirmPassword: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
-  const { signIn, signUp } = useAuth();
+
+  const { signIn } = useAuth();
   const { settings } = useClinicSettings();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -74,43 +71,6 @@ export default function Auth() {
     navigate('/admin');
   };
 
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrors({});
-    
-    const result = signupSchema.safeParse(signupData);
-    if (!result.success) {
-      const fieldErrors: Record<string, string> = {};
-      result.error.errors.forEach((err) => {
-        if (err.path[0]) fieldErrors[err.path[0].toString()] = err.message;
-      });
-      setErrors(fieldErrors);
-      return;
-    }
-
-    setIsLoading(true);
-    const { error } = await signUp(signupData.email, signupData.password, signupData.fullName);
-    setIsLoading(false);
-
-    if (error) {
-      let message = error.message;
-      if (error.message.includes('already registered')) {
-        message = 'Este email já está cadastrado';
-      }
-      toast({
-        variant: 'destructive',
-        title: 'Erro ao cadastrar',
-        description: message,
-      });
-      return;
-    }
-
-    toast({
-      title: 'Conta criada com sucesso!',
-      description: 'Entre em contato com o administrador para ter acesso ao sistema.',
-    });
-  };
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/20 p-4 relative overflow-hidden">
       {/* Background decorations */}
@@ -143,154 +103,52 @@ export default function Auth() {
           </div>
         </CardHeader>
         <CardContent className="pt-4">
-          <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6 bg-muted/50">
-              <TabsTrigger value="login" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                Entrar
-              </TabsTrigger>
-              <TabsTrigger value="signup" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                Cadastrar
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="login" className="space-y-0 mt-0">
-              <form onSubmit={handleLogin} className="space-y-5">
-                <div className="space-y-2">
-                  <Label htmlFor="login-email" className="text-sm font-medium">
-                    Email
-                  </Label>
-                  <Input
-                    id="login-email"
-                    type="email"
-                    placeholder="seu@email.com"
-                    value={loginData.email}
-                    onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-                    className="h-11 bg-background/50 border-muted-foreground/20 focus:border-primary transition-colors"
-                  />
-                  {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="login-password" className="text-sm font-medium">
-                    Senha
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      id="login-password"
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="••••••••"
-                      value={loginData.password}
-                      onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                      className="h-11 bg-background/50 border-muted-foreground/20 focus:border-primary transition-colors pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                      tabIndex={-1}
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                  {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
-                </div>
-                <Button 
-                  type="submit" 
-                  className="w-full h-11 text-base font-semibold bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30" 
-                  disabled={isLoading}
+          <form onSubmit={handleLogin} className="space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="login-email" className="text-sm font-medium">Email</Label>
+              <Input
+                id="login-email"
+                type="email"
+                placeholder="seu@email.com"
+                value={loginData.email}
+                onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                className="h-11 bg-background/50 border-muted-foreground/20 focus:border-primary transition-colors"
+              />
+              {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="login-password" className="text-sm font-medium">Senha</Label>
+              <div className="relative">
+                <Input
+                  id="login-password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  value={loginData.password}
+                  onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                  className="h-11 bg-background/50 border-muted-foreground/20 focus:border-primary transition-colors pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  tabIndex={-1}
                 >
-                  {isLoading ? 'Entrando...' : 'Entrar'}
-                </Button>
-              </form>
-            </TabsContent>
-            
-            <TabsContent value="signup" className="space-y-0 mt-0">
-              <form onSubmit={handleSignup} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signup-name" className="text-sm font-medium">
-                    Nome Completo
-                  </Label>
-                  <Input
-                    id="signup-name"
-                    type="text"
-                    placeholder="Seu nome completo"
-                    value={signupData.fullName}
-                    onChange={(e) => setSignupData({ ...signupData, fullName: e.target.value })}
-                    className="h-11 bg-background/50 border-muted-foreground/20 focus:border-primary transition-colors"
-                  />
-                  {errors.fullName && <p className="text-sm text-destructive">{errors.fullName}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email" className="text-sm font-medium">
-                    Email
-                  </Label>
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    placeholder="seu@email.com"
-                    value={signupData.email}
-                    onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
-                    className="h-11 bg-background/50 border-muted-foreground/20 focus:border-primary transition-colors"
-                  />
-                  {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password" className="text-sm font-medium">
-                    Senha
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      id="signup-password"
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="••••••••"
-                      value={signupData.password}
-                      onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
-                      className="h-11 bg-background/50 border-muted-foreground/20 focus:border-primary transition-colors pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                      tabIndex={-1}
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                  {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-confirm" className="text-sm font-medium">
-                    Confirmar Senha
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      id="signup-confirm"
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      placeholder="••••••••"
-                      value={signupData.confirmPassword}
-                      onChange={(e) => setSignupData({ ...signupData, confirmPassword: e.target.value })}
-                      className="h-11 bg-background/50 border-muted-foreground/20 focus:border-primary transition-colors pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                      tabIndex={-1}
-                    >
-                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                  {errors.confirmPassword && <p className="text-sm text-destructive">{errors.confirmPassword}</p>}
-                </div>
-                <Button 
-                  type="submit" 
-                  className="w-full h-11 text-base font-semibold bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30" 
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Cadastrando...' : 'Criar Conta'}
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+            </div>
+            <Button
+              type="submit"
+              className="w-full h-11 text-base font-semibold bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Entrando...' : 'Entrar'}
+            </Button>
+            <p className="text-xs text-center text-muted-foreground pt-2">
+              Acesso restrito à equipe. Novos administradores devem ser convidados pelo painel interno.
+            </p>
+          </form>
         </CardContent>
       </Card>
     </div>
