@@ -32,12 +32,18 @@ export default function Auth() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showPassword, setShowPassword] = useState(false);
 
-  const { signIn } = useAuth();
+  const { signIn, user, loading, roles } = useAuth();
   const { settings } = useClinicSettings();
   const navigate = useNavigate();
   const { toast } = useToast();
   const logoSrc = settings?.logo_url || logoPacem;
   const clinicName = settings?.nome_fantasia || 'Sistema Clínico';
+
+  const isStaff = roles.some((role) => ['administrador', 'recepcao', 'profissional', 'financeiro'].includes(role));
+
+  useState(() => {
+    return undefined;
+  });
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,8 +74,15 @@ export default function Auth() {
       return;
     }
 
-    navigate('/admin');
   };
+
+  if (!loading && user) {
+    if (isStaff) {
+      navigate('/admin/dashboard', { replace: true });
+    } else {
+      navigate('/dashboard', { replace: true });
+    }
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/20 p-4 relative overflow-hidden">
