@@ -36,18 +36,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const fetchUserRoles = async (userId: string) => {
+  const fetchUserRoles = async (userId: string, currentUser?: User | null) => {
     let { data, error } = await supabase
       .from('user_roles')
       .select('role')
       .eq('user_id', userId);
 
-    if (!error && (!data || data.length === 0) && user?.id === userId) {
+    if (!error && (!data || data.length === 0) && currentUser?.id === userId) {
       try {
         await provisionCurrentSignup({
-          email: user.email ?? '',
-          fullName: (user.user_metadata?.full_name as string | undefined) ?? 'Sem nome',
-          cpf: (user.user_metadata?.cpf as string | undefined) ?? null,
+          email: currentUser.email ?? '',
+          fullName: (currentUser.user_metadata?.full_name as string | undefined) ?? 'Sem nome',
+          cpf: (currentUser.user_metadata?.cpf as string | undefined) ?? null,
         });
 
         const retry = await supabase
@@ -82,7 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (session?.user) {
           setTimeout(() => {
             if (!mounted) return;
-            fetchUserRoles(session.user.id).then((r) => {
+            fetchUserRoles(session.user.id, session.user).then((r) => {
               if (mounted) {
                 setRoles(r);
                 setLoading(false);
@@ -102,7 +102,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        fetchUserRoles(session.user.id).then((r) => {
+        fetchUserRoles(session.user.id, session.user).then((r) => {
           if (mounted) {
             setRoles(r);
             setLoading(false);
