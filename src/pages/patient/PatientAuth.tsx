@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { usePatientAuth } from '@/contexts/PatientAuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,9 +16,8 @@ const loginSchema = z.object({
   password: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres'),
 });
 
-const signupSchema = z.object({
+const signupBaseSchema = z.object({
   fullName: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
-  cpf: z.string().min(11, 'CPF inválido').max(14, 'CPF inválido'),
   email: z.string().email('Email inválido'),
   password: z.string()
     .min(6, 'A senha precisa de no mínimo 6 caracteres')
@@ -74,21 +74,20 @@ export default function PatientAuth({ mode }: PatientAuthProps) {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   
-  const { signIn, signUp, user, isPatient, isAdmin } = usePatientAuth();
+  const { signIn, signUp, user, isPatient, isAdmin, loading } = usePatientAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const { toast } = useToast();
 
   // Redirect based on user role
   useEffect(() => {
-    if (user) {
+    if (!loading && user) {
       if (isAdmin && !isPatient) {
-        navigate('/admin');
+        navigate('/admin/dashboard', { replace: true });
       } else if (isPatient) {
-        navigate('/dashboard');
+        navigate('/dashboard', { replace: true });
       }
     }
-  }, [user, isPatient, isAdmin, navigate]);
+  }, [loading, user, isPatient, isAdmin, navigate]);
 
   const formatCPF = (value: string) => {
     const numbers = value.replace(/\D/g, '');
@@ -127,14 +126,30 @@ export default function PatientAuth({ mode }: PatientAuthProps) {
         return;
       }
 
-      navigate('/dashboard');
     } else {
-      const result = signupSchema.safeParse(formData);
+      const normalizedEmail = formData.email.trim().toLowerCase();
+      const { data: inviteCheck } = await (supabase.rpc as any)('is_authorized_admin_email', {
+        _email: normalizedEmail,
+      });
+      const isInvitedAdmin = Boolean(inviteCheck);
+
+      const result = signupBaseSchema.safeParse(formData);
+      const fieldErrors: Record<string, string> = {};
+
       if (!result.success) {
-        const fieldErrors: Record<string, string> = {};
         result.error.errors.forEach((err) => {
           if (err.path[0]) fieldErrors[err.path[0].toString()] = err.message;
         });
+      }
+
+      if (!isInvitedAdmin) {
+        const cpfDigits = formData.cpf.replace(/\D/g, '');
+        if (cpfDigits.length < 11) {
+          fieldErrors.cpf = 'CPF inválido';
+        }
+      }
+
+      if (Object.keys(fieldErrors).length > 0) {
         setErrors(fieldErrors);
         return;
       }
@@ -152,26 +167,12 @@ export default function PatientAuth({ mode }: PatientAuthProps) {
         return;
       }
 
-      // Auto-login after signup (email auto-confirmed)
-      const { error: loginError } = await signIn(formData.email, formData.password);
       setIsLoading(false);
 
-      if (loginError) {
-        toast({
-          variant: 'destructive',
-          title: 'Cadastro realizado, mas houve erro ao entrar',
-          description: 'Tente fazer login manualmente.',
-        });
-        navigate('/login');
-        return;
-      }
-
       toast({
-        title: 'Bem-vindo!',
-        description: 'Sua conta foi criada com sucesso.',
+        title: 'Conta criada com sucesso!',
+        description: 'Se necessário, confirme seu e-mail para concluir o primeiro acesso.',
       });
-      
-      navigate('/dashboard');
     }
   };
 
@@ -237,6 +238,9 @@ export default function PatientAuth({ mode }: PatientAuthProps) {
                     className="h-11 bg-background/50 border-muted-foreground/20 focus:border-primary"
                   />
                   {errors.cpf && <p className="text-sm text-destructive">{errors.cpf}</p>}
+                  <p className="text-xs text-muted-foreground">
+                    Se você recebeu convite para a equipe, o CPF é opcional neste cadastro.
+                  </p>
                 </div>
               </>
             )}

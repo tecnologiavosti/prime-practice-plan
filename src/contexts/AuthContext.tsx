@@ -24,11 +24,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
   const [roles, setRoles] = useState<AppRole[]>([]);
 
-  const fetchUserRoles = async (userId: string) => {
-    const { data, error } = await supabase
+  const provisionCurrentSignup = async (account: { email: string; fullName: string; cpf?: string | null }) => {
+    const { error } = await (supabase.rpc as any)('provision_current_user_signup', {
+      p_email: account.email,
+      p_full_name: account.fullName,
+      p_cpf: account.cpf ?? null,
+    });
+
+    if (error) {
+      throw error;
+    }
+  };
+
+  const fetchUserRoles = async (userId: string, currentUser?: User | null) => {
+    let { data, error } = await supabase
       .from('user_roles')
       .select('role')
       .eq('user_id', userId);
+
+    if (!error && (!data || data.length === 0) && currentUser?.id === userId) {
+      try {
+        await provisionCurrentSignup({
+          email: currentUser.email ?? '',
+          fullName: (currentUser.user_metadata?.full_name as string | undefined) ?? 'Sem nome',
+          cpf: (currentUser.user_metadata?.cpf as string | undefined) ?? null,
+        });
+
+        const retry = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', userId);
+
+        data = retry.data;
+        error = retry.error;
+      } catch (provisionError) {
+        console.error('Error provisioning roles:', provisionError);
+      }
+    }
 
     if (error) {
       console.error('Error fetching roles:', error);
@@ -50,7 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (session?.user) {
           setTimeout(() => {
             if (!mounted) return;
-            fetchUserRoles(session.user.id).then((r) => {
+            fetchUserRoles(session.user.id, session.user).then((r) => {
               if (mounted) {
                 setRoles(r);
                 setLoading(false);
@@ -70,7 +102,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        fetchUserRoles(session.user.id).then((r) => {
+        fetchUserRoles(session.user.id, session.user).then((r) => {
           if (mounted) {
             setRoles(r);
             setLoading(false);
