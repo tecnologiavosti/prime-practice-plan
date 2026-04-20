@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -41,10 +41,6 @@ export default function Auth() {
 
   const isStaff = roles.some((role) => ['administrador', 'recepcao', 'profissional', 'financeiro'].includes(role));
 
-  useState(() => {
-    return undefined;
-  });
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
@@ -76,13 +72,15 @@ export default function Auth() {
 
   };
 
-  if (!loading && user) {
-    if (isStaff) {
-      navigate('/admin/dashboard', { replace: true });
-    } else {
-      navigate('/dashboard', { replace: true });
+  useEffect(() => {
+    if (!loading && user) {
+      if (isStaff) {
+        navigate('/admin/dashboard', { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
     }
-  }
+  }, [loading, user, isStaff, navigate]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/20 p-4 relative overflow-hidden">

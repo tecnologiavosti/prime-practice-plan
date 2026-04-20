@@ -70,6 +70,7 @@ const App = () => (
             <Route path="/admin/auth" element={<AuthProvider><Auth /></AuthProvider>} />
             <Route element={<AuthProvider><MainLayout /></AuthProvider>}>
               <Route path="/admin" element={<Dashboard />} />
+              <Route path="/admin/dashboard" element={<Dashboard />} />
               <Route path="/admin/pacientes" element={<Patients />} />
               <Route path="/admin/profissionais" element={<Professionals />} />
               <Route path="/admin/procedimentos" element={<Procedures />} />

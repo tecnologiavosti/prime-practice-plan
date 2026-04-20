@@ -24,11 +24,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
   const [roles, setRoles] = useState<AppRole[]>([]);
 
+  const provisionCurrentSignup = async (account: { email: string; fullName: string; cpf?: string | null }) => {
+    const { error } = await (supabase.rpc as any)('provision_current_user_signup', {
+      p_email: account.email,
+      p_full_name: account.fullName,
+      p_cpf: account.cpf ?? null,
+    });
+
+    if (error) {
+      throw error;
+    }
+  };
+
   const fetchUserRoles = async (userId: string) => {
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from('user_roles')
       .select('role')
       .eq('user_id', userId);
+
+    if (!error && (!data || data.length === 0) && user?.id === userId) {
+      try {
+        await provisionCurrentSignup({
+          email: user.email ?? '',
+          fullName: (user.user_metadata?.full_name as string | undefined) ?? 'Sem nome',
+          cpf: (user.user_metadata?.cpf as string | undefined) ?? null,
+        });
+
+        const retry = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', userId);
+
+        data = retry.data;
+        error = retry.error;
+      } catch (provisionError) {
+        console.error('Error provisioning roles:', provisionError);
+      }
+    }
 
     if (error) {
       console.error('Error fetching roles:', error);
