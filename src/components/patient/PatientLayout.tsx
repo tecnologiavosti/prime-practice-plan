@@ -23,21 +23,8 @@ const menuItems = [
 export function PatientLayout() {
   const { user, loading, isPatient, isAdmin, patientProfile, signOut } = usePatientAuth();
   const navigate = useNavigate();
-  const [rolesChecked, setRolesChecked] = useState(false);
 
-  // Wait for roles to be fetched before making decisions
-  useEffect(() => {
-    if (!loading && user) {
-      // Give a small delay for fetchPatientProfile to complete
-      const timer = setTimeout(() => setRolesChecked(true), 300);
-      return () => clearTimeout(timer);
-    }
-    if (!loading && !user) {
-      setRolesChecked(true);
-    }
-  }, [loading, user]);
-
-  if (loading || (user && !rolesChecked)) {
+  if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="space-y-4">
@@ -52,9 +39,9 @@ export function PatientLayout() {
     return <Navigate to="/login" replace />;
   }
 
-  // Admin users should be redirected to admin panel
-  if (isAdmin && !isPatient) {
-    return <Navigate to="/admin" replace />;
+  // Priority: Admin/Staff users bypass patient layout entirely
+  if (isAdmin) {
+    return <Navigate to="/admin/dashboard" replace />;
   }
 
   if (!isPatient) {
