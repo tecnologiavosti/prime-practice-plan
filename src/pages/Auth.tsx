@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 import { Eye, EyeOff } from 'lucide-react';
@@ -30,12 +29,10 @@ const signupSchema = z.object({
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const [loginData, setLoginData] = useState({ email: '', password: '' });
-  const [signupData, setSignupData] = useState({ fullName: '', email: '', password: '', confirmPassword: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
-  const { signIn, signUp } = useAuth();
+
+  const { signIn } = useAuth();
   const { settings } = useClinicSettings();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -72,43 +69,6 @@ export default function Auth() {
     }
 
     navigate('/admin');
-  };
-
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrors({});
-    
-    const result = signupSchema.safeParse(signupData);
-    if (!result.success) {
-      const fieldErrors: Record<string, string> = {};
-      result.error.errors.forEach((err) => {
-        if (err.path[0]) fieldErrors[err.path[0].toString()] = err.message;
-      });
-      setErrors(fieldErrors);
-      return;
-    }
-
-    setIsLoading(true);
-    const { error } = await signUp(signupData.email, signupData.password, signupData.fullName);
-    setIsLoading(false);
-
-    if (error) {
-      let message = error.message;
-      if (error.message.includes('already registered')) {
-        message = 'Este email já está cadastrado';
-      }
-      toast({
-        variant: 'destructive',
-        title: 'Erro ao cadastrar',
-        description: message,
-      });
-      return;
-    }
-
-    toast({
-      title: 'Conta criada com sucesso!',
-      description: 'Entre em contato com o administrador para ter acesso ao sistema.',
-    });
   };
 
   return (
