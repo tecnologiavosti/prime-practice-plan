@@ -98,10 +98,9 @@ export default function LandingPage() {
 
         <div className="container mx-auto px-4 md:px-6 py-24 lg:py-32">
           <div className="mx-auto max-w-3xl text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3.5 py-1.5 text-xs font-medium text-primary mb-6">
-              <Heart className="h-3.5 w-3.5" strokeWidth={2} />
-              Cuidando da sua saúde
-            </div>
+            <p className="text-[11px] md:text-xs font-semibold uppercase tracking-[0.22em] text-primary/90 mb-6">
+              Solução Completa em Gestão de Saúde
+            </p>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold leading-[1.08] tracking-tight text-foreground mb-6">
               Agende suas consultas{' '}
               <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
