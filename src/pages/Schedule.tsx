@@ -181,7 +181,7 @@ export default function Schedule() {
               <SelectItem value="month">Mês</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={() => navigate('/agendamentos')}>
+          <Button onClick={() => navigate('/admin/agendamentos')}>
             <Plus className="mr-2 h-4 w-4" />
             Agendar
           </Button>
@@ -214,7 +214,7 @@ export default function Schedule() {
             <p className="text-muted-foreground text-center mb-4">
               Cadastre profissionais para visualizar e gerenciar a agenda.
             </p>
-            <Button onClick={() => navigate('/profissionais')}>
+            <Button onClick={() => navigate('/admin/profissionais')}>
               Cadastrar Profissional
             </Button>
           </CardContent>
