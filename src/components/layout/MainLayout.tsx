@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Sidebar } from './Sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const STAFF_ROLES: string[] = ['administrador', 'recepcao', 'profissional', 'financeiro'];
+const ADMIN_STAFF_ROLES: string[] = ['administrador', 'recepcao', 'financeiro'];
 
 export function MainLayout() {
   const { user, loading, roles } = useAuth();
@@ -23,9 +23,14 @@ export function MainLayout() {
     return <Navigate to="/admin/auth" replace />;
   }
 
-  const hasStaffRole = roles.some((r) => STAFF_ROLES.includes(r));
+  const hasAdminRole = roles.some((r) => ADMIN_STAFF_ROLES.includes(r));
+  const isProfessionalOnly = roles.includes('profissional') && !hasAdminRole;
 
-  if (!hasStaffRole) {
+  if (isProfessionalOnly) {
+    return <Navigate to="/professional/dashboard" replace />;
+  }
+
+  if (!hasAdminRole) {
     return <Navigate to="/dashboard" replace />;
   }
 

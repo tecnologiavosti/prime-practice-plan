@@ -26,10 +26,10 @@ import {
 } from 'lucide-react';
 
 const menuItems = [
-  { to: '/admin', icon: LayoutDashboard, label: 'Dashboard', roles: ['administrador', 'recepcao', 'profissional', 'financeiro'] },
-  { to: '/admin/agenda', icon: Calendar, label: 'Agenda', roles: ['administrador', 'recepcao', 'profissional'] },
-  { to: '/admin/agendamentos', icon: ClipboardList, label: 'Agendamentos', roles: ['administrador', 'recepcao', 'profissional'] },
-  { to: '/admin/pacientes', icon: Users, label: 'Pacientes', roles: ['administrador', 'recepcao', 'profissional'] },
+  { to: '/admin', icon: LayoutDashboard, label: 'Dashboard', roles: ['administrador', 'recepcao', 'financeiro'] },
+  { to: '/admin/agenda', icon: Calendar, label: 'Agenda', roles: ['administrador', 'recepcao'] },
+  { to: '/admin/agendamentos', icon: ClipboardList, label: 'Agendamentos', roles: ['administrador', 'recepcao'] },
+  { to: '/admin/pacientes', icon: Users, label: 'Pacientes', roles: ['administrador', 'recepcao'] },
   { to: '/admin/profissionais', icon: UserCog, label: 'Profissionais', roles: ['administrador'] },
   { to: '/admin/procedimentos', icon: FileText, label: 'Procedimentos', roles: ['administrador'] },
   { to: '/admin/convenios', icon: Building2, label: 'Convênios', roles: ['administrador'] },
