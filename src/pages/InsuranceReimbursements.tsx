@@ -168,7 +168,7 @@ export default function InsuranceReimbursements() {
       status: r.status,
       notes: r.notes || '',
     });
-    setReceiptFile(null);
+    setReceiptPaths(r.receipt_file_path || '');
     setDialogOpen(true);
   };
 
@@ -190,7 +190,7 @@ export default function InsuranceReimbursements() {
   const openNew = () => {
     setFormData(emptyForm);
     setEditingId(null);
-    setReceiptFile(null);
+    setReceiptPaths('');
     setDialogOpen(true);
   };
 
@@ -268,11 +268,12 @@ export default function InsuranceReimbursements() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label>Comprovante</Label>
-                  <Input
-                    type="file"
-                    onChange={(e) => setReceiptFile(e.target.files?.[0] || null)}
+                <div className="space-y-2 md:col-span-2">
+                  <Label>Comprovantes — até 5 arquivos</Label>
+                  <MultiFileUpload
+                    value={receiptPaths}
+                    onChange={setReceiptPaths}
+                    folder={`reimbursements/${formData.health_insurance_id || 'sem-convenio'}/${formData.reference_month || 'sem-mes'}`}
                   />
                 </div>
                 <div className="space-y-2 md:col-span-2">
