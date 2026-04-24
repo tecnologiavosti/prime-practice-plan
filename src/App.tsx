@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { PatientAuthProvider } from "@/contexts/PatientAuthContext";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { ProfessionalLayout } from "@/components/layout/ProfessionalLayout";
 import { PatientLayout } from "@/components/patient/PatientLayout";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Auth from "./pages/Auth";
@@ -39,6 +40,11 @@ import PatientAppointments from "./pages/patient/PatientAppointments";
 import PatientBooking from "./pages/patient/PatientBooking";
 import PatientProfile from "./pages/patient/PatientProfile";
 import PatientHistory from "./pages/patient/PatientHistory";
+// Professional Portal
+import ProfessionalDashboard from "./pages/professional/ProfessionalDashboard";
+import ProfessionalSchedule from "./pages/professional/ProfessionalSchedule";
+import ProfessionalPatients from "./pages/professional/ProfessionalPatients";
+import ProfessionalPayouts from "./pages/professional/ProfessionalPayouts";
 
 const queryClient = new QueryClient();
 
@@ -66,6 +72,14 @@ const App = () => (
               <Route path="/historico" element={<PatientHistory />} />
             </Route>
             
+            {/* Professional Portal Routes */}
+            <Route element={<AuthProvider><ProfessionalLayout /></AuthProvider>}>
+              <Route path="/professional/dashboard" element={<ProfessionalDashboard />} />
+              <Route path="/professional/agenda" element={<ProfessionalSchedule />} />
+              <Route path="/professional/pacientes" element={<ProfessionalPatients />} />
+              <Route path="/professional/repasses" element={<ProfessionalPayouts />} />
+            </Route>
+
             {/* Staff/Admin Routes */}
             <Route path="/admin/auth" element={<AuthProvider><Auth /></AuthProvider>} />
             <Route element={<AuthProvider><MainLayout /></AuthProvider>}>
