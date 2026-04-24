@@ -8,14 +8,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { UserPlus, Trash2, Mail } from 'lucide-react';
+import { UserPlus, Trash2, Mail, Copy, Stethoscope, Shield } from 'lucide-react';
 import { z } from 'zod';
 
 const inviteSchema = z.object({
   full_name: z.string().trim().min(3, 'Nome deve ter no mínimo 3 caracteres').max(100),
   email: z.string().trim().email('Email inválido').max(255),
+  role: z.enum(['administrador', 'profissional']),
 });
 
 interface AuthorizedAdmin {
@@ -25,6 +27,7 @@ interface AuthorizedAdmin {
   used: boolean;
   used_at: string | null;
   created_at: string;
+  role: 'administrador' | 'profissional';
 }
 
 export default function TeamUsers() {
@@ -33,7 +36,7 @@ export default function TeamUsers() {
   const [items, setItems] = useState<AuthorizedAdmin[]>([]);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ full_name: '', email: '' });
+  const [form, setForm] = useState<{ full_name: string; email: string; role: 'administrador' | 'profissional' }>({ full_name: '', email: '', role: 'administrador' });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [toDelete, setToDelete] = useState<AuthorizedAdmin | null>(null);
 
@@ -48,7 +51,7 @@ export default function TeamUsers() {
       toast({ variant: 'destructive', title: 'Erro ao carregar', description: error.message });
       return;
     }
-    setItems(data || []);
+    setItems((data as any) || []);
   };
 
   useEffect(() => {
@@ -66,9 +69,10 @@ export default function TeamUsers() {
     }
 
     setSaving(true);
-    const { error } = await supabase.from('authorized_admins').insert({
+    const { error } = await (supabase.from('authorized_admins') as any).insert({
       email: form.email.trim().toLowerCase(),
       full_name: form.full_name.trim(),
+      role: form.role,
       invited_by: user?.id,
     });
     setSaving(false);
@@ -81,10 +85,17 @@ export default function TeamUsers() {
       return;
     }
 
-    toast({ title: 'Convite criado', description: `${form.full_name} pode agora se cadastrar como administrador.` });
-    setForm({ full_name: '', email: '' });
+    const roleLabel = form.role === 'profissional' ? 'Profissional' : 'Administrador';
+    toast({ title: 'Convite criado', description: `${form.full_name} pode agora se cadastrar como ${roleLabel}.` });
+    setForm({ full_name: '', email: '', role: 'administrador' });
     setOpen(false);
     fetchData();
+  };
+
+  const copySignupLink = () => {
+    const link = `${window.location.origin}/admin/auth`;
+    navigator.clipboard.writeText(link);
+    toast({ title: 'Link copiado', description: link });
   };
 
   const handleDelete = async () => {
@@ -107,12 +118,18 @@ export default function TeamUsers() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Equipe / Usuários</h1>
-          <p className="text-sm text-muted-foreground">Convide e-mails autorizados a criar conta de administrador.</p>
+          <p className="text-sm text-muted-foreground">Convide e-mails autorizados a acessar o sistema (administradores ou profissionais).</p>
         </div>
-        <Button onClick={() => setOpen(true)} className="gap-2">
-          <UserPlus className="h-4 w-4" />
-          Convidar Novo Administrador
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={copySignupLink} className="gap-2">
+            <Copy className="h-4 w-4" />
+            Copiar link de cadastro
+          </Button>
+          <Button onClick={() => { setForm({ full_name: '', email: '', role: 'administrador' }); setOpen(true); }} className="gap-2">
+            <UserPlus className="h-4 w-4" />
+            Novo Convite
+          </Button>
+        </div>
       </div>
 
       <Card className="overflow-hidden">
@@ -121,6 +138,7 @@ export default function TeamUsers() {
             <TableRow>
               <TableHead>Nome</TableHead>
               <TableHead>Email</TableHead>
+              <TableHead>Tipo</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Convidado em</TableHead>
               <TableHead className="text-right">Ações</TableHead>
@@ -129,7 +147,7 @@ export default function TeamUsers() {
           <TableBody>
             {items.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                   Nenhum convite cadastrado.
                 </TableCell>
               </TableRow>
@@ -137,6 +155,13 @@ export default function TeamUsers() {
               <TableRow key={it.id}>
                 <TableCell className="font-medium">{it.full_name}</TableCell>
                 <TableCell className="flex items-center gap-2"><Mail className="h-3.5 w-3.5 text-muted-foreground" />{it.email}</TableCell>
+                <TableCell>
+                  {it.role === 'profissional' ? (
+                    <Badge variant="outline" className="gap-1"><Stethoscope className="h-3 w-3" />Profissional</Badge>
+                  ) : (
+                    <Badge variant="outline" className="gap-1"><Shield className="h-3 w-3" />Administrador</Badge>
+                  )}
+                </TableCell>
                 <TableCell>
                   {it.used
                     ? <Badge variant="secondary">Cadastrado</Badge>
@@ -157,9 +182,21 @@ export default function TeamUsers() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Convidar Novo Administrador</DialogTitle>
+            <DialogTitle>Novo Convite</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="inv-role">Tipo de acesso</Label>
+              <Select value={form.role} onValueChange={(v: 'administrador' | 'profissional') => setForm({ ...form, role: v })}>
+                <SelectTrigger id="inv-role">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="administrador">Administrador</SelectItem>
+                  <SelectItem value="profissional">Profissional (Médico)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="space-y-2">
               <Label htmlFor="inv-name">Nome Completo</Label>
               <Input id="inv-name" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} />
@@ -171,7 +208,9 @@ export default function TeamUsers() {
               {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
             </div>
             <p className="text-xs text-muted-foreground">
-              A pessoa deverá criar a conta usando exatamente este e-mail. Ao se cadastrar, receberá o papel de Administrador automaticamente.
+              {form.role === 'profissional'
+                ? 'Ao se cadastrar com este e-mail, será criado automaticamente um cadastro de profissional vinculado, com acesso ao Portal do Médico.'
+                : 'A pessoa deverá criar a conta usando exatamente este e-mail e receberá o papel de Administrador automaticamente.'}
             </p>
           </div>
           <DialogFooter>
