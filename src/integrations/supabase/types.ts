@@ -1788,6 +1788,7 @@ export type Database = {
       }
     }
     Functions: {
+      current_professional_id: { Args: never; Returns: string }
       get_professionals_for_patients: {
         Args: never
         Returns: {
