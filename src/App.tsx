@@ -44,7 +44,7 @@ import PatientHistory from "./pages/patient/PatientHistory";
 import ProfessionalDashboard from "./pages/professional/ProfessionalDashboard";
 import ProfessionalSchedule from "./pages/professional/ProfessionalSchedule";
 import ProfessionalPatients from "./pages/professional/ProfessionalPatients";
-import ProfessionalPayouts from "./pages/professional/ProfessionalPayouts";
+import ProfessionalPayoutsPortal from "./pages/professional/ProfessionalPayouts";
 
 const queryClient = new QueryClient();
 
