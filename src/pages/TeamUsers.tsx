@@ -8,14 +8,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { UserPlus, Trash2, Mail } from 'lucide-react';
+import { UserPlus, Trash2, Mail, Copy, Stethoscope, Shield } from 'lucide-react';
 import { z } from 'zod';
 
 const inviteSchema = z.object({
   full_name: z.string().trim().min(3, 'Nome deve ter no mínimo 3 caracteres').max(100),
   email: z.string().trim().email('Email inválido').max(255),
+  role: z.enum(['administrador', 'profissional']),
 });
 
 interface AuthorizedAdmin {
@@ -25,6 +27,7 @@ interface AuthorizedAdmin {
   used: boolean;
   used_at: string | null;
   created_at: string;
+  role: 'administrador' | 'profissional';
 }
 
 export default function TeamUsers() {
@@ -33,7 +36,7 @@ export default function TeamUsers() {
   const [items, setItems] = useState<AuthorizedAdmin[]>([]);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ full_name: '', email: '' });
+  const [form, setForm] = useState<{ full_name: string; email: string; role: 'administrador' | 'profissional' }>({ full_name: '', email: '', role: 'administrador' });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [toDelete, setToDelete] = useState<AuthorizedAdmin | null>(null);
 
@@ -66,9 +69,10 @@ export default function TeamUsers() {
     }
 
     setSaving(true);
-    const { error } = await supabase.from('authorized_admins').insert({
+    const { error } = await (supabase.from('authorized_admins') as any).insert({
       email: form.email.trim().toLowerCase(),
       full_name: form.full_name.trim(),
+      role: form.role,
       invited_by: user?.id,
     });
     setSaving(false);
@@ -81,10 +85,17 @@ export default function TeamUsers() {
       return;
     }
 
-    toast({ title: 'Convite criado', description: `${form.full_name} pode agora se cadastrar como administrador.` });
-    setForm({ full_name: '', email: '' });
+    const roleLabel = form.role === 'profissional' ? 'Profissional' : 'Administrador';
+    toast({ title: 'Convite criado', description: `${form.full_name} pode agora se cadastrar como ${roleLabel}.` });
+    setForm({ full_name: '', email: '', role: 'administrador' });
     setOpen(false);
     fetchData();
+  };
+
+  const copySignupLink = () => {
+    const link = `${window.location.origin}/admin/auth`;
+    navigator.clipboard.writeText(link);
+    toast({ title: 'Link copiado', description: link });
   };
 
   const handleDelete = async () => {
