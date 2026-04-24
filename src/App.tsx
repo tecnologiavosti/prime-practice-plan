@@ -77,7 +77,7 @@ const App = () => (
               <Route path="/professional/dashboard" element={<ProfessionalDashboard />} />
               <Route path="/professional/agenda" element={<ProfessionalSchedule />} />
               <Route path="/professional/pacientes" element={<ProfessionalPatients />} />
-              <Route path="/professional/repasses" element={<ProfessionalPayouts />} />
+              <Route path="/professional/repasses" element={<ProfessionalPayoutsPortal />} />
             </Route>
 
             {/* Staff/Admin Routes */}
