@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import { QuickRecord } from '@/components/professional/QuickRecord';
+import { ClipboardEdit } from 'lucide-react';
 
 type AppointmentRow = {
   id: string;
@@ -16,6 +18,7 @@ type AppointmentRow = {
   status: string;
   consultation_type: string;
   notes: string | null;
+  patient_id: string;
   patients: { full_name: string } | null;
   procedures: { name: string } | null;
 };
