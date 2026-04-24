@@ -46,7 +46,7 @@ const menuItems = [
   { to: '/admin/escalas', icon: Calendar, label: 'Configurar Escalas', roles: ['administrador'] },
   { to: '/admin/perfil-clinica', icon: Settings, label: 'Perfil da Clínica', roles: ['administrador'] },
   { to: '/admin/equipe', icon: UsersRound, label: 'Equipe / Usuários', roles: ['administrador'] },
-  { to: '/admin/configuracoes', icon: UserCog, label: 'Minha Conta', roles: ['administrador', 'recepcao', 'profissional', 'financeiro'] },
+  
 ];
 
 export function Sidebar() {
