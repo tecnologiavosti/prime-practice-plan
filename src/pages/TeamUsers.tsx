@@ -118,12 +118,18 @@ export default function TeamUsers() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Equipe / Usuários</h1>
-          <p className="text-sm text-muted-foreground">Convide e-mails autorizados a criar conta de administrador.</p>
+          <p className="text-sm text-muted-foreground">Convide e-mails autorizados a acessar o sistema (administradores ou profissionais).</p>
         </div>
-        <Button onClick={() => setOpen(true)} className="gap-2">
-          <UserPlus className="h-4 w-4" />
-          Convidar Novo Administrador
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={copySignupLink} className="gap-2">
+            <Copy className="h-4 w-4" />
+            Copiar link de cadastro
+          </Button>
+          <Button onClick={() => { setForm({ full_name: '', email: '', role: 'administrador' }); setOpen(true); }} className="gap-2">
+            <UserPlus className="h-4 w-4" />
+            Novo Convite
+          </Button>
+        </div>
       </div>
 
       <Card className="overflow-hidden">
@@ -132,6 +138,7 @@ export default function TeamUsers() {
             <TableRow>
               <TableHead>Nome</TableHead>
               <TableHead>Email</TableHead>
+              <TableHead>Tipo</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Convidado em</TableHead>
               <TableHead className="text-right">Ações</TableHead>
@@ -140,7 +147,7 @@ export default function TeamUsers() {
           <TableBody>
             {items.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                   Nenhum convite cadastrado.
                 </TableCell>
               </TableRow>
@@ -148,6 +155,13 @@ export default function TeamUsers() {
               <TableRow key={it.id}>
                 <TableCell className="font-medium">{it.full_name}</TableCell>
                 <TableCell className="flex items-center gap-2"><Mail className="h-3.5 w-3.5 text-muted-foreground" />{it.email}</TableCell>
+                <TableCell>
+                  {it.role === 'profissional' ? (
+                    <Badge variant="outline" className="gap-1"><Stethoscope className="h-3 w-3" />Profissional</Badge>
+                  ) : (
+                    <Badge variant="outline" className="gap-1"><Shield className="h-3 w-3" />Administrador</Badge>
+                  )}
+                </TableCell>
                 <TableCell>
                   {it.used
                     ? <Badge variant="secondary">Cadastrado</Badge>
@@ -168,9 +182,21 @@ export default function TeamUsers() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Convidar Novo Administrador</DialogTitle>
+            <DialogTitle>Novo Convite</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="inv-role">Tipo de acesso</Label>
+              <Select value={form.role} onValueChange={(v: 'administrador' | 'profissional') => setForm({ ...form, role: v })}>
+                <SelectTrigger id="inv-role">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="administrador">Administrador</SelectItem>
+                  <SelectItem value="profissional">Profissional (Médico)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="space-y-2">
               <Label htmlFor="inv-name">Nome Completo</Label>
               <Input id="inv-name" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} />
@@ -182,7 +208,9 @@ export default function TeamUsers() {
               {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
             </div>
             <p className="text-xs text-muted-foreground">
-              A pessoa deverá criar a conta usando exatamente este e-mail. Ao se cadastrar, receberá o papel de Administrador automaticamente.
+              {form.role === 'profissional'
+                ? 'Ao se cadastrar com este e-mail, será criado automaticamente um cadastro de profissional vinculado, com acesso ao Portal do Médico.'
+                : 'A pessoa deverá criar a conta usando exatamente este e-mail e receberá o papel de Administrador automaticamente.'}
             </p>
           </div>
           <DialogFooter>
