@@ -72,7 +72,7 @@ export default function InsuranceReimbursements() {
   const [formData, setFormData] = useState(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [receiptPaths, setReceiptPaths] = useState<string>('');
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -127,18 +127,6 @@ export default function InsuranceReimbursements() {
     }
     setSubmitting(true);
 
-    let receiptPath: string | null = null;
-    if (receiptFile) {
-      const filePath = `reimbursements/${formData.health_insurance_id}/${formData.reference_month}/${receiptFile.name}`;
-      const { error: uploadError } = await supabase.storage.from('documents').upload(filePath, receiptFile, { upsert: true });
-      if (uploadError) {
-        toast({ variant: 'destructive', title: 'Erro no upload', description: uploadError.message });
-        setSubmitting(false);
-        return;
-      }
-      receiptPath = filePath;
-    }
-
     const payload: any = {
       health_insurance_id: formData.health_insurance_id,
       reference_month: formData.reference_month,
@@ -146,14 +134,13 @@ export default function InsuranceReimbursements() {
       received_amount: formData.received_amount,
       status: formData.status,
       notes: formData.notes || null,
+      receipt_file_path: receiptPaths || null,
     };
-    if (receiptPath) payload.receipt_file_path = receiptPath;
 
     let error;
     if (editingId) {
       ({ error } = await supabase.from('insurance_reimbursements').update(payload).eq('id', editingId));
     } else {
-      if (receiptPath) payload.receipt_file_path = receiptPath;
       ({ error } = await supabase.from('insurance_reimbursements').insert(payload));
     }
 
@@ -167,7 +154,7 @@ export default function InsuranceReimbursements() {
     setDialogOpen(false);
     setFormData(emptyForm);
     setEditingId(null);
-    setReceiptFile(null);
+    setReceiptPaths('');
     fetchReimbursements();
   };
 
