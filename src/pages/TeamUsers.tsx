@@ -51,7 +51,7 @@ export default function TeamUsers() {
       toast({ variant: 'destructive', title: 'Erro ao carregar', description: error.message });
       return;
     }
-    setItems(data || []);
+    setItems((data as any) || []);
   };
 
   useEffect(() => {
