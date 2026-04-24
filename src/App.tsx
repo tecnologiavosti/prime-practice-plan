@@ -108,7 +108,7 @@ const App = () => (
               <Route path="/admin/escalas" element={<ScheduleConfig />} />
               <Route path="/admin/perfil-clinica" element={<ClinicProfile />} />
               <Route path="/admin/equipe" element={<TeamUsers />} />
-              <Route path="/admin/configuracoes" element={<Settings />} />
+              
             </Route>
             
             <Route path="*" element={<NotFound />} />
