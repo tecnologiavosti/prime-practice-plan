@@ -1814,6 +1814,11 @@ export type Database = {
         Returns: boolean
       }
       is_authorized_admin_email: { Args: { _email: string }; Returns: boolean }
+      is_own_patient: { Args: { _patient_id: string }; Returns: boolean }
+      professional_treats_patient: {
+        Args: { _patient_id: string }
+        Returns: boolean
+      }
       provision_current_user_signup: {
         Args: { p_cpf?: string; p_email: string; p_full_name: string }
         Returns: Database["public"]["Enums"]["app_role"]
