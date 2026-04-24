@@ -45,13 +45,23 @@ export default function ProfessionalSchedule() {
   const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [items, setItems] = useState<AppointmentRow[]>([]);
   const [loading, setLoading] = useState(false);
+  const [me, setMe] = useState<{ id: string; full_name: string; crm: string | null } | null>(null);
+  const [recordOpen, setRecordOpen] = useState(false);
+  const [activeRow, setActiveRow] = useState<AppointmentRow | null>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.from('professionals').select('id, full_name, crm').maybeSingle();
+      if (data) setMe(data as any);
+    })();
+  }, []);
 
   const load = async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('appointments')
-      .select('id, appointment_date, start_time, end_time, status, consultation_type, notes, patients(full_name), procedures(name)')
+      .select('id, appointment_date, start_time, end_time, status, consultation_type, notes, patient_id, patients(full_name), procedures(name)')
       .eq('appointment_date', date)
       .order('start_time', { ascending: true });
 
@@ -134,12 +144,32 @@ export default function ProfessionalSchedule() {
                       ))}
                     </SelectContent>
                   </Select>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1"
+                    onClick={() => { setActiveRow(a); setRecordOpen(true); }}
+                  >
+                    <ClipboardEdit className="h-4 w-4" />
+                    Prontuário
+                  </Button>
                 </div>
               ))}
             </div>
           )}
         </CardContent>
       </Card>
+
+      <QuickRecord
+        open={recordOpen}
+        onOpenChange={setRecordOpen}
+        appointmentId={activeRow?.id || null}
+        patientId={activeRow?.patient_id || null}
+        patientName={activeRow?.patients?.full_name || ''}
+        professionalId={me?.id || null}
+        professionalName={me?.full_name || ''}
+        professionalCrm={me?.crm || null}
+      />
     </div>
   );
 }
