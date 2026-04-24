@@ -1,11 +1,9 @@
 import { Outlet, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Sidebar } from './Sidebar';
+import { ProfessionalSidebar } from './ProfessionalSidebar';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const ADMIN_STAFF_ROLES: string[] = ['administrador', 'recepcao', 'financeiro'];
-
-export function MainLayout() {
+export function ProfessionalLayout() {
   const { user, loading, roles } = useAuth();
 
   if (loading) {
@@ -19,24 +17,12 @@ export function MainLayout() {
     );
   }
 
-  if (!user) {
-    return <Navigate to="/admin/auth" replace />;
-  }
-
-  const hasAdminRole = roles.some((r) => ADMIN_STAFF_ROLES.includes(r));
-  const isProfessionalOnly = roles.includes('profissional') && !hasAdminRole;
-
-  if (isProfessionalOnly) {
-    return <Navigate to="/professional/dashboard" replace />;
-  }
-
-  if (!hasAdminRole) {
-    return <Navigate to="/dashboard" replace />;
-  }
+  if (!user) return <Navigate to="/admin/auth" replace />;
+  if (!roles.includes('profissional')) return <Navigate to="/admin" replace />;
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      <Sidebar />
+      <ProfessionalSidebar />
       <main className="flex-1 overflow-y-auto">
         <Outlet />
       </main>
