@@ -10,6 +10,7 @@ import {
   Home,
   FileText,
   CalendarPlus,
+  Settings as SettingsIcon,
 } from 'lucide-react';
 
 const menuItems = [
@@ -18,6 +19,7 @@ const menuItems = [
   { to: '/agendar', icon: CalendarPlus, label: 'Agendar Consulta' },
   { to: '/meus-dados', icon: User, label: 'Meus Dados' },
   { to: '/historico', icon: FileText, label: 'Histórico Médico' },
+  { to: '/configuracoes', icon: SettingsIcon, label: 'Minha Conta' },
 ];
 
 export function PatientLayout() {
