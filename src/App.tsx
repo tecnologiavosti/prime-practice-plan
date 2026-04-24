@@ -31,6 +31,7 @@ import InsuranceReimbursements from "./pages/InsuranceReimbursements";
 import ScheduleConfig from "./pages/ScheduleConfig";
 import ClinicProfile from "./pages/ClinicProfile";
 import TeamUsers from "./pages/TeamUsers";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 // Patient Portal
 import LandingPage from "./pages/LandingPage";
@@ -70,6 +71,7 @@ const App = () => (
               <Route path="/agendar" element={<PatientBooking />} />
               <Route path="/meus-dados" element={<PatientProfile />} />
               <Route path="/historico" element={<PatientHistory />} />
+              <Route path="/configuracoes" element={<Settings />} />
             </Route>
             
             {/* Professional Portal Routes */}
@@ -78,6 +80,7 @@ const App = () => (
               <Route path="/professional/agenda" element={<ProfessionalSchedule />} />
               <Route path="/professional/pacientes" element={<ProfessionalPatients />} />
               <Route path="/professional/repasses" element={<ProfessionalPayoutsPortal />} />
+              <Route path="/professional/configuracoes" element={<Settings />} />
             </Route>
 
             {/* Staff/Admin Routes */}
@@ -105,6 +108,7 @@ const App = () => (
               <Route path="/admin/escalas" element={<ScheduleConfig />} />
               <Route path="/admin/perfil-clinica" element={<ClinicProfile />} />
               <Route path="/admin/equipe" element={<TeamUsers />} />
+              <Route path="/admin/configuracoes" element={<Settings />} />
             </Route>
             
             <Route path="*" element={<NotFound />} />
