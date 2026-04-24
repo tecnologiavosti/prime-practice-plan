@@ -44,6 +44,7 @@ import {
 import { format, addDays, isAfter, isBefore } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { createDocumentSignedUrl, DOCUMENTS_BUCKET } from '@/lib/storageDocuments';
+import { MultiFileUpload } from '@/components/ui/multi-file-upload';
 
 interface GuideItem {
   id?: string;
@@ -927,38 +928,14 @@ export default function MedicalGuides() {
                 </div>
               </div>
 
-              {/* Upload de Anexo */}
+              {/* Upload de Anexos (até 5) */}
               <div className="space-y-2">
-                <Label>Anexo (PDF/Imagem)</Label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png,.webp"
-                    disabled={uploadingAttachment}
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      setUploadingAttachment(true);
-                      const ext = file.name.split('.').pop();
-                      const path = `anexos_guias/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-                      const { error: uploadError } = await supabase.storage.from('documents').upload(path, file);
-                      if (uploadError) {
-                        toast({ variant: 'destructive', title: 'Erro no upload', description: uploadError.message });
-                        setUploadingAttachment(false);
-                        return;
-                      }
-                      setAttachmentUrl(path);
-                      setUploadingAttachment(false);
-                      toast({ title: 'Anexo enviado!' });
-                    }}
-                  />
-                  {uploadingAttachment && <Loader2 className="h-4 w-4 animate-spin" />}
-                </div>
-                {attachmentUrl && (
-                  <Button type="button" variant="outline" size="sm" onClick={() => void handleOpenAttachment(attachmentUrl)}>
-                    <Paperclip className="mr-1 h-3 w-3" /> Ver Anexo Atual
-                  </Button>
-                )}
+                <Label>Anexos (PDF/Imagem) — até 5 arquivos</Label>
+                <MultiFileUpload
+                  value={attachmentUrl}
+                  onChange={setAttachmentUrl}
+                  folder="anexos_guias"
+                />
               </div>
 
               <div className="flex justify-end gap-2">

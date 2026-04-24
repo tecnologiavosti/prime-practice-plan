@@ -22,6 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Plus, ArrowUpDown, Pencil, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { MultiFileUpload } from '@/components/ui/multi-file-upload';
 
 interface HealthInsurance {
   id: string;

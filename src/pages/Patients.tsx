@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Search, Edit, Trash2, Upload, ExternalLink, Loader2 } from 'lucide-react';
+import { MultiFileUpload } from '@/components/ui/multi-file-upload';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -374,36 +375,12 @@ export default function Patients() {
                   />
                 </div>
                 <div className="space-y-2 md:col-span-2">
-                  <Label>Documento (PDF/Imagem)</Label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="file"
-                      accept=".pdf,.jpg,.jpeg,.png,.webp"
-                      disabled={uploadingDoc}
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
-                        setUploadingDoc(true);
-                        const ext = file.name.split('.').pop();
-                        const path = `documentos_pacientes/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-                        const { error: uploadError } = await supabase.storage.from('documents').upload(path, file);
-                        if (uploadError) {
-                          toast({ variant: 'destructive', title: 'Erro no upload', description: uploadError.message });
-                          setUploadingDoc(false);
-                          return;
-                        }
-                        setFormData((current) => ({ ...current, document_url: path }));
-                        setUploadingDoc(false);
-                        toast({ title: 'Documento enviado!' });
-                      }}
-                    />
-                    {uploadingDoc && <Loader2 className="h-4 w-4 animate-spin" />}
-                  </div>
-                  {formData.document_url && (
-                    <Button type="button" variant="outline" size="sm" className="mt-1" onClick={() => void handleOpenPatientDocument(formData.document_url)}>
-                      <ExternalLink className="mr-1 h-3 w-3" /> Ver Documento Atual
-                    </Button>
-                  )}
+                  <Label>Documentos (PDF/Imagem) — até 5 arquivos</Label>
+                  <MultiFileUpload
+                    value={formData.document_url}
+                    onChange={(v) => setFormData((current) => ({ ...current, document_url: v }))}
+                    folder="documentos_pacientes"
+                  />
                 </div>
               </div>
               <div className="flex justify-end gap-2">
