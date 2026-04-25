@@ -45,6 +45,7 @@ import PatientHistory from "./pages/patient/PatientHistory";
 import ProfessionalDashboard from "./pages/professional/ProfessionalDashboard";
 import ProfessionalSchedule from "./pages/professional/ProfessionalSchedule";
 import ProfessionalPatients from "./pages/professional/ProfessionalPatients";
+import ProfessionalPatientRecord from "./pages/professional/ProfessionalPatientRecord";
 import ProfessionalPayoutsPortal from "./pages/professional/ProfessionalPayouts";
 
 const queryClient = new QueryClient();
@@ -79,6 +80,7 @@ const App = () => (
               <Route path="/professional/dashboard" element={<ProfessionalDashboard />} />
               <Route path="/professional/agenda" element={<ProfessionalSchedule />} />
               <Route path="/professional/pacientes" element={<ProfessionalPatients />} />
+              <Route path="/professional/pacientes/:patientId" element={<ProfessionalPatientRecord />} />
               <Route path="/professional/repasses" element={<ProfessionalPayoutsPortal />} />
               <Route path="/professional/configuracoes" element={<Settings />} />
             </Route>
