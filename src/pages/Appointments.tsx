@@ -26,6 +26,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { ReceiptDialog } from '@/components/patient/ReceiptDialog';
+import { PatientCombobox } from '@/components/patient/PatientCombobox';
 
 interface Appointment {
   id: string;
@@ -524,12 +525,10 @@ export default function Appointments() {
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label>Paciente *</Label>
-                  <Select value={formData.patient_id} onValueChange={(v) => setFormData({ ...formData, patient_id: v })}>
-                    <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                    <SelectContent>
-                      {patients.map((p) => <SelectItem key={p.id} value={p.id}>{p.full_name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  <PatientCombobox
+                    value={formData.patient_id}
+                    onChange={(id) => setFormData({ ...formData, patient_id: id })}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Profissional *</Label>
