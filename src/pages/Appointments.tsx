@@ -27,6 +27,7 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { ReceiptDialog } from '@/components/patient/ReceiptDialog';
 import { PatientCombobox } from '@/components/patient/PatientCombobox';
+import { ProfessionalCombobox } from '@/components/professional/ProfessionalCombobox';
 
 interface Appointment {
   id: string;
@@ -532,12 +533,10 @@ export default function Appointments() {
                 </div>
                 <div className="space-y-2">
                   <Label>Profissional *</Label>
-                  <Select value={formData.professional_id} onValueChange={(v) => setFormData({ ...formData, professional_id: v })}>
-                    <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                    <SelectContent>
-                      {professionals.map((p) => <SelectItem key={p.id} value={p.id}>{p.full_name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  <ProfessionalCombobox
+                    value={formData.professional_id}
+                    onChange={(id) => setFormData({ ...formData, professional_id: id })}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Procedimento</Label>
