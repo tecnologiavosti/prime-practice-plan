@@ -26,6 +26,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { ReceiptDialog } from '@/components/patient/ReceiptDialog';
+import { PatientCombobox } from '@/components/patient/PatientCombobox';
 
 interface Appointment {
   id: string;
