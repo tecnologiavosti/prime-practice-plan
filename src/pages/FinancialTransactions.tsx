@@ -28,6 +28,8 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PatientCombobox } from '@/components/patient/PatientCombobox';
+import { ProfessionalCombobox } from '@/components/professional/ProfessionalCombobox';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Search, DollarSign, FileText, Clock, Pencil, Trash2 } from 'lucide-react';
 import {
@@ -341,35 +343,18 @@ export default function FinancialTransactions() {
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label>Paciente</Label>
-                  <Select
+                  <PatientCombobox
                     value={formData.patient_id}
-                    onValueChange={(v) => setFormData({ ...formData, patient_id: v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {patients.map((p) => (
-                        <SelectItem key={p.id} value={p.id}>{p.full_name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    onChange={(id) => setFormData({ ...formData, patient_id: id })}
+                    allowCreate={false}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Profissional</Label>
-                  <Select
+                  <ProfessionalCombobox
                     value={formData.professional_id}
-                    onValueChange={(v) => setFormData({ ...formData, professional_id: v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {professionals.map((p) => (
-                        <SelectItem key={p.id} value={p.id}>{p.full_name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    onChange={(id) => setFormData({ ...formData, professional_id: id })}
+                  />
                 </div>
               </div>
 
