@@ -382,6 +382,7 @@ export default function Appointments() {
         appointmentDate: finalizingAppointment.appointment_date,
         amount: finalizeAmount,
         paymentMethodName: pmName,
+        notes: finalizeNotes || null,
       });
 
       setFinalizeDialogOpen(false);

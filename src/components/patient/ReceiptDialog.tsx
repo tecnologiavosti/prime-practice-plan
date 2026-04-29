@@ -15,6 +15,7 @@ interface ReceiptData {
   appointmentDate: string;
   amount: number;
   paymentMethodName: string;
+  notes?: string | null;
 }
 
 interface ReceiptDialogProps {
@@ -62,6 +63,17 @@ export function ReceiptDialog({ open, onOpenChange, data }: ReceiptDialogProps) 
     addLine('Data', formattedDate);
     addLine('Valor', formatCurrency(data.amount));
     addLine('Pagamento', data.paymentMethodName);
+
+    if (data.notes && data.notes.trim()) {
+      y += 3;
+      doc.setFont('helvetica', 'bold');
+      doc.text('Observações:', margin, y);
+      y += 6;
+      doc.setFont('helvetica', 'normal');
+      const lines = doc.splitTextToSize(data.notes, 170);
+      doc.text(lines, margin, y);
+      y += lines.length * 5;
+    }
 
     y += 5;
     doc.line(margin, y, 190, y);
@@ -116,6 +128,12 @@ export function ReceiptDialog({ open, onOpenChange, data }: ReceiptDialogProps) 
               <span className="font-medium">Forma de Pagamento:</span>
               <span>{data.paymentMethodName}</span>
             </div>
+            {data.notes && data.notes.trim() && (
+              <div className="pt-2 border-t">
+                <p className="font-medium mb-1">Observações:</p>
+                <p className="whitespace-pre-wrap text-muted-foreground">{data.notes}</p>
+              </div>
+            )}
           </div>
         </div>
 
