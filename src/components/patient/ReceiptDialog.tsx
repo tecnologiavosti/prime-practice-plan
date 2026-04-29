@@ -15,6 +15,7 @@ interface ReceiptData {
   appointmentDate: string;
   amount: number;
   paymentMethodName: string;
+  notes?: string | null;
 }
 
 interface ReceiptDialogProps {
