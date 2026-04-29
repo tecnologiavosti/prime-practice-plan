@@ -443,6 +443,34 @@ export default function Appointments() {
     setDeleteId(null);
   };
 
+  const handleViewReceipt = async (apt: Appointment) => {
+    const { data, error } = await supabase
+      .from('financial_transactions')
+      .select('amount, notes, payment_method:payment_methods(name)')
+      .eq('appointment_id', apt.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error || !data) {
+      toast({ variant: 'destructive', title: 'Recibo indisponível', description: 'Nenhum registro financeiro encontrado para esta consulta.' });
+      return;
+    }
+
+    setReceiptData({
+      patientName: apt.patient?.full_name || '',
+      professionalName: apt.professional?.full_name || '',
+      procedureName: apt.procedure?.name || 'Consulta',
+      consultationType: apt.consultation_type,
+      insuranceName: apt.health_insurance?.name,
+      appointmentDate: apt.appointment_date,
+      amount: Number(data.amount) || 0,
+      paymentMethodName: (data.payment_method as any)?.name || '',
+      notes: data.notes || null,
+    });
+    setReceiptOpen(true);
+  };
+
   // Apply filters
   const filtered = appointments.filter((a) => {
     const matchSearch = !search ||
