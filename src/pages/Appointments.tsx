@@ -520,6 +520,11 @@ export default function Appointments() {
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-1">
+          {apt.status === 'finalizado' && (
+            <Button variant="ghost" size="icon" onClick={() => handleViewReceipt(apt)} title="Ver recibo">
+              <Receipt className="h-4 w-4 text-primary" />
+            </Button>
+          )}
           <Button variant="ghost" size="icon" onClick={() => handleEditAppointment(apt)} title="Editar">
             <Pencil className="h-4 w-4" />
           </Button>
