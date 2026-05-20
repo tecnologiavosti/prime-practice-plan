@@ -285,7 +285,7 @@ export default function LandingPage() {
           <motion.div
             initial="hidden"
             whileInView="show"
-            viewport={{ once: true, margin: '-80px' }}
+            viewport={{ once: true, amount: 0.05 }}
             variants={stagger}
             className="mt-16 md:mt-20 grid grid-cols-2 md:grid-cols-4 gap-px overflow-hidden rounded-2xl border border-[hsl(var(--lp-line))] bg-[hsl(var(--lp-line))] shadow-[0_18px_60px_-30px_hsl(var(--lp-ink)/0.15)]"
           >
@@ -319,7 +319,7 @@ export default function LandingPage() {
           <motion.div
             initial="hidden"
             whileInView="show"
-            viewport={{ once: true, margin: '-80px' }}
+            viewport={{ once: true, amount: 0.05 }}
             variants={stagger}
             className="max-w-2xl mx-auto text-center mb-16"
           >
@@ -344,7 +344,7 @@ export default function LandingPage() {
           <motion.div
             initial="hidden"
             whileInView="show"
-            viewport={{ once: true, margin: '-60px' }}
+            viewport={{ once: true, amount: 0.05 }}
             variants={stagger}
             className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5"
           >
@@ -375,7 +375,7 @@ export default function LandingPage() {
           <motion.div
             initial="hidden"
             whileInView="show"
-            viewport={{ once: true, margin: '-80px' }}
+            viewport={{ once: true, amount: 0.05 }}
             variants={stagger}
             className="max-w-2xl mx-auto text-center mb-14"
           >
@@ -396,7 +396,7 @@ export default function LandingPage() {
           <motion.div
             initial="hidden"
             whileInView="show"
-            viewport={{ once: true, margin: '-60px' }}
+            viewport={{ once: true, amount: 0.05 }}
             variants={stagger}
             className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-5xl mx-auto"
           >
@@ -423,7 +423,7 @@ export default function LandingPage() {
             <motion.div
               initial="hidden"
               whileInView="show"
-              viewport={{ once: true, margin: '-80px' }}
+              viewport={{ once: true, amount: 0.05 }}
               variants={stagger}
             >
               <motion.span
@@ -474,7 +474,7 @@ export default function LandingPage() {
             <motion.div
               initial={{ opacity: 0, y: 32 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-80px' }}
+              viewport={{ once: true, amount: 0.05 }}
               transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
               className="relative"
             >
@@ -532,7 +532,7 @@ export default function LandingPage() {
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
+            viewport={{ once: true, amount: 0.05 }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="relative overflow-hidden rounded-3xl bg-[hsl(var(--lp-blue))] px-6 py-10 md:px-12 md:py-12 shadow-[0_30px_70px_-25px_hsl(var(--lp-blue)/0.55)]"
           >
