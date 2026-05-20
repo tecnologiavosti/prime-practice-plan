@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion, type Variants } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useClinicSettings } from '@/hooks/useClinicSettings';
+import { supabase } from '@/integrations/supabase/client';
 import logoPacem from '@/assets/logoPacem.png';
 import clinicHero from '@/assets/clinic-hero.jpg';
 import {
@@ -69,6 +70,12 @@ const lpStyles = {
 export default function LandingPage() {
   const { settings } = useClinicSettings();
   const [scrolled, setScrolled] = useState(false);
+  const [stats, setStats] = useState<{
+    patients: number;
+    specialties: number;
+    professionals: number;
+    appointments: number;
+  } | null>(null);
 
   const clinicName = settings?.nome_fantasia || 'Clínica Pacem';
   const clinicLogo = settings?.logo_url || logoPacem;
@@ -79,6 +86,31 @@ export default function LandingPage() {
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  useEffect(() => {
+    (async () => {
+      const { data, error } = await supabase.rpc('get_landing_stats');
+      if (!error && data && data.length > 0) {
+        const r = data[0] as {
+          patients_count: number;
+          specialties_count: number;
+          professionals_count: number;
+          appointments_count: number;
+        };
+        setStats({
+          patients: r.patients_count ?? 0,
+          specialties: r.specialties_count ?? 0,
+          professionals: r.professionals_count ?? 0,
+          appointments: r.appointments_count ?? 0,
+        });
+      }
+    })();
+  }, []);
+
+  const formatStat = (n: number) => {
+    if (n >= 1000) return `+${Math.floor(n / 1000)}.${String(n % 1000).padStart(3, '0').slice(0, 3)}`.replace(/\.0+$/, '');
+    return `+${n}`;
+  };
 
   return (
     <div
@@ -213,7 +245,9 @@ export default function LandingPage() {
                     ))}
                   </div>
                   <p className="text-[12.5px] text-[hsl(var(--lp-muted))] mt-0.5">
-                    Mais de 3.500 pacientes atendidos com excelência
+                    {stats && stats.patients > 0
+                      ? `Mais de ${stats.patients.toLocaleString('pt-BR')} pacientes atendidos com excelência`
+                      : 'Pacientes atendidos com excelência'}
                   </p>
                 </div>
               </motion.div>
@@ -256,10 +290,10 @@ export default function LandingPage() {
             className="mt-16 md:mt-20 grid grid-cols-2 md:grid-cols-4 gap-px overflow-hidden rounded-2xl border border-[hsl(var(--lp-line))] bg-[hsl(var(--lp-line))] shadow-[0_18px_60px_-30px_hsl(var(--lp-ink)/0.15)]"
           >
             {[
-              { icon: Users, v: '+3.500', l: 'Pacientes atendidos' },
-              { icon: Star, v: '+15', l: 'Especialidades' },
-              { icon: HeartPulse, v: '98%', l: 'Satisfação garantida' },
-              { icon: Shield, v: '+5 anos', l: 'Cuidando de vidas' },
+              { icon: Users, v: stats ? stats.patients.toLocaleString('pt-BR') : '—', l: 'Pacientes cadastrados' },
+              { icon: Star, v: stats ? String(stats.specialties) : '—', l: 'Especialidades' },
+              { icon: Stethoscope, v: stats ? String(stats.professionals) : '—', l: 'Profissionais' },
+              { icon: HeartPulse, v: stats ? stats.appointments.toLocaleString('pt-BR') : '—', l: 'Consultas realizadas' },
             ].map((s) => (
               <motion.div
                 key={s.l}
