@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion, type Variants } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useClinicSettings } from '@/hooks/useClinicSettings';
+import { supabase } from '@/integrations/supabase/client';
 import logoPacem from '@/assets/logoPacem.png';
 import clinicHero from '@/assets/clinic-hero.jpg';
 import {
