@@ -245,7 +245,9 @@ export default function LandingPage() {
                     ))}
                   </div>
                   <p className="text-[12.5px] text-[hsl(var(--lp-muted))] mt-0.5">
-                    Mais de 3.500 pacientes atendidos com excelência
+                    {stats && stats.patients > 0
+                      ? `Mais de ${stats.patients.toLocaleString('pt-BR')} pacientes atendidos com excelência`
+                      : 'Pacientes atendidos com excelência'}
                   </p>
                 </div>
               </motion.div>
