@@ -327,7 +327,7 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-80px' }}
-              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.7, ease: 'easeOut' }}
               className="relative"
             >
               {/* Glow underlay */}
@@ -389,7 +389,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-80px' }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.7, ease: 'easeOut' }}
             className="relative overflow-hidden rounded-[2rem] border border-primary/20 bg-gradient-to-br from-primary via-primary to-primary/85 px-6 py-20 md:py-24 text-center max-w-5xl mx-auto shadow-[0_40px_100px_-30px_hsl(var(--primary)/0.6)]"
           >
             {/* Spotlight + dot pattern */}
