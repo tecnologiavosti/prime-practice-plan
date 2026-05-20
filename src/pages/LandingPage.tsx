@@ -620,6 +620,13 @@ export default function LandingPage() {
                 <Facebook className="h-[18px] w-[18px]" strokeWidth={1.8} />
               </a>
             </div>
+            <Link
+              to="/politica-de-privacidade"
+              className="mt-5 inline-flex items-center gap-1.5 text-[13px] text-[hsl(var(--lp-muted))] hover:text-[hsl(var(--lp-blue))] transition-colors"
+            >
+              <Lock className="h-3.5 w-3.5" />
+              Política de Privacidade
+            </Link>
           </div>
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[hsl(var(--lp-ink))] mb-4">Navegação</p>
