@@ -331,7 +331,7 @@ export default function LandingPage() {
       </section>
 
       {/* ============== FEATURES / SOBRE ============== */}
-      <section id="sobre" className="relative py-24 md:py-28">
+      <section id="sobre" className="relative py-16 md:py-28">
         <div className="container mx-auto px-5 md:px-10">
           <motion.div
             initial="hidden"
@@ -348,7 +348,7 @@ export default function LandingPage() {
             </motion.span>
             <motion.h2
               variants={fadeUp}
-              className="mt-6 text-[34px] md:text-[44px] font-extrabold tracking-[-0.02em] leading-[1.1] text-[hsl(var(--lp-ink))]"
+              className="mt-6 text-[28px] md:text-[44px] font-extrabold tracking-[-0.02em] leading-[1.1] text-[hsl(var(--lp-ink))]"
             >
               Tecnologia que <span className="text-[hsl(var(--lp-blue))]">cuida</span> de você
             </motion.h2>
@@ -387,7 +387,7 @@ export default function LandingPage() {
       </section>
 
       {/* ============== ESPECIALIDADES ============== */}
-      <section id="especialidades" className="relative py-24 md:py-28 bg-white border-y border-[hsl(var(--lp-line))]">
+      <section id="especialidades" className="relative py-16 md:py-28 bg-white border-y border-[hsl(var(--lp-line))]">
         <div className="container mx-auto px-5 md:px-10">
           <motion.div
             initial="hidden"
@@ -404,7 +404,7 @@ export default function LandingPage() {
             </motion.span>
             <motion.h2
               variants={fadeUp}
-              className="mt-6 text-[34px] md:text-[44px] font-extrabold tracking-[-0.02em] leading-[1.1] text-[hsl(var(--lp-ink))]"
+              className="mt-6 text-[28px] md:text-[44px] font-extrabold tracking-[-0.02em] leading-[1.1] text-[hsl(var(--lp-ink))]"
             >
               Um time completo, <span className="text-[hsl(var(--lp-blue))]">à sua disposição</span>
             </motion.h2>
@@ -437,7 +437,7 @@ export default function LandingPage() {
       </section>
 
       {/* ============== BENEFÍCIOS ============== */}
-      <section id="beneficios" className="relative py-24 md:py-28">
+      <section id="beneficios" className="relative py-16 md:py-28">
         <div className="container mx-auto px-5 md:px-10">
           <div className="grid lg:grid-cols-2 gap-14 items-center max-w-6xl mx-auto">
             <motion.div
@@ -454,7 +454,7 @@ export default function LandingPage() {
               </motion.span>
               <motion.h2
                 variants={fadeUp}
-                className="mt-6 text-[34px] md:text-[44px] font-extrabold tracking-[-0.02em] leading-[1.08] text-[hsl(var(--lp-ink))]"
+                className="mt-6 text-[28px] md:text-[44px] font-extrabold tracking-[-0.02em] leading-[1.08] text-[hsl(var(--lp-ink))]"
               >
                 Tudo que você precisa para <span className="text-[hsl(var(--lp-blue))]">gerenciar</span> sua saúde
               </motion.h2>
