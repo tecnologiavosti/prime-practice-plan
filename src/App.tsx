@@ -35,6 +35,8 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 // Patient Portal
 import LandingPage from "./pages/LandingPage";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import CookieBanner from "@/components/CookieBanner";
 import PatientAuth from "./pages/patient/PatientAuth";
 import PatientDashboard from "./pages/patient/PatientDashboard";
 import PatientAppointments from "./pages/patient/PatientAppointments";
