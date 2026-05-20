@@ -660,7 +660,7 @@ export default function LandingPage() {
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[hsl(var(--lp-ink))] mb-4">Contato</p>
             <ul className="space-y-2.5 text-[14px]">
               <li className="flex items-start gap-2"><MapPin className="h-4 w-4 mt-0.5 shrink-0 text-[hsl(var(--lp-blue))]" />{settings?.endereco_completo || 'Endereço da clínica'}</li>
-              <li className="flex items-center gap-2"><Phone className="h-4 w-4 shrink-0 text-[hsl(var(--lp-blue))]" />{settings?.telefone || '(00) 0000-0000'}</li>
+              <li className="flex items-center gap-2"><Phone className="h-4 w-4 shrink-0 text-[hsl(var(--lp-blue))]" />(61) 99811-7985</li>
               <li className="flex items-center gap-2"><Mail className="h-4 w-4 shrink-0 text-[hsl(var(--lp-blue))]" />{settings?.email_contato || 'contato@clinica.com'}</li>
             </ul>
           </div>
