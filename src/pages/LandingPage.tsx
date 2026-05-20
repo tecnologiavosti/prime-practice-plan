@@ -141,14 +141,14 @@ export default function LandingPage() {
             : 'border-b border-transparent bg-transparent'
         }`}
       >
-        <div className="container mx-auto flex h-18 items-center justify-between px-5 md:px-10 py-3">
-          <Link to="/" className="flex items-center gap-2.5">
-            <img src={clinicLogo} alt={clinicName} className="h-9 w-auto object-contain" />
-            <div className="leading-tight">
-              <div className="text-[15px] font-bold tracking-tight text-[hsl(var(--lp-ink))]">
+        <div className="container mx-auto flex h-16 md:h-18 items-center justify-between px-4 md:px-10 py-2 md:py-3">
+          <Link to="/" className="flex items-center gap-2 md:gap-2.5 min-w-0">
+            <img src={clinicLogo} alt={clinicName} className="h-8 md:h-9 w-auto object-contain shrink-0" />
+            <div className="leading-tight min-w-0">
+              <div className="text-[14px] md:text-[15px] font-bold tracking-tight text-[hsl(var(--lp-ink))] truncate">
                 {clinicName}
               </div>
-              <div className="text-[9px] font-medium uppercase tracking-[0.22em] text-[hsl(var(--lp-muted))]">
+              <div className="hidden sm:block text-[9px] font-medium uppercase tracking-[0.22em] text-[hsl(var(--lp-muted))]">
                 Cuidado · Confiança
               </div>
             </div>
@@ -159,17 +159,18 @@ export default function LandingPage() {
             <a href="#sobre" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Sobre</a>
             <a href="#contato" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Contato</a>
           </nav>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex text-[hsl(var(--lp-ink))] hover:bg-[hsl(var(--lp-blue-soft))]/60 hover:text-[hsl(var(--lp-blue-ink))]">
               <Link to="/login">Entrar</Link>
             </Button>
             <Button
               size="sm"
               asChild
-              className="rounded-xl bg-[hsl(var(--lp-blue))] text-white hover:bg-[hsl(var(--lp-blue-ink))] shadow-[0_8px_24px_-8px_hsl(var(--lp-blue)/0.5)] transition-all"
+              className="rounded-xl bg-[hsl(var(--lp-blue))] text-white hover:bg-[hsl(var(--lp-blue-ink))] shadow-[0_8px_24px_-8px_hsl(var(--lp-blue)/0.5)] transition-all px-3 md:px-4"
             >
               <Link to="/cadastro">
-                Agendar avaliação
+                <span className="hidden sm:inline">Agendar avaliação</span>
+                <span className="sm:hidden">Agendar</span>
                 <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </Button>
