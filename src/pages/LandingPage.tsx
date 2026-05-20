@@ -547,9 +547,9 @@ export default function LandingPage() {
           <div>
             <p className="text-[11px] uppercase tracking-[0.22em] text-[hsl(var(--od-mint))] mb-4">Contato</p>
             <ul className="space-y-2.5 text-sm">
-              <li className="flex items-start gap-2"><MapPin className="h-4 w-4 mt-0.5 shrink-0" />{settings?.endereco || 'Endereço da clínica'}</li>
+              <li className="flex items-start gap-2"><MapPin className="h-4 w-4 mt-0.5 shrink-0" />{settings?.endereco_completo || 'Endereço da clínica'}</li>
               <li className="flex items-center gap-2"><Phone className="h-4 w-4 shrink-0" />{settings?.telefone || '(00) 0000-0000'}</li>
-              <li className="flex items-center gap-2"><Mail className="h-4 w-4 shrink-0" />{settings?.email || 'contato@clinica.com'}</li>
+              <li className="flex items-center gap-2"><Mail className="h-4 w-4 shrink-0" />{settings?.email_contato || 'contato@clinica.com'}</li>
             </ul>
           </div>
         </div>
