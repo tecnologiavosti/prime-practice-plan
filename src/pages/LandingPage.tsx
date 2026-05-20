@@ -414,18 +414,21 @@ export default function LandingPage() {
             variants={stagger}
             className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-5xl mx-auto"
           >
-            {specialties.map((sp) => (
-              <motion.div
-                key={sp.name}
-                variants={fadeUp}
-                className="group rounded-2xl border border-[hsl(var(--lp-line))] bg-[hsl(var(--lp-bg))] p-7 text-center transition-all duration-300 hover:-translate-y-1 hover:bg-white hover:shadow-[0_18px_40px_-18px_hsl(var(--lp-blue)/0.3)] hover:border-[hsl(var(--lp-blue)/0.3)]"
-              >
-                <div className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-xl bg-white border border-[hsl(var(--lp-line))] text-[hsl(var(--lp-blue))] group-hover:bg-[hsl(var(--lp-blue))] group-hover:text-white group-hover:border-transparent transition-colors">
-                  <sp.icon className="h-6 w-6" strokeWidth={1.8} />
-                </div>
-                <h3 className="text-[15px] font-bold text-[hsl(var(--lp-ink))]">{sp.name}</h3>
-              </motion.div>
-            ))}
+            {specialtiesList.map((sp) => {
+              const Icon = specialtyIconFor(sp.name);
+              return (
+                <motion.div
+                  key={sp.id}
+                  variants={fadeUp}
+                  className="group rounded-2xl border border-[hsl(var(--lp-line))] bg-[hsl(var(--lp-bg))] p-7 text-center transition-all duration-300 hover:-translate-y-1 hover:bg-white hover:shadow-[0_18px_40px_-18px_hsl(var(--lp-blue)/0.3)] hover:border-[hsl(var(--lp-blue)/0.3)]"
+                >
+                  <div className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-xl bg-white border border-[hsl(var(--lp-line))] text-[hsl(var(--lp-blue))] group-hover:bg-[hsl(var(--lp-blue))] group-hover:text-white group-hover:border-transparent transition-colors">
+                    <Icon className="h-6 w-6" strokeWidth={1.8} />
+                  </div>
+                  <h3 className="text-[15px] font-bold text-[hsl(var(--lp-ink))]">{sp.name}</h3>
+                </motion.div>
+              );
+            })}
           </motion.div>
         </div>
       </section>
