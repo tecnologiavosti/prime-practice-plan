@@ -38,12 +38,14 @@ const benefits = [
   'Acesse de qualquer dispositivo',
 ];
 
-const specialties = [
-  { icon: HeartPulse, name: 'Cardiologia' },
-  { icon: Stethoscope, name: 'Clínica Geral' },
-  { icon: Users, name: 'Pediatria' },
-  { icon: FileText, name: 'Dermatologia' },
-];
+const specialtyIconFor = (name: string) => {
+  const n = (name || '').toLowerCase();
+  if (n.includes('cardio')) return HeartPulse;
+  if (n.includes('pedia') || n.includes('criança')) return Users;
+  if (n.includes('derma') || n.includes('pele')) return FileText;
+  if (n.includes('clínic') || n.includes('clinic') || n.includes('geral')) return Stethoscope;
+  return Stethoscope;
+};
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 24 },
@@ -76,6 +78,18 @@ export default function LandingPage() {
     professionals: number;
     appointments: number;
   } | null>(null);
+  const [specialtiesList, setSpecialtiesList] = useState<{ id: string; name: string }[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from('specialties')
+        .select('id, name')
+        .eq('active', true)
+        .order('name');
+      if (data) setSpecialtiesList(data);
+    })();
+  }, []);
 
   const clinicName = settings?.nome_fantasia || 'Clínica Pacem';
   const clinicLogo = settings?.logo_url || logoPacem;
@@ -400,18 +414,21 @@ export default function LandingPage() {
             variants={stagger}
             className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-5xl mx-auto"
           >
-            {specialties.map((sp) => (
-              <motion.div
-                key={sp.name}
-                variants={fadeUp}
-                className="group rounded-2xl border border-[hsl(var(--lp-line))] bg-[hsl(var(--lp-bg))] p-7 text-center transition-all duration-300 hover:-translate-y-1 hover:bg-white hover:shadow-[0_18px_40px_-18px_hsl(var(--lp-blue)/0.3)] hover:border-[hsl(var(--lp-blue)/0.3)]"
-              >
-                <div className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-xl bg-white border border-[hsl(var(--lp-line))] text-[hsl(var(--lp-blue))] group-hover:bg-[hsl(var(--lp-blue))] group-hover:text-white group-hover:border-transparent transition-colors">
-                  <sp.icon className="h-6 w-6" strokeWidth={1.8} />
-                </div>
-                <h3 className="text-[15px] font-bold text-[hsl(var(--lp-ink))]">{sp.name}</h3>
-              </motion.div>
-            ))}
+            {specialtiesList.map((sp) => {
+              const Icon = specialtyIconFor(sp.name);
+              return (
+                <motion.div
+                  key={sp.id}
+                  variants={fadeUp}
+                  className="group rounded-2xl border border-[hsl(var(--lp-line))] bg-[hsl(var(--lp-bg))] p-7 text-center transition-all duration-300 hover:-translate-y-1 hover:bg-white hover:shadow-[0_18px_40px_-18px_hsl(var(--lp-blue)/0.3)] hover:border-[hsl(var(--lp-blue)/0.3)]"
+                >
+                  <div className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-xl bg-white border border-[hsl(var(--lp-line))] text-[hsl(var(--lp-blue))] group-hover:bg-[hsl(var(--lp-blue))] group-hover:text-white group-hover:border-transparent transition-colors">
+                    <Icon className="h-6 w-6" strokeWidth={1.8} />
+                  </div>
+                  <h3 className="text-[15px] font-bold text-[hsl(var(--lp-ink))]">{sp.name}</h3>
+                </motion.div>
+              );
+            })}
           </motion.div>
         </div>
       </section>
