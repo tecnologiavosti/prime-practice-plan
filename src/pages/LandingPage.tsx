@@ -219,11 +219,11 @@ export default function LandingPage() {
                 médico e gerencie seus atendimentos em um só lugar.
               </motion.p>
 
-              <motion.div variants={fadeUp} className="mt-9 flex flex-col sm:flex-row gap-3">
+              <motion.div variants={fadeUp} className="mt-7 md:mt-9 flex flex-col sm:flex-row gap-3">
                 <Button
                   size="lg"
                   asChild
-                  className="h-12 px-7 rounded-xl bg-[hsl(var(--lp-blue))] hover:bg-[hsl(var(--lp-blue-ink))] text-white text-[14.5px] font-semibold shadow-[0_14px_36px_-12px_hsl(var(--lp-blue)/0.6)] transition-all hover:-translate-y-0.5"
+                  className="h-12 px-6 md:px-7 rounded-xl bg-[hsl(var(--lp-blue))] hover:bg-[hsl(var(--lp-blue-ink))] text-white text-[14.5px] font-semibold shadow-[0_14px_36px_-12px_hsl(var(--lp-blue)/0.6)] transition-all hover:-translate-y-0.5"
                 >
                   <Link to="/cadastro">
                     Criar minha conta
@@ -234,14 +234,14 @@ export default function LandingPage() {
                   size="lg"
                   variant="outline"
                   asChild
-                  className="h-12 px-7 rounded-xl border-[hsl(var(--lp-line))] bg-white text-[hsl(var(--lp-ink))] hover:bg-[hsl(var(--lp-blue-soft))]/50 hover:text-[hsl(var(--lp-blue-ink))] hover:border-[hsl(var(--lp-blue)/0.3)] text-[14.5px] font-semibold transition-all"
+                  className="h-12 px-6 md:px-7 rounded-xl border-[hsl(var(--lp-line))] bg-white text-[hsl(var(--lp-ink))] hover:bg-[hsl(var(--lp-blue-soft))]/50 hover:text-[hsl(var(--lp-blue-ink))] hover:border-[hsl(var(--lp-blue)/0.3)] text-[14.5px] font-semibold transition-all"
                 >
                   <Link to="/login">Já tenho conta</Link>
                 </Button>
               </motion.div>
 
               {/* trust row */}
-              <motion.div variants={fadeUp} className="mt-10 flex items-center gap-4">
+              <motion.div variants={fadeUp} className="mt-8 md:mt-10 flex items-center gap-3 md:gap-4">
                 <div className="flex -space-x-2.5">
                   {[
                     'from-blue-200 to-blue-400',
