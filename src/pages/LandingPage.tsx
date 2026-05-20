@@ -78,6 +78,18 @@ export default function LandingPage() {
     professionals: number;
     appointments: number;
   } | null>(null);
+  const [specialtiesList, setSpecialtiesList] = useState<{ id: string; name: string }[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from('specialties')
+        .select('id, name')
+        .eq('active', true)
+        .order('name');
+      if (data) setSpecialtiesList(data);
+    })();
+  }, []);
 
   const clinicName = settings?.nome_fantasia || 'Clínica Pacem';
   const clinicLogo = settings?.logo_url || logoPacem;
