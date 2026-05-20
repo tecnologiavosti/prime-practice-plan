@@ -439,7 +439,7 @@ export default function LandingPage() {
       {/* ============== BENEFÍCIOS ============== */}
       <section id="beneficios" className="relative py-16 md:py-28">
         <div className="container mx-auto px-5 md:px-10">
-          <div className="grid lg:grid-cols-2 gap-14 items-center max-w-6xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center max-w-6xl mx-auto">
             <motion.div
               initial="hidden"
               whileInView="show"
