@@ -22,6 +22,8 @@ import {
   Phone,
   MapPin,
   Mail,
+  Instagram,
+  Facebook,
 } from 'lucide-react';
 
 const features = [
