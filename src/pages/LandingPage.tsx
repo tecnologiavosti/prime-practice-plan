@@ -290,10 +290,10 @@ export default function LandingPage() {
             className="mt-16 md:mt-20 grid grid-cols-2 md:grid-cols-4 gap-px overflow-hidden rounded-2xl border border-[hsl(var(--lp-line))] bg-[hsl(var(--lp-line))] shadow-[0_18px_60px_-30px_hsl(var(--lp-ink)/0.15)]"
           >
             {[
-              { icon: Users, v: '+3.500', l: 'Pacientes atendidos' },
-              { icon: Star, v: '+15', l: 'Especialidades' },
-              { icon: HeartPulse, v: '98%', l: 'Satisfação garantida' },
-              { icon: Shield, v: '+5 anos', l: 'Cuidando de vidas' },
+              { icon: Users, v: stats ? stats.patients.toLocaleString('pt-BR') : '—', l: 'Pacientes cadastrados' },
+              { icon: Star, v: stats ? String(stats.specialties) : '—', l: 'Especialidades' },
+              { icon: Stethoscope, v: stats ? String(stats.professionals) : '—', l: 'Profissionais' },
+              { icon: HeartPulse, v: stats ? stats.appointments.toLocaleString('pt-BR') : '—', l: 'Consultas realizadas' },
             ].map((s) => (
               <motion.div
                 key={s.l}
