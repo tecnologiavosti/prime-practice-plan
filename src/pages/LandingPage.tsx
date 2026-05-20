@@ -598,9 +598,26 @@ export default function LandingPage() {
                 <div className="text-[10px] uppercase tracking-[0.22em] text-[hsl(var(--lp-muted))]">Cuidado · Confiança</div>
               </div>
             </div>
-            <p className="text-[14px] max-w-md leading-relaxed">
-              Cuidado humano, tecnologia de ponta e atendimento que respeita cada momento da sua vida.
-            </p>
+            <div className="flex items-center gap-3">
+              <a
+                href="https://www.instagram.com/clinicapacem"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram: Clínica Pacem (@clinicapacem)"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[hsl(var(--lp-line))] bg-white text-[hsl(var(--lp-muted))] hover:text-[hsl(var(--lp-blue))] hover:border-[hsl(var(--lp-blue)/0.4)] transition-colors"
+              >
+                <Instagram className="h-[18px] w-[18px]" strokeWidth={1.8} />
+              </a>
+              <a
+                href="https://www.facebook.com/clinicapacem"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Facebook: Clínica Pacem"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[hsl(var(--lp-line))] bg-white text-[hsl(var(--lp-muted))] hover:text-[hsl(var(--lp-blue))] hover:border-[hsl(var(--lp-blue)/0.4)] transition-colors"
+              >
+                <Facebook className="h-[18px] w-[18px]" strokeWidth={1.8} />
+              </a>
+            </div>
           </div>
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[hsl(var(--lp-ink))] mb-4">Navegação</p>
