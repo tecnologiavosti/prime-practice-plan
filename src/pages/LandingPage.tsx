@@ -554,7 +554,7 @@ export default function LandingPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.05 }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="relative overflow-hidden rounded-3xl bg-[hsl(var(--lp-blue))] px-6 py-10 md:px-12 md:py-12 shadow-[0_30px_70px_-25px_hsl(var(--lp-blue)/0.55)]"
+            className="relative overflow-hidden rounded-3xl bg-[hsl(var(--lp-blue))] px-5 py-8 md:px-12 md:py-12 shadow-[0_30px_70px_-25px_hsl(var(--lp-blue)/0.55)]"
           >
             <div aria-hidden className="absolute inset-0 opacity-20" style={{
               backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
