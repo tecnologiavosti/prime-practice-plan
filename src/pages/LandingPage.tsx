@@ -304,7 +304,7 @@ export default function LandingPage() {
             whileInView="show"
             viewport={{ once: true, amount: 0.05 }}
             variants={stagger}
-            className="mt-16 md:mt-20 grid grid-cols-2 md:grid-cols-4 gap-px overflow-hidden rounded-2xl border border-[hsl(var(--lp-line))] bg-[hsl(var(--lp-line))] shadow-[0_18px_60px_-30px_hsl(var(--lp-ink)/0.15)]"
+            className="mt-12 md:mt-20 grid grid-cols-2 md:grid-cols-4 gap-px overflow-hidden rounded-2xl border border-[hsl(var(--lp-line))] bg-[hsl(var(--lp-line))] shadow-[0_18px_60px_-30px_hsl(var(--lp-ink)/0.15)]"
           >
             {[
               { icon: Users, v: stats ? stats.patients.toLocaleString('pt-BR') : '—', l: 'Pacientes cadastrados' },
@@ -315,14 +315,14 @@ export default function LandingPage() {
               <motion.div
                 key={s.l}
                 variants={fadeUp}
-                className="bg-white px-6 py-7 flex items-center gap-4"
+                className="bg-white px-4 sm:px-6 py-5 sm:py-7 flex items-center gap-3 sm:gap-4"
               >
-                <div className="h-11 w-11 shrink-0 rounded-xl bg-[hsl(var(--lp-blue-soft))] flex items-center justify-center">
+                <div className="h-10 w-10 sm:h-11 sm:w-11 shrink-0 rounded-xl bg-[hsl(var(--lp-blue-soft))] flex items-center justify-center">
                   <s.icon className="h-5 w-5 text-[hsl(var(--lp-blue))]" strokeWidth={1.8} />
                 </div>
-                <div className="leading-tight">
-                  <div className="text-[22px] font-extrabold tracking-tight text-[hsl(var(--lp-ink))]">{s.v}</div>
-                  <div className="text-[12.5px] text-[hsl(var(--lp-muted))] mt-0.5">{s.l}</div>
+                <div className="leading-tight min-w-0">
+                  <div className="text-[18px] sm:text-[22px] font-extrabold tracking-tight text-[hsl(var(--lp-ink))]">{s.v}</div>
+                  <div className="text-[11.5px] sm:text-[12.5px] text-[hsl(var(--lp-muted))] mt-0.5">{s.l}</div>
                 </div>
               </motion.div>
             ))}
