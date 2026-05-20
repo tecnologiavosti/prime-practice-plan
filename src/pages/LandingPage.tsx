@@ -70,6 +70,12 @@ const lpStyles = {
 export default function LandingPage() {
   const { settings } = useClinicSettings();
   const [scrolled, setScrolled] = useState(false);
+  const [stats, setStats] = useState<{
+    patients: number;
+    specialties: number;
+    professionals: number;
+    appointments: number;
+  } | null>(null);
 
   const clinicName = settings?.nome_fantasia || 'Clínica Pacem';
   const clinicLogo = settings?.logo_url || logoPacem;
@@ -80,6 +86,31 @@ export default function LandingPage() {
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  useEffect(() => {
+    (async () => {
+      const { data, error } = await supabase.rpc('get_landing_stats');
+      if (!error && data && data.length > 0) {
+        const r = data[0] as {
+          patients_count: number;
+          specialties_count: number;
+          professionals_count: number;
+          appointments_count: number;
+        };
+        setStats({
+          patients: r.patients_count ?? 0,
+          specialties: r.specialties_count ?? 0,
+          professionals: r.professionals_count ?? 0,
+          appointments: r.appointments_count ?? 0,
+        });
+      }
+    })();
+  }, []);
+
+  const formatStat = (n: number) => {
+    if (n >= 1000) return `+${Math.floor(n / 1000)}.${String(n % 1000).padStart(3, '0').slice(0, 3)}`.replace(/\.0+$/, '');
+    return `+${n}`;
+  };
 
   return (
     <div
