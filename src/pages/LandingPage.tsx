@@ -38,12 +38,14 @@ const benefits = [
   'Acesse de qualquer dispositivo',
 ];
 
-const specialties = [
-  { icon: HeartPulse, name: 'Cardiologia' },
-  { icon: Stethoscope, name: 'Clínica Geral' },
-  { icon: Users, name: 'Pediatria' },
-  { icon: FileText, name: 'Dermatologia' },
-];
+const specialtyIconFor = (name: string) => {
+  const n = (name || '').toLowerCase();
+  if (n.includes('cardio')) return HeartPulse;
+  if (n.includes('pedia') || n.includes('criança')) return Users;
+  if (n.includes('derma') || n.includes('pele')) return FileText;
+  if (n.includes('clínic') || n.includes('clinic') || n.includes('geral')) return Stethoscope;
+  return Stethoscope;
+};
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 24 },
