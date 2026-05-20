@@ -567,7 +567,7 @@ export default function LandingPage() {
                   <Calendar className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-[22px] md:text-[26px] font-extrabold text-white tracking-tight leading-tight">
+                  <h3 className="text-[20px] md:text-[26px] font-extrabold text-white tracking-tight leading-tight">
                     Pronto para cuidar da sua saúde?
                   </h3>
                   <p className="text-[14.5px] text-white/85 mt-1">
