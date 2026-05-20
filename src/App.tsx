@@ -62,6 +62,8 @@ const App = () => (
           <Routes>
             {/* Public Landing Page */}
             <Route path="/" element={<LandingPage />} />
+            <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
+            
             
             {/* Patient Auth Routes */}
             <Route path="/login" element={<PatientAuthProvider><PatientAuth mode="login" /></PatientAuthProvider>} />
