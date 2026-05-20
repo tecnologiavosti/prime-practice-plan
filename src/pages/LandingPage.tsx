@@ -186,18 +186,18 @@ export default function LandingPage() {
           <div className="absolute top-1/3 -right-32 h-[28rem] w-[28rem] rounded-full bg-[hsl(var(--lp-blue)/0.06)] blur-3xl" />
         </div>
 
-        <div className="container mx-auto px-5 md:px-10 relative">
+        <div className="container mx-auto px-4 md:px-10 relative">
           <motion.div
             variants={stagger}
             initial="hidden"
             animate="show"
-            className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center"
+            className="grid lg:grid-cols-2 gap-8 lg:gap-14 items-center"
           >
             {/* LEFT — TEXT */}
             <div>
               <motion.span
                 variants={fadeUp}
-                className="inline-flex items-center gap-2 rounded-full border border-[hsl(var(--lp-line))] bg-white px-3.5 py-1.5 text-[11.5px] font-semibold text-[hsl(var(--lp-blue-ink))] shadow-sm"
+                className="inline-flex items-center gap-2 rounded-full border border-[hsl(var(--lp-line))] bg-white px-3 py-1.5 text-[11px] md:text-[11.5px] font-semibold text-[hsl(var(--lp-blue-ink))] shadow-sm"
               >
                 <Sparkles className="h-3.5 w-3.5 text-[hsl(var(--lp-blue))]" />
                 Excelência em saúde e bem-estar
@@ -205,7 +205,7 @@ export default function LandingPage() {
 
               <motion.h1
                 variants={fadeUp}
-                className="mt-7 text-[40px] md:text-[54px] lg:text-[62px] font-extrabold leading-[1.05] tracking-[-0.025em] text-[hsl(var(--lp-ink))]"
+                className="mt-5 md:mt-7 text-[32px] sm:text-[40px] md:text-[54px] lg:text-[62px] font-extrabold leading-[1.05] tracking-[-0.025em] text-[hsl(var(--lp-ink))]"
               >
                 Agende suas consultas{' '}
                 <span className="text-[hsl(var(--lp-blue))]">com facilidade</span>
@@ -213,7 +213,7 @@ export default function LandingPage() {
 
               <motion.p
                 variants={fadeUp}
-                className="mt-6 text-[17px] md:text-lg text-[hsl(var(--lp-muted))] max-w-xl leading-relaxed"
+                className="mt-4 md:mt-6 text-[15px] md:text-lg text-[hsl(var(--lp-muted))] max-w-xl leading-relaxed"
               >
                 Simplifique o cuidado com sua saúde. Agende consultas online, acompanhe seu histórico
                 médico e gerencie seus atendimentos em um só lugar.
