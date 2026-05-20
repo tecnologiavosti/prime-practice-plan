@@ -179,7 +179,7 @@ export default function LandingPage() {
       </header>
 
       {/* ============== HERO ============== */}
-      <section className="relative pt-32 pb-20 md:pt-36 md:pb-24">
+      <section className="relative pt-24 pb-14 md:pt-36 md:pb-24">
         {/* subtle ambient */}
         <div aria-hidden className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -left-40 h-[32rem] w-[32rem] rounded-full bg-[hsl(var(--lp-blue)/0.08)] blur-3xl" />
