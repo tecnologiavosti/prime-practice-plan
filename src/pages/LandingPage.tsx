@@ -592,7 +592,7 @@ export default function LandingPage() {
       {/* ============== FOOTER ============== */}
       <footer id="contato" className="bg-white border-t border-[hsl(var(--lp-line))] text-[hsl(var(--lp-muted))]">
         <div className="container mx-auto px-5 md:px-10 py-14 grid md:grid-cols-4 gap-10">
-          <div className="md:col-span-2">
+          <div>
             <div className="flex items-center gap-3 mb-4">
               <img src={clinicLogo} alt={clinicName} className="h-9 w-auto object-contain" />
               <div className="leading-tight">
