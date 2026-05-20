@@ -141,14 +141,14 @@ export default function LandingPage() {
             : 'border-b border-transparent bg-transparent'
         }`}
       >
-        <div className="container mx-auto flex h-18 items-center justify-between px-5 md:px-10 py-3">
-          <Link to="/" className="flex items-center gap-2.5">
-            <img src={clinicLogo} alt={clinicName} className="h-9 w-auto object-contain" />
-            <div className="leading-tight">
-              <div className="text-[15px] font-bold tracking-tight text-[hsl(var(--lp-ink))]">
+        <div className="container mx-auto flex h-16 md:h-18 items-center justify-between px-4 md:px-10 py-2 md:py-3">
+          <Link to="/" className="flex items-center gap-2 md:gap-2.5 min-w-0">
+            <img src={clinicLogo} alt={clinicName} className="h-8 md:h-9 w-auto object-contain shrink-0" />
+            <div className="leading-tight min-w-0">
+              <div className="text-[14px] md:text-[15px] font-bold tracking-tight text-[hsl(var(--lp-ink))] truncate">
                 {clinicName}
               </div>
-              <div className="text-[9px] font-medium uppercase tracking-[0.22em] text-[hsl(var(--lp-muted))]">
+              <div className="hidden sm:block text-[9px] font-medium uppercase tracking-[0.22em] text-[hsl(var(--lp-muted))]">
                 Cuidado · Confiança
               </div>
             </div>
@@ -159,17 +159,18 @@ export default function LandingPage() {
             <a href="#sobre" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Sobre</a>
             <a href="#contato" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Contato</a>
           </nav>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex text-[hsl(var(--lp-ink))] hover:bg-[hsl(var(--lp-blue-soft))]/60 hover:text-[hsl(var(--lp-blue-ink))]">
               <Link to="/login">Entrar</Link>
             </Button>
             <Button
               size="sm"
               asChild
-              className="rounded-xl bg-[hsl(var(--lp-blue))] text-white hover:bg-[hsl(var(--lp-blue-ink))] shadow-[0_8px_24px_-8px_hsl(var(--lp-blue)/0.5)] transition-all"
+              className="rounded-xl bg-[hsl(var(--lp-blue))] text-white hover:bg-[hsl(var(--lp-blue-ink))] shadow-[0_8px_24px_-8px_hsl(var(--lp-blue)/0.5)] transition-all px-3 md:px-4"
             >
               <Link to="/cadastro">
-                Agendar avaliação
+                <span className="hidden sm:inline">Agendar avaliação</span>
+                <span className="sm:hidden">Agendar</span>
                 <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </Button>
@@ -178,25 +179,25 @@ export default function LandingPage() {
       </header>
 
       {/* ============== HERO ============== */}
-      <section className="relative pt-32 pb-20 md:pt-36 md:pb-24">
+      <section className="relative pt-24 pb-14 md:pt-36 md:pb-24">
         {/* subtle ambient */}
         <div aria-hidden className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -left-40 h-[32rem] w-[32rem] rounded-full bg-[hsl(var(--lp-blue)/0.08)] blur-3xl" />
           <div className="absolute top-1/3 -right-32 h-[28rem] w-[28rem] rounded-full bg-[hsl(var(--lp-blue)/0.06)] blur-3xl" />
         </div>
 
-        <div className="container mx-auto px-5 md:px-10 relative">
+        <div className="container mx-auto px-4 md:px-10 relative">
           <motion.div
             variants={stagger}
             initial="hidden"
             animate="show"
-            className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center"
+            className="grid lg:grid-cols-2 gap-8 lg:gap-14 items-center"
           >
             {/* LEFT — TEXT */}
             <div>
               <motion.span
                 variants={fadeUp}
-                className="inline-flex items-center gap-2 rounded-full border border-[hsl(var(--lp-line))] bg-white px-3.5 py-1.5 text-[11.5px] font-semibold text-[hsl(var(--lp-blue-ink))] shadow-sm"
+                className="inline-flex items-center gap-2 rounded-full border border-[hsl(var(--lp-line))] bg-white px-3 py-1.5 text-[11px] md:text-[11.5px] font-semibold text-[hsl(var(--lp-blue-ink))] shadow-sm"
               >
                 <Sparkles className="h-3.5 w-3.5 text-[hsl(var(--lp-blue))]" />
                 Excelência em saúde e bem-estar
@@ -204,7 +205,7 @@ export default function LandingPage() {
 
               <motion.h1
                 variants={fadeUp}
-                className="mt-7 text-[40px] md:text-[54px] lg:text-[62px] font-extrabold leading-[1.05] tracking-[-0.025em] text-[hsl(var(--lp-ink))]"
+                className="mt-5 md:mt-7 text-[32px] sm:text-[40px] md:text-[54px] lg:text-[62px] font-extrabold leading-[1.05] tracking-[-0.025em] text-[hsl(var(--lp-ink))]"
               >
                 Agende suas consultas{' '}
                 <span className="text-[hsl(var(--lp-blue))]">com facilidade</span>
@@ -212,17 +213,17 @@ export default function LandingPage() {
 
               <motion.p
                 variants={fadeUp}
-                className="mt-6 text-[17px] md:text-lg text-[hsl(var(--lp-muted))] max-w-xl leading-relaxed"
+                className="mt-4 md:mt-6 text-[15px] md:text-lg text-[hsl(var(--lp-muted))] max-w-xl leading-relaxed"
               >
                 Simplifique o cuidado com sua saúde. Agende consultas online, acompanhe seu histórico
                 médico e gerencie seus atendimentos em um só lugar.
               </motion.p>
 
-              <motion.div variants={fadeUp} className="mt-9 flex flex-col sm:flex-row gap-3">
+              <motion.div variants={fadeUp} className="mt-7 md:mt-9 flex flex-col sm:flex-row gap-3">
                 <Button
                   size="lg"
                   asChild
-                  className="h-12 px-7 rounded-xl bg-[hsl(var(--lp-blue))] hover:bg-[hsl(var(--lp-blue-ink))] text-white text-[14.5px] font-semibold shadow-[0_14px_36px_-12px_hsl(var(--lp-blue)/0.6)] transition-all hover:-translate-y-0.5"
+                  className="h-12 px-6 md:px-7 rounded-xl bg-[hsl(var(--lp-blue))] hover:bg-[hsl(var(--lp-blue-ink))] text-white text-[14.5px] font-semibold shadow-[0_14px_36px_-12px_hsl(var(--lp-blue)/0.6)] transition-all hover:-translate-y-0.5"
                 >
                   <Link to="/cadastro">
                     Criar minha conta
@@ -233,14 +234,14 @@ export default function LandingPage() {
                   size="lg"
                   variant="outline"
                   asChild
-                  className="h-12 px-7 rounded-xl border-[hsl(var(--lp-line))] bg-white text-[hsl(var(--lp-ink))] hover:bg-[hsl(var(--lp-blue-soft))]/50 hover:text-[hsl(var(--lp-blue-ink))] hover:border-[hsl(var(--lp-blue)/0.3)] text-[14.5px] font-semibold transition-all"
+                  className="h-12 px-6 md:px-7 rounded-xl border-[hsl(var(--lp-line))] bg-white text-[hsl(var(--lp-ink))] hover:bg-[hsl(var(--lp-blue-soft))]/50 hover:text-[hsl(var(--lp-blue-ink))] hover:border-[hsl(var(--lp-blue)/0.3)] text-[14.5px] font-semibold transition-all"
                 >
                   <Link to="/login">Já tenho conta</Link>
                 </Button>
               </motion.div>
 
               {/* trust row */}
-              <motion.div variants={fadeUp} className="mt-10 flex items-center gap-4">
+              <motion.div variants={fadeUp} className="mt-8 md:mt-10 flex items-center gap-3 md:gap-4">
                 <div className="flex -space-x-2.5">
                   {[
                     'from-blue-200 to-blue-400',
@@ -279,7 +280,7 @@ export default function LandingPage() {
                 <img
                   src={clinicHero}
                   alt={`Recepção da ${clinicName}`}
-                  className="w-full h-[420px] md:h-[520px] object-cover"
+                  className="w-full h-[280px] sm:h-[420px] md:h-[520px] object-cover"
                   width={1024}
                   height={1024}
                 />
@@ -303,7 +304,7 @@ export default function LandingPage() {
             whileInView="show"
             viewport={{ once: true, amount: 0.05 }}
             variants={stagger}
-            className="mt-16 md:mt-20 grid grid-cols-2 md:grid-cols-4 gap-px overflow-hidden rounded-2xl border border-[hsl(var(--lp-line))] bg-[hsl(var(--lp-line))] shadow-[0_18px_60px_-30px_hsl(var(--lp-ink)/0.15)]"
+            className="mt-12 md:mt-20 grid grid-cols-2 md:grid-cols-4 gap-px overflow-hidden rounded-2xl border border-[hsl(var(--lp-line))] bg-[hsl(var(--lp-line))] shadow-[0_18px_60px_-30px_hsl(var(--lp-ink)/0.15)]"
           >
             {[
               { icon: Users, v: stats ? stats.patients.toLocaleString('pt-BR') : '—', l: 'Pacientes cadastrados' },
@@ -314,14 +315,14 @@ export default function LandingPage() {
               <motion.div
                 key={s.l}
                 variants={fadeUp}
-                className="bg-white px-6 py-7 flex items-center gap-4"
+                className="bg-white px-4 sm:px-6 py-5 sm:py-7 flex items-center gap-3 sm:gap-4"
               >
-                <div className="h-11 w-11 shrink-0 rounded-xl bg-[hsl(var(--lp-blue-soft))] flex items-center justify-center">
+                <div className="h-10 w-10 sm:h-11 sm:w-11 shrink-0 rounded-xl bg-[hsl(var(--lp-blue-soft))] flex items-center justify-center">
                   <s.icon className="h-5 w-5 text-[hsl(var(--lp-blue))]" strokeWidth={1.8} />
                 </div>
-                <div className="leading-tight">
-                  <div className="text-[22px] font-extrabold tracking-tight text-[hsl(var(--lp-ink))]">{s.v}</div>
-                  <div className="text-[12.5px] text-[hsl(var(--lp-muted))] mt-0.5">{s.l}</div>
+                <div className="leading-tight min-w-0">
+                  <div className="text-[18px] sm:text-[22px] font-extrabold tracking-tight text-[hsl(var(--lp-ink))]">{s.v}</div>
+                  <div className="text-[11.5px] sm:text-[12.5px] text-[hsl(var(--lp-muted))] mt-0.5">{s.l}</div>
                 </div>
               </motion.div>
             ))}
@@ -330,7 +331,7 @@ export default function LandingPage() {
       </section>
 
       {/* ============== FEATURES / SOBRE ============== */}
-      <section id="sobre" className="relative py-24 md:py-28">
+      <section id="sobre" className="relative py-16 md:py-28">
         <div className="container mx-auto px-5 md:px-10">
           <motion.div
             initial="hidden"
@@ -347,7 +348,7 @@ export default function LandingPage() {
             </motion.span>
             <motion.h2
               variants={fadeUp}
-              className="mt-6 text-[34px] md:text-[44px] font-extrabold tracking-[-0.02em] leading-[1.1] text-[hsl(var(--lp-ink))]"
+              className="mt-6 text-[28px] md:text-[44px] font-extrabold tracking-[-0.02em] leading-[1.1] text-[hsl(var(--lp-ink))]"
             >
               Tecnologia que <span className="text-[hsl(var(--lp-blue))]">cuida</span> de você
             </motion.h2>
@@ -386,7 +387,7 @@ export default function LandingPage() {
       </section>
 
       {/* ============== ESPECIALIDADES ============== */}
-      <section id="especialidades" className="relative py-24 md:py-28 bg-white border-y border-[hsl(var(--lp-line))]">
+      <section id="especialidades" className="relative py-16 md:py-28 bg-white border-y border-[hsl(var(--lp-line))]">
         <div className="container mx-auto px-5 md:px-10">
           <motion.div
             initial="hidden"
@@ -403,7 +404,7 @@ export default function LandingPage() {
             </motion.span>
             <motion.h2
               variants={fadeUp}
-              className="mt-6 text-[34px] md:text-[44px] font-extrabold tracking-[-0.02em] leading-[1.1] text-[hsl(var(--lp-ink))]"
+              className="mt-6 text-[28px] md:text-[44px] font-extrabold tracking-[-0.02em] leading-[1.1] text-[hsl(var(--lp-ink))]"
             >
               Um time completo, <span className="text-[hsl(var(--lp-blue))]">à sua disposição</span>
             </motion.h2>
@@ -436,9 +437,9 @@ export default function LandingPage() {
       </section>
 
       {/* ============== BENEFÍCIOS ============== */}
-      <section id="beneficios" className="relative py-24 md:py-28">
+      <section id="beneficios" className="relative py-16 md:py-28">
         <div className="container mx-auto px-5 md:px-10">
-          <div className="grid lg:grid-cols-2 gap-14 items-center max-w-6xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center max-w-6xl mx-auto">
             <motion.div
               initial="hidden"
               whileInView="show"
@@ -453,7 +454,7 @@ export default function LandingPage() {
               </motion.span>
               <motion.h2
                 variants={fadeUp}
-                className="mt-6 text-[34px] md:text-[44px] font-extrabold tracking-[-0.02em] leading-[1.08] text-[hsl(var(--lp-ink))]"
+                className="mt-6 text-[28px] md:text-[44px] font-extrabold tracking-[-0.02em] leading-[1.08] text-[hsl(var(--lp-ink))]"
               >
                 Tudo que você precisa para <span className="text-[hsl(var(--lp-blue))]">gerenciar</span> sua saúde
               </motion.h2>
@@ -553,7 +554,7 @@ export default function LandingPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.05 }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="relative overflow-hidden rounded-3xl bg-[hsl(var(--lp-blue))] px-6 py-10 md:px-12 md:py-12 shadow-[0_30px_70px_-25px_hsl(var(--lp-blue)/0.55)]"
+            className="relative overflow-hidden rounded-3xl bg-[hsl(var(--lp-blue))] px-5 py-8 md:px-12 md:py-12 shadow-[0_30px_70px_-25px_hsl(var(--lp-blue)/0.55)]"
           >
             <div aria-hidden className="absolute inset-0 opacity-20" style={{
               backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
@@ -566,7 +567,7 @@ export default function LandingPage() {
                   <Calendar className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-[22px] md:text-[26px] font-extrabold text-white tracking-tight leading-tight">
+                  <h3 className="text-[20px] md:text-[26px] font-extrabold text-white tracking-tight leading-tight">
                     Pronto para cuidar da sua saúde?
                   </h3>
                   <p className="text-[14.5px] text-white/85 mt-1">
@@ -591,7 +592,7 @@ export default function LandingPage() {
 
       {/* ============== FOOTER ============== */}
       <footer id="contato" className="bg-white border-t border-[hsl(var(--lp-line))] text-[hsl(var(--lp-muted))]">
-        <div className="container mx-auto px-5 md:px-10 py-14 grid md:grid-cols-4 gap-10">
+        <div className="container mx-auto px-5 md:px-10 py-12 md:py-14 grid sm:grid-cols-2 md:grid-cols-4 gap-8 md:gap-10">
           <div>
             <div className="flex items-center gap-3 mb-4">
               <img src={clinicLogo} alt={clinicName} className="h-9 w-auto object-contain" />
