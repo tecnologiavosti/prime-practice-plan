@@ -119,6 +119,7 @@ const App = () => (
             
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <CookieBanner />
         </BrowserRouter>
       </ErrorBoundary>
     </TooltipProvider>
