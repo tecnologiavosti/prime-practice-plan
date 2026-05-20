@@ -629,6 +629,25 @@ export default function LandingPage() {
             </Link>
           </div>
           <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[hsl(var(--lp-ink))] mb-4">Atendimento</p>
+            <ul className="space-y-2.5 text-[14px]">
+              <li className="flex items-start gap-2">
+                <Clock className="h-4 w-4 mt-0.5 shrink-0 text-[hsl(var(--lp-blue))]" />
+                <div>
+                  <div className="text-[hsl(var(--lp-ink))] font-semibold">Segunda a Sexta</div>
+                  <div>08h às 19h</div>
+                </div>
+              </li>
+              <li className="flex items-start gap-2">
+                <Clock className="h-4 w-4 mt-0.5 shrink-0 text-[hsl(var(--lp-blue))]" />
+                <div>
+                  <div className="text-[hsl(var(--lp-ink))] font-semibold">Sábado</div>
+                  <div>08h às 13h</div>
+                </div>
+              </li>
+            </ul>
+          </div>
+          <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[hsl(var(--lp-ink))] mb-4">Navegação</p>
             <ul className="space-y-2.5 text-[14px]">
               <li><a href="#sobre" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Sobre</a></li>
