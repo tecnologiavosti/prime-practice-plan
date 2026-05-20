@@ -280,7 +280,7 @@ export default function LandingPage() {
                 <img
                   src={clinicHero}
                   alt={`Recepção da ${clinicName}`}
-                  className="w-full h-[420px] md:h-[520px] object-cover"
+                  className="w-full h-[280px] sm:h-[420px] md:h-[520px] object-cover"
                   width={1024}
                   height={1024}
                 />
