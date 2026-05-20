@@ -620,6 +620,13 @@ export default function LandingPage() {
                 <Facebook className="h-[18px] w-[18px]" strokeWidth={1.8} />
               </a>
             </div>
+            <Link
+              to="/politica-de-privacidade"
+              className="mt-5 inline-flex items-center gap-1.5 text-[13px] text-[hsl(var(--lp-muted))] hover:text-[hsl(var(--lp-blue))] transition-colors"
+            >
+              <Lock className="h-3.5 w-3.5" />
+              Política de Privacidade
+            </Link>
           </div>
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[hsl(var(--lp-ink))] mb-4">Navegação</p>
@@ -642,10 +649,7 @@ export default function LandingPage() {
         <div className="border-t border-[hsl(var(--lp-line))]">
           <div className="container mx-auto px-5 md:px-10 py-5 flex flex-col md:flex-row items-center justify-between gap-3 text-[12.5px] text-[hsl(var(--lp-muted))]">
             <p>© {new Date().getFullYear()} {clinicName}. Todos os direitos reservados.</p>
-            <div className="flex items-center gap-5">
-              <Link to="/politica-de-privacidade" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Política de Privacidade</Link>
-              <Link to="/admin/auth" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Área Administrativa</Link>
-            </div>
+            <Link to="/admin/auth" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Área Administrativa</Link>
           </div>
         </div>
       </footer>
