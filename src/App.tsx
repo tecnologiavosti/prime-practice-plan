@@ -35,6 +35,8 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 // Patient Portal
 import LandingPage from "./pages/LandingPage";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import CookieBanner from "@/components/CookieBanner";
 import PatientAuth from "./pages/patient/PatientAuth";
 import PatientDashboard from "./pages/patient/PatientDashboard";
 import PatientAppointments from "./pages/patient/PatientAppointments";
@@ -60,6 +62,8 @@ const App = () => (
           <Routes>
             {/* Public Landing Page */}
             <Route path="/" element={<LandingPage />} />
+            <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
+            
             
             {/* Patient Auth Routes */}
             <Route path="/login" element={<PatientAuthProvider><PatientAuth mode="login" /></PatientAuthProvider>} />
@@ -115,6 +119,7 @@ const App = () => (
             
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <CookieBanner />
         </BrowserRouter>
       </ErrorBoundary>
     </TooltipProvider>

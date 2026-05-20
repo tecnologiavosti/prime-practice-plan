@@ -642,7 +642,10 @@ export default function LandingPage() {
         <div className="border-t border-[hsl(var(--lp-line))]">
           <div className="container mx-auto px-5 md:px-10 py-5 flex flex-col md:flex-row items-center justify-between gap-3 text-[12.5px] text-[hsl(var(--lp-muted))]">
             <p>© {new Date().getFullYear()} {clinicName}. Todos os direitos reservados.</p>
-            <Link to="/admin/auth" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Área Administrativa</Link>
+            <div className="flex items-center gap-5">
+              <Link to="/politica-de-privacidade" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Política de Privacidade</Link>
+              <Link to="/admin/auth" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Área Administrativa</Link>
+            </div>
           </div>
         </div>
       </footer>
