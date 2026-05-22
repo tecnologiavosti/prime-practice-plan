@@ -23,6 +23,7 @@ import {
   Banknote,
   Settings,
   UsersRound,
+  TrendingUp,
 } from 'lucide-react';
 
 const menuItems = [
@@ -36,7 +37,8 @@ const menuItems = [
   { to: '/admin/administradoras', icon: CreditCard, label: 'Administradoras', roles: ['administrador'] },
   { to: '/admin/pacotes', icon: Package, label: 'Pacotes', roles: ['administrador', 'recepcao'] },
   { to: '/admin/especialidades', icon: Stethoscope, label: 'Especialidades', roles: ['administrador'] },
-  { to: '/admin/financeiro', icon: DollarSign, label: 'Financeiro', roles: ['administrador', 'financeiro'] },
+  { to: '/admin/financeiro', icon: DollarSign, label: 'Contas a Receber', roles: ['administrador', 'financeiro'] },
+  { to: '/admin/fluxo-caixa', icon: TrendingUp, label: 'Fluxo de Caixa', roles: ['administrador', 'financeiro'] },
   { to: '/admin/guias', icon: Receipt, label: 'Guias Médicas', roles: ['administrador', 'financeiro', 'recepcao'] },
   { to: '/admin/lotes-faturamento', icon: FileBarChart, label: 'Faturamento', roles: ['administrador', 'financeiro'] },
   { to: '/admin/repasses', icon: Wallet, label: 'Repasses', roles: ['administrador', 'financeiro'] },
