@@ -27,6 +27,7 @@ import BillingBatches from "./pages/BillingBatches";
 import FinancialReports from "./pages/FinancialReports";
 import PaymentMethods from "./pages/PaymentMethods";
 import InsuranceReimbursements from "./pages/InsuranceReimbursements";
+import CashFlow from "./pages/CashFlow";
 
 import ScheduleConfig from "./pages/ScheduleConfig";
 import ClinicProfile from "./pages/ClinicProfile";
@@ -104,6 +105,7 @@ const App = () => (
               <Route path="/admin/agenda" element={<Schedule />} />
               <Route path="/admin/agendamentos" element={<Appointments />} />
               <Route path="/admin/financeiro" element={<FinancialTransactions />} />
+              <Route path="/admin/fluxo-caixa" element={<CashFlow />} />
               <Route path="/admin/guias" element={<MedicalGuides />} />
               <Route path="/admin/repasses" element={<ProfessionalPayouts />} />
               <Route path="/admin/repasse-convenios" element={<InsuranceReimbursements />} />

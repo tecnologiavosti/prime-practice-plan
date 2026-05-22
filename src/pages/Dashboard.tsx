@@ -14,8 +14,11 @@ import {
   AlertCircle,
   ArrowUpRight,
   Wallet,
-  Receipt
+  Receipt,
+  TrendingUp,
+  TrendingDown
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -23,6 +26,7 @@ interface Stats { totalPatients: number; totalProfessionals: number; todayAppoin
 interface GuideStats { total: number; pending: number; authorized: number; billed: number; totalRequested: number; totalAuthorized: number; }
 interface BillingStats { openBatches: number; sentBatches: number; receivedAmount: number; pendingAmount: number; }
 interface PayoutStats { pendingPayouts: number; pendingAmount: number; paidThisMonth: number; }
+interface CashFlowStats { entradas: number; saidas: number; saldo: number; }
 interface RecentActivity { id: string; type: 'guide' | 'appointment' | 'billing' | 'payout'; title: string; description: string; status: string; date: string; amount?: number; }
 
 export default function Dashboard() {
@@ -30,6 +34,7 @@ export default function Dashboard() {
   const [guideStats, setGuideStats] = useState<GuideStats>({ total: 0, pending: 0, authorized: 0, billed: 0, totalRequested: 0, totalAuthorized: 0 });
   const [billingStats, setBillingStats] = useState<BillingStats>({ openBatches: 0, sentBatches: 0, receivedAmount: 0, pendingAmount: 0 });
   const [payoutStats, setPayoutStats] = useState<PayoutStats>({ pendingPayouts: 0, pendingAmount: 0, paidThisMonth: 0 });
+  const [cashFlowStats, setCashFlowStats] = useState<CashFlowStats>({ entradas: 0, saidas: 0, saldo: 0 });
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -39,8 +44,17 @@ export default function Dashboard() {
   useEffect(() => { fetchAllData(); }, []);
 
   const fetchAllData = async () => {
-    await Promise.all([fetchBasicStats(), fetchGuideStats(), fetchBillingStats(), fetchPayoutStats(), fetchRecentActivity()]);
+    await Promise.all([fetchBasicStats(), fetchGuideStats(), fetchBillingStats(), fetchPayoutStats(), fetchCashFlowStats(), fetchRecentActivity()]);
     setLoading(false);
+  };
+
+  const fetchCashFlowStats = async () => {
+    const { data } = await supabase.from('cash_flow_entries').select('entry_type, amount').gte('entry_date', monthStart).lte('entry_date', monthEnd);
+    if (data) {
+      const entradas = data.filter(d => d.entry_type === 'entrada').reduce((s, d) => s + Number(d.amount || 0), 0);
+      const saidas = data.filter(d => d.entry_type === 'saida').reduce((s, d) => s + Number(d.amount || 0), 0);
+      setCashFlowStats({ entradas, saidas, saldo: entradas - saidas });
+    }
   };
 
   const fetchBasicStats = async () => {
@@ -267,6 +281,49 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Fluxo de Caixa */}
+      <Card className="shadow-sm border-t-[3px] border-t-primary">
+        <CardHeader className="p-4 pb-3 flex flex-row items-center justify-between">
+          <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
+            <div className="h-7 w-7 rounded-md bg-primary/15 flex items-center justify-center">
+              <Wallet className="h-4 w-4 text-primary" strokeWidth={2} />
+            </div>
+            Fluxo de Caixa — {format(new Date(), "MMM yyyy", { locale: ptBR })}
+          </CardTitle>
+          <Link to="/admin/fluxo-caixa" className="text-xs font-semibold text-primary hover:underline">
+            Gerenciar →
+          </Link>
+        </CardHeader>
+        <CardContent className="p-4 pt-0">
+          <div className="grid grid-cols-3 gap-3">
+            <div className="p-3 rounded-lg border border-emerald-200 bg-emerald-50/50">
+              <div className="flex items-center gap-2 mb-1">
+                <TrendingUp className="h-4 w-4 text-emerald-600" strokeWidth={2} />
+                <p className="text-[11px] font-semibold text-emerald-700 uppercase tracking-wider">Entradas</p>
+              </div>
+              <p className="text-lg font-extrabold text-emerald-700">{loading ? '—' : formatCurrency(cashFlowStats.entradas)}</p>
+            </div>
+            <div className="p-3 rounded-lg border border-red-200 bg-red-50/50">
+              <div className="flex items-center gap-2 mb-1">
+                <TrendingDown className="h-4 w-4 text-red-600" strokeWidth={2} />
+                <p className="text-[11px] font-semibold text-red-700 uppercase tracking-wider">Saídas</p>
+              </div>
+              <p className="text-lg font-extrabold text-red-700">{loading ? '—' : formatCurrency(cashFlowStats.saidas)}</p>
+            </div>
+            <div className="p-3 rounded-lg border border-border bg-card">
+              <div className="flex items-center gap-2 mb-1">
+                <DollarSign className="h-4 w-4 text-primary" strokeWidth={2} />
+                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Saldo</p>
+              </div>
+              <p className={`text-lg font-extrabold ${cashFlowStats.saldo >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
+                {loading ? '—' : formatCurrency(cashFlowStats.saldo)}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
 
       {/* Atividade Recente */}
       <Card className="shadow-sm border-t-[3px] border-t-primary">
