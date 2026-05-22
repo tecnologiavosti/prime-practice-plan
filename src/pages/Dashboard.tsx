@@ -14,8 +14,11 @@ import {
   AlertCircle,
   ArrowUpRight,
   Wallet,
-  Receipt
+  Receipt,
+  TrendingUp,
+  TrendingDown
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -23,6 +26,7 @@ interface Stats { totalPatients: number; totalProfessionals: number; todayAppoin
 interface GuideStats { total: number; pending: number; authorized: number; billed: number; totalRequested: number; totalAuthorized: number; }
 interface BillingStats { openBatches: number; sentBatches: number; receivedAmount: number; pendingAmount: number; }
 interface PayoutStats { pendingPayouts: number; pendingAmount: number; paidThisMonth: number; }
+interface CashFlowStats { entradas: number; saidas: number; saldo: number; }
 interface RecentActivity { id: string; type: 'guide' | 'appointment' | 'billing' | 'payout'; title: string; description: string; status: string; date: string; amount?: number; }
 
 export default function Dashboard() {
@@ -30,6 +34,7 @@ export default function Dashboard() {
   const [guideStats, setGuideStats] = useState<GuideStats>({ total: 0, pending: 0, authorized: 0, billed: 0, totalRequested: 0, totalAuthorized: 0 });
   const [billingStats, setBillingStats] = useState<BillingStats>({ openBatches: 0, sentBatches: 0, receivedAmount: 0, pendingAmount: 0 });
   const [payoutStats, setPayoutStats] = useState<PayoutStats>({ pendingPayouts: 0, pendingAmount: 0, paidThisMonth: 0 });
+  const [cashFlowStats, setCashFlowStats] = useState<CashFlowStats>({ entradas: 0, saidas: 0, saldo: 0 });
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -39,8 +44,17 @@ export default function Dashboard() {
   useEffect(() => { fetchAllData(); }, []);
 
   const fetchAllData = async () => {
-    await Promise.all([fetchBasicStats(), fetchGuideStats(), fetchBillingStats(), fetchPayoutStats(), fetchRecentActivity()]);
+    await Promise.all([fetchBasicStats(), fetchGuideStats(), fetchBillingStats(), fetchPayoutStats(), fetchCashFlowStats(), fetchRecentActivity()]);
     setLoading(false);
+  };
+
+  const fetchCashFlowStats = async () => {
+    const { data } = await supabase.from('cash_flow_entries').select('entry_type, amount').gte('entry_date', monthStart).lte('entry_date', monthEnd);
+    if (data) {
+      const entradas = data.filter(d => d.entry_type === 'entrada').reduce((s, d) => s + Number(d.amount || 0), 0);
+      const saidas = data.filter(d => d.entry_type === 'saida').reduce((s, d) => s + Number(d.amount || 0), 0);
+      setCashFlowStats({ entradas, saidas, saldo: entradas - saidas });
+    }
   };
 
   const fetchBasicStats = async () => {
