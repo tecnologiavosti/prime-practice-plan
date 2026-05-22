@@ -74,7 +74,7 @@ export default function CashFlow() {
     const end = format(endOfMonth(new Date(y, m - 1, 1)), 'yyyy-MM-dd');
     let q = supabase
       .from('cash_flow_entries')
-      .select('*, payment_method:payment_methods(name)')
+      .select('*')
       .gte('entry_date', start)
       .lte('entry_date', end)
       .order('entry_date', { ascending: false });
@@ -259,7 +259,7 @@ export default function CashFlow() {
                   </TableCell>
                   <TableCell className="text-sm">{e.category}</TableCell>
                   <TableCell className="text-sm">{e.description || '—'}</TableCell>
-                  <TableCell className="text-sm">{e.payment_method?.name || '—'}</TableCell>
+                  <TableCell className="text-sm">{paymentMethods.find(p => p.id === e.payment_method_id)?.name || '—'}</TableCell>
                   <TableCell className={`text-right font-semibold tabular-nums ${e.entry_type === 'entrada' ? 'text-emerald-600' : 'text-red-600'}`}>
                     {e.entry_type === 'entrada' ? '+' : '-'} {formatCurrency(Number(e.amount))}
                   </TableCell>
