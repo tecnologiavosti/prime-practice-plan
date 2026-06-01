@@ -1758,6 +1758,57 @@ export type Database = {
           },
         ]
       }
+      seo_settings: {
+        Row: {
+          bing_site_verification: string | null
+          created_at: string
+          ga4_measurement_id: string | null
+          google_site_verification: string | null
+          gtm_container_id: string | null
+          id: string
+          meta_description: string | null
+          meta_keywords: string | null
+          meta_pixel_id: string | null
+          meta_title: string | null
+          og_image_url: string | null
+          robots_txt: string | null
+          singleton: boolean
+          updated_at: string
+        }
+        Insert: {
+          bing_site_verification?: string | null
+          created_at?: string
+          ga4_measurement_id?: string | null
+          google_site_verification?: string | null
+          gtm_container_id?: string | null
+          id?: string
+          meta_description?: string | null
+          meta_keywords?: string | null
+          meta_pixel_id?: string | null
+          meta_title?: string | null
+          og_image_url?: string | null
+          robots_txt?: string | null
+          singleton?: boolean
+          updated_at?: string
+        }
+        Update: {
+          bing_site_verification?: string | null
+          created_at?: string
+          ga4_measurement_id?: string | null
+          google_site_verification?: string | null
+          gtm_container_id?: string | null
+          id?: string
+          meta_description?: string | null
+          meta_keywords?: string | null
+          meta_pixel_id?: string | null
+          meta_title?: string | null
+          og_image_url?: string | null
+          robots_txt?: string | null
+          singleton?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       specialties: {
         Row: {
           active: boolean
