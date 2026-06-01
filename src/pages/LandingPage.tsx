@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion, type Variants } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useClinicSettings } from '@/hooks/useClinicSettings';
+import { SeoHead } from '@/components/SeoHead';
 import { supabase } from '@/integrations/supabase/client';
 import logoPacem from '@/assets/logoPacem.png';
 import clinicHero from '@/assets/clinic-hero.jpg';
@@ -133,6 +134,7 @@ export default function LandingPage() {
       style={lpStyles}
       className="relative min-h-screen overflow-x-hidden bg-[hsl(var(--lp-bg))] font-['Inter',_sans-serif] text-[hsl(var(--lp-ink))] antialiased"
     >
+      <SeoHead />
       {/* ============== HEADER ============== */}
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
