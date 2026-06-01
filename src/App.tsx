@@ -28,6 +28,7 @@ import FinancialReports from "./pages/FinancialReports";
 import PaymentMethods from "./pages/PaymentMethods";
 import InsuranceReimbursements from "./pages/InsuranceReimbursements";
 import CashFlow from "./pages/CashFlow";
+import SeoSettings from "./pages/SeoSettings";
 
 import ScheduleConfig from "./pages/ScheduleConfig";
 import ClinicProfile from "./pages/ClinicProfile";
@@ -116,6 +117,7 @@ const App = () => (
               <Route path="/admin/escalas" element={<ScheduleConfig />} />
               <Route path="/admin/perfil-clinica" element={<ClinicProfile />} />
               <Route path="/admin/equipe" element={<TeamUsers />} />
+              <Route path="/admin/seo" element={<SeoSettings />} />
               
             </Route>
             
