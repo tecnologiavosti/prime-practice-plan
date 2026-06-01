@@ -133,6 +133,7 @@ export default function LandingPage() {
       style={lpStyles}
       className="relative min-h-screen overflow-x-hidden bg-[hsl(var(--lp-bg))] font-['Inter',_sans-serif] text-[hsl(var(--lp-ink))] antialiased"
     >
+      <SeoHead />
       {/* ============== HEADER ============== */}
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
