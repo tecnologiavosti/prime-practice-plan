@@ -381,6 +381,48 @@ export type Database = {
           },
         ]
       }
+      blog_posts: {
+        Row: {
+          author: string | null
+          content: string | null
+          cover_url: string | null
+          created_at: string
+          excerpt: string | null
+          id: string
+          published: boolean
+          published_at: string
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author?: string | null
+          content?: string | null
+          cover_url?: string | null
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          published?: boolean
+          published_at?: string
+          slug: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author?: string | null
+          content?: string | null
+          cover_url?: string | null
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          published?: boolean
+          published_at?: string
+          slug?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       cash_flow_entries: {
         Row: {
           amount: number
@@ -1827,6 +1869,27 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string
+        }
+        Relationships: []
+      }
+      specialty_health_insurances: {
+        Row: {
+          created_at: string
+          health_insurance_id: string
+          id: string
+          specialty_id: string
+        }
+        Insert: {
+          created_at?: string
+          health_insurance_id: string
+          id?: string
+          specialty_id: string
+        }
+        Update: {
+          created_at?: string
+          health_insurance_id?: string
+          id?: string
+          specialty_id?: string
         }
         Relationships: []
       }
