@@ -624,6 +624,8 @@ export default function LandingPage() {
             <ul className="space-y-2.5 text-[13.5px]">
               <li className="flex items-start gap-2"><Clock className="h-4 w-4 mt-0.5 shrink-0 text-[hsl(var(--lp-blue))]" /><div><div className="text-[hsl(var(--lp-ink))] font-semibold">Seg a Sex</div>08h às 19h</div></li>
               <li className="flex items-start gap-2"><Clock className="h-4 w-4 mt-0.5 shrink-0 text-[hsl(var(--lp-blue))]" /><div><div className="text-[hsl(var(--lp-ink))] font-semibold">Sábado</div>08h às 13h</div></li>
+              <li><Link to="/convenios" className="hover:text-[hsl(var(--lp-blue))]">Convênios</Link></li>
+              <li><a href="#blog" className="hover:text-[hsl(var(--lp-blue))]">Blog</a></li>
               <li><Link to="/politica-de-privacidade" className="inline-flex items-center gap-1.5 hover:text-[hsl(var(--lp-blue))]"><Lock className="h-3.5 w-3.5" />Política de Privacidade</Link></li>
             </ul>
           </div>
