@@ -436,7 +436,46 @@ export default function LandingPage() {
       </section>
 
       {/* BLOG */}
-      <BlogSection />
+      {posts.length > 0 && (
+        <section id="blog" className="py-16 md:py-24">
+          <div className="container mx-auto px-5 md:px-10">
+            <div className="max-w-2xl mx-auto text-center mb-12">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-[hsl(var(--lp-line))] bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[hsl(var(--lp-blue))]">
+                Blog
+              </span>
+              <h2 className="mt-5 text-[28px] md:text-[42px] font-extrabold tracking-[-0.02em] leading-[1.1]">
+                Conteúdo sobre <span className="text-[hsl(var(--lp-blue))]">saúde mental</span>
+              </h2>
+              <p className="mt-4 text-[15.5px] text-[hsl(var(--lp-muted))]">
+                Artigos escritos pela nossa equipe para informar e cuidar de você.
+              </p>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto">
+              {posts.map((p) => (
+                <article key={p.id} className="rounded-2xl border border-[hsl(var(--lp-line))] bg-white overflow-hidden hover:shadow-[0_18px_40px_-18px_hsl(var(--lp-blue)/0.3)] transition-all hover:-translate-y-1">
+                  {p.cover_url ? (
+                    <img src={p.cover_url} alt={p.title} className="w-full h-44 object-cover" loading="lazy" />
+                  ) : (
+                    <div className="w-full h-44 bg-gradient-to-br from-[hsl(var(--lp-blue-soft))] to-white flex items-center justify-center">
+                      <Brain className="h-12 w-12 text-[hsl(var(--lp-blue))]/30" />
+                    </div>
+                  )}
+                  <div className="p-5">
+                    <h3 className="text-[16px] font-bold leading-snug mb-2 line-clamp-2">{p.title}</h3>
+                    {p.excerpt && <p className="text-[13.5px] text-[hsl(var(--lp-muted))] leading-relaxed line-clamp-3">{p.excerpt}</p>}
+                    <p className="text-[11.5px] text-[hsl(var(--lp-muted))] mt-3">
+                      {p.author && <>por <span className="font-semibold text-[hsl(var(--lp-ink))]">{p.author}</span> · </>}
+                      {new Date(p.published_at).toLocaleDateString('pt-BR')}
+                    </p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+
 
 
       {/* CTA WHATSAPP MIDDLE */}
