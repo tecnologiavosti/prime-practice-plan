@@ -29,6 +29,8 @@ import PaymentMethods from "./pages/PaymentMethods";
 import InsuranceReimbursements from "./pages/InsuranceReimbursements";
 import CashFlow from "./pages/CashFlow";
 import SeoSettings from "./pages/SeoSettings";
+import Blog from "./pages/Blog";
+import Convenios from "./pages/Convenios";
 
 import ScheduleConfig from "./pages/ScheduleConfig";
 import ClinicProfile from "./pages/ClinicProfile";
