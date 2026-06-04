@@ -121,6 +121,7 @@ const App = () => (
               <Route path="/admin/perfil-clinica" element={<ClinicProfile />} />
               <Route path="/admin/equipe" element={<TeamUsers />} />
               <Route path="/admin/seo" element={<SeoSettings />} />
+              <Route path="/admin/blog" element={<Blog />} />
               
             </Route>
             
