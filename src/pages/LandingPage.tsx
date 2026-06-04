@@ -193,9 +193,10 @@ export default function LandingPage() {
           </Link>
           <nav className="hidden lg:flex items-center gap-8 text-[14px] font-medium text-[hsl(var(--lp-ink))]/75">
             <a href="#especialidades" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Especialidades</a>
-            <a href="#diferenciais" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Por que Pacem</a>
+            <a href="#diferenciais" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Diferenciais</a>
             <a href="#equipe" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Equipe</a>
-            <a href="#depoimentos" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Depoimentos</a>
+            <Link to="/convenios" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Convênios</Link>
+            <a href="#blog" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Blog</a>
             <a href="#faq" className="hover:text-[hsl(var(--lp-blue))] transition-colors">FAQ</a>
           </nav>
           <div className="flex items-center gap-2 shrink-0">
@@ -206,13 +207,12 @@ export default function LandingPage() {
               className="hidden sm:inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-[#25D366] text-white text-sm font-semibold hover:bg-[#1ebe5d] transition-colors"
             >
               <WhatsAppIcon className="h-4 w-4" />
-              WhatsApp
+              Agendar
             </a>
-            <Button asChild size="sm" className="rounded-xl bg-[hsl(var(--lp-blue))] hover:bg-[hsl(var(--lp-blue-ink))] text-white px-3 md:px-4">
-              <Link to="/cadastro">
-                <span className="hidden sm:inline">Agendar Consulta</span>
-                <span className="sm:hidden">Agendar</span>
-                <ArrowRight className="h-3.5 w-3.5" />
+            <Button asChild size="sm" variant="outline" className="rounded-xl border-[hsl(var(--lp-blue))] text-[hsl(var(--lp-blue))] hover:bg-[hsl(var(--lp-blue))] hover:text-white px-3 md:px-4">
+              <Link to="/login">
+                <span className="hidden sm:inline">Entrar / Cadastrar-se</span>
+                <span className="sm:hidden">Entrar</span>
               </Link>
             </Button>
           </div>
