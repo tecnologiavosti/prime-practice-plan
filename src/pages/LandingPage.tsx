@@ -167,6 +167,18 @@ export default function LandingPage() {
     })();
   }, []);
 
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from('blog_posts')
+        .select('id, title, excerpt, cover_url, author, published_at, slug')
+        .eq('published', true)
+        .order('published_at', { ascending: false })
+        .limit(6);
+      if (data) setPosts(data);
+    })();
+  }, []);
+
   return (
     <div
       style={lpStyles}
