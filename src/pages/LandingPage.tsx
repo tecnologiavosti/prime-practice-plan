@@ -403,29 +403,6 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-6xl mx-auto">
-            {equipe.map((p) => (
-              <div
-                key={p.nome}
-                className="group rounded-2xl border border-[hsl(var(--lp-line))] bg-[hsl(var(--lp-bg))] overflow-hidden hover:shadow-[0_18px_40px_-18px_hsl(var(--lp-blue)/0.3)] transition-all hover:-translate-y-1"
-              >
-                <div className="aspect-[4/5] bg-gradient-to-br from-[hsl(var(--lp-blue-soft))] to-white flex items-center justify-center">
-                  <Users className="h-16 w-16 text-[hsl(var(--lp-blue))]/30" strokeWidth={1.2} />
-                </div>
-                <div className="p-5">
-                  <h3 className="text-[15.5px] font-bold leading-tight">{p.nome}</h3>
-                  <p className="text-[13px] text-[hsl(var(--lp-blue))] font-semibold mt-1">{p.cargo}</p>
-                  <p className="text-[12px] text-[hsl(var(--lp-muted))] mt-2 leading-relaxed">{p.formacao}</p>
-                  <p className="text-[11.5px] text-[hsl(var(--lp-muted))] mt-1.5 flex items-center gap-1">
-                    <Clock className="h-3 w-3" /> {p.tempo}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-          <p className="text-center text-[12px] text-[hsl(var(--lp-muted))] mt-8 italic">
-            *Em breve: fotos e biografias completas de cada profissional.
-          </p>
         </div>
       </section>
 
