@@ -51,6 +51,8 @@ const menuItems = [
   { to: '/admin/perfil-clinica', icon: Settings, label: 'Perfil da Clínica', roles: ['administrador'] },
   { to: '/admin/equipe', icon: UsersRound, label: 'Equipe / Usuários', roles: ['administrador'] },
   { to: '/admin/seo', icon: Search, label: 'SEO / Google', roles: ['administrador'] },
+  { to: '/admin/blog', icon: Newspaper, label: 'Blog', roles: ['administrador'] },
+  
   
 ];
 
