@@ -435,6 +435,10 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* BLOG */}
+      <BlogSection />
+
+
       {/* CTA WHATSAPP MIDDLE */}
       <section className="py-10 md:py-14">
         <div className="container mx-auto px-5 md:px-10">
