@@ -145,6 +145,7 @@ export default function LandingPage() {
   const { settings } = useClinicSettings();
   const [scrolled, setScrolled] = useState(false);
   const [stats, setStats] = useState<{ patients: number; appointments: number } | null>(null);
+  const [posts, setPosts] = useState<Array<{ id: string; title: string; excerpt: string | null; cover_url: string | null; author: string | null; published_at: string; slug: string }>>([]);
 
   const clinicName = settings?.nome_fantasia || 'Clínica Pacem';
   const clinicLogo = settings?.logo_url || logoPacem;
