@@ -29,6 +29,8 @@ import PaymentMethods from "./pages/PaymentMethods";
 import InsuranceReimbursements from "./pages/InsuranceReimbursements";
 import CashFlow from "./pages/CashFlow";
 import SeoSettings from "./pages/SeoSettings";
+import Blog from "./pages/Blog";
+import Convenios from "./pages/Convenios";
 
 import ScheduleConfig from "./pages/ScheduleConfig";
 import ClinicProfile from "./pages/ClinicProfile";
@@ -64,6 +66,7 @@ const App = () => (
           <Routes>
             {/* Public Landing Page */}
             <Route path="/" element={<LandingPage />} />
+            <Route path="/convenios" element={<Convenios />} />
             <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
             
             
@@ -118,6 +121,7 @@ const App = () => (
               <Route path="/admin/perfil-clinica" element={<ClinicProfile />} />
               <Route path="/admin/equipe" element={<TeamUsers />} />
               <Route path="/admin/seo" element={<SeoSettings />} />
+              <Route path="/admin/blog" element={<Blog />} />
               
             </Route>
             

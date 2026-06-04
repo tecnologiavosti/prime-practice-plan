@@ -65,14 +65,14 @@ const especialidades = [
     desc: 'Diagnóstico e terapia para linguagem, fala, voz e desenvolvimento infantil.',
   },
   {
-    icon: Heart,
-    title: 'Terapia de Casal',
-    desc: 'Mediação de conflitos, comunicação e reconstrução de vínculos afetivos.',
+    icon: HeartPulse,
+    title: 'Clínico Geral',
+    desc: 'Avaliação clínica abrangente, acompanhamento de saúde, exames de rotina e cuidado preventivo.',
   },
   {
     icon: Baby,
-    title: 'Terapia Infantil',
-    desc: 'Atendimento lúdico especializado em desenvolvimento emocional de crianças.',
+    title: 'RN1',
+    desc: 'Atendimento especializado em recém-nascidos com foco em desenvolvimento, vínculo e orientação familiar.',
   },
 ];
 
@@ -83,14 +83,6 @@ const diferenciais = [
   { icon: MapPin, title: 'Localização estratégica', desc: 'Asa Norte — Brasília, fácil acesso e estacionamento.' },
   { icon: Calendar, title: 'Presencial e online', desc: 'Você escolhe a modalidade que melhor se adapta à sua rotina.' },
   { icon: ShieldCheck, title: 'Ambiente acolhedor', desc: 'Espaço pensado para o seu conforto e sigilo absoluto.' },
-];
-
-// Placeholders — substituir depois pelos profissionais reais
-const equipe = [
-  { nome: 'Dra. Ana Beatriz Costa', cargo: 'Psicóloga Clínica', formacao: 'CRP 01/12345 · Especialista em TCC', tempo: '+10 anos de atuação' },
-  { nome: 'Dr. Rafael Mendes', cargo: 'Médico Psiquiatra', formacao: 'CRM-DF 23456 · Residência em Psiquiatria HUB-UnB', tempo: '+8 anos de atuação' },
-  { nome: 'Dra. Larissa Almeida', cargo: 'Psicóloga Infantil', formacao: 'CRP 01/34567 · Mestre em Psicologia do Desenvolvimento', tempo: '+6 anos de atuação' },
-  { nome: 'Dra. Camila Ribeiro', cargo: 'Nutricionista Comportamental', formacao: 'CRN-1 5678 · Pós em Nutrição e Saúde Mental', tempo: '+7 anos de atuação' },
 ];
 
 const depoimentos = [
@@ -153,6 +145,7 @@ export default function LandingPage() {
   const { settings } = useClinicSettings();
   const [scrolled, setScrolled] = useState(false);
   const [stats, setStats] = useState<{ patients: number; appointments: number } | null>(null);
+  const [posts, setPosts] = useState<Array<{ id: string; title: string; excerpt: string | null; cover_url: string | null; author: string | null; published_at: string; slug: string }>>([]);
 
   const clinicName = settings?.nome_fantasia || 'Clínica Pacem';
   const clinicLogo = settings?.logo_url || logoPacem;
@@ -171,6 +164,18 @@ export default function LandingPage() {
         const r = data[0] as { patients_count: number; appointments_count: number };
         setStats({ patients: r.patients_count ?? 0, appointments: r.appointments_count ?? 0 });
       }
+    })();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from('blog_posts')
+        .select('id, title, excerpt, cover_url, author, published_at, slug')
+        .eq('published', true)
+        .order('published_at', { ascending: false })
+        .limit(6);
+      if (data) setPosts(data);
     })();
   }, []);
 
@@ -201,9 +206,10 @@ export default function LandingPage() {
           </Link>
           <nav className="hidden lg:flex items-center gap-8 text-[14px] font-medium text-[hsl(var(--lp-ink))]/75">
             <a href="#especialidades" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Especialidades</a>
-            <a href="#diferenciais" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Por que Pacem</a>
+            <a href="#diferenciais" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Diferenciais</a>
             <a href="#equipe" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Equipe</a>
-            <a href="#depoimentos" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Depoimentos</a>
+            <Link to="/convenios" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Convênios</Link>
+            <a href="#blog" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Blog</a>
             <a href="#faq" className="hover:text-[hsl(var(--lp-blue))] transition-colors">FAQ</a>
           </nav>
           <div className="flex items-center gap-2 shrink-0">
@@ -214,13 +220,12 @@ export default function LandingPage() {
               className="hidden sm:inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-[#25D366] text-white text-sm font-semibold hover:bg-[#1ebe5d] transition-colors"
             >
               <WhatsAppIcon className="h-4 w-4" />
-              WhatsApp
+              Agendar
             </a>
-            <Button asChild size="sm" className="rounded-xl bg-[hsl(var(--lp-blue))] hover:bg-[hsl(var(--lp-blue-ink))] text-white px-3 md:px-4">
-              <Link to="/cadastro">
-                <span className="hidden sm:inline">Agendar Consulta</span>
-                <span className="sm:hidden">Agendar</span>
-                <ArrowRight className="h-3.5 w-3.5" />
+            <Button asChild size="sm" variant="outline" className="rounded-xl border-[hsl(var(--lp-blue))] text-[hsl(var(--lp-blue))] hover:bg-[hsl(var(--lp-blue))] hover:text-white px-3 md:px-4">
+              <Link to="/login">
+                <span className="hidden sm:inline">Entrar / Cadastrar-se</span>
+                <span className="sm:hidden">Entrar</span>
               </Link>
             </Button>
           </div>
@@ -255,20 +260,14 @@ export default function LandingPage() {
               </motion.p>
 
               <motion.div variants={fadeUp} className="mt-7 md:mt-9 flex flex-col sm:flex-row gap-3">
-                <Button size="lg" asChild className="h-12 px-6 rounded-xl bg-[hsl(var(--lp-blue))] hover:bg-[hsl(var(--lp-blue-ink))] text-white text-[14.5px] font-semibold shadow-[0_14px_36px_-12px_hsl(var(--lp-blue)/0.6)] transition-all hover:-translate-y-0.5">
-                  <Link to="/cadastro">
-                    Agendar Consulta
-                    <ArrowRight className="ml-1 h-4 w-4" />
-                  </Link>
-                </Button>
                 <a
-                  href={wa('Olá! Gostaria de falar com um especialista da Clínica Pacem.')}
+                  href={wa('Olá! Gostaria de agendar uma consulta na Clínica Pacem.')}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl bg-[#25D366] hover:bg-[#1ebe5d] text-white text-[14.5px] font-semibold shadow-[0_14px_36px_-12px_rgba(37,211,102,0.6)] transition-all hover:-translate-y-0.5"
                 >
                   <WhatsAppIcon className="h-5 w-5" />
-                  Atendimento Imediato
+                  Agendar
                 </a>
               </motion.div>
 
@@ -411,29 +410,6 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-6xl mx-auto">
-            {equipe.map((p) => (
-              <div
-                key={p.nome}
-                className="group rounded-2xl border border-[hsl(var(--lp-line))] bg-[hsl(var(--lp-bg))] overflow-hidden hover:shadow-[0_18px_40px_-18px_hsl(var(--lp-blue)/0.3)] transition-all hover:-translate-y-1"
-              >
-                <div className="aspect-[4/5] bg-gradient-to-br from-[hsl(var(--lp-blue-soft))] to-white flex items-center justify-center">
-                  <Users className="h-16 w-16 text-[hsl(var(--lp-blue))]/30" strokeWidth={1.2} />
-                </div>
-                <div className="p-5">
-                  <h3 className="text-[15.5px] font-bold leading-tight">{p.nome}</h3>
-                  <p className="text-[13px] text-[hsl(var(--lp-blue))] font-semibold mt-1">{p.cargo}</p>
-                  <p className="text-[12px] text-[hsl(var(--lp-muted))] mt-2 leading-relaxed">{p.formacao}</p>
-                  <p className="text-[11.5px] text-[hsl(var(--lp-muted))] mt-1.5 flex items-center gap-1">
-                    <Clock className="h-3 w-3" /> {p.tempo}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-          <p className="text-center text-[12px] text-[hsl(var(--lp-muted))] mt-8 italic">
-            *Em breve: fotos e biografias completas de cada profissional.
-          </p>
         </div>
       </section>
 
@@ -471,6 +447,49 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* BLOG */}
+      {posts.length > 0 && (
+        <section id="blog" className="py-16 md:py-24">
+          <div className="container mx-auto px-5 md:px-10">
+            <div className="max-w-2xl mx-auto text-center mb-12">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-[hsl(var(--lp-line))] bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[hsl(var(--lp-blue))]">
+                Blog
+              </span>
+              <h2 className="mt-5 text-[28px] md:text-[42px] font-extrabold tracking-[-0.02em] leading-[1.1]">
+                Conteúdo sobre <span className="text-[hsl(var(--lp-blue))]">saúde mental</span>
+              </h2>
+              <p className="mt-4 text-[15.5px] text-[hsl(var(--lp-muted))]">
+                Artigos escritos pela nossa equipe para informar e cuidar de você.
+              </p>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto">
+              {posts.map((p) => (
+                <article key={p.id} className="rounded-2xl border border-[hsl(var(--lp-line))] bg-white overflow-hidden hover:shadow-[0_18px_40px_-18px_hsl(var(--lp-blue)/0.3)] transition-all hover:-translate-y-1">
+                  {p.cover_url ? (
+                    <img src={p.cover_url} alt={p.title} className="w-full h-44 object-cover" loading="lazy" />
+                  ) : (
+                    <div className="w-full h-44 bg-gradient-to-br from-[hsl(var(--lp-blue-soft))] to-white flex items-center justify-center">
+                      <Brain className="h-12 w-12 text-[hsl(var(--lp-blue))]/30" />
+                    </div>
+                  )}
+                  <div className="p-5">
+                    <h3 className="text-[16px] font-bold leading-snug mb-2 line-clamp-2">{p.title}</h3>
+                    {p.excerpt && <p className="text-[13.5px] text-[hsl(var(--lp-muted))] leading-relaxed line-clamp-3">{p.excerpt}</p>}
+                    <p className="text-[11.5px] text-[hsl(var(--lp-muted))] mt-3">
+                      {p.author && <>por <span className="font-semibold text-[hsl(var(--lp-ink))]">{p.author}</span> · </>}
+                      {new Date(p.published_at).toLocaleDateString('pt-BR')}
+                    </p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+
+
 
       {/* CTA WHATSAPP MIDDLE */}
       <section className="py-10 md:py-14">
@@ -605,6 +624,8 @@ export default function LandingPage() {
             <ul className="space-y-2.5 text-[13.5px]">
               <li className="flex items-start gap-2"><Clock className="h-4 w-4 mt-0.5 shrink-0 text-[hsl(var(--lp-blue))]" /><div><div className="text-[hsl(var(--lp-ink))] font-semibold">Seg a Sex</div>08h às 19h</div></li>
               <li className="flex items-start gap-2"><Clock className="h-4 w-4 mt-0.5 shrink-0 text-[hsl(var(--lp-blue))]" /><div><div className="text-[hsl(var(--lp-ink))] font-semibold">Sábado</div>08h às 13h</div></li>
+              <li><Link to="/convenios" className="hover:text-[hsl(var(--lp-blue))]">Convênios</Link></li>
+              <li><a href="#blog" className="hover:text-[hsl(var(--lp-blue))]">Blog</a></li>
               <li><Link to="/politica-de-privacidade" className="inline-flex items-center gap-1.5 hover:text-[hsl(var(--lp-blue))]"><Lock className="h-3.5 w-3.5" />Política de Privacidade</Link></li>
             </ul>
           </div>
