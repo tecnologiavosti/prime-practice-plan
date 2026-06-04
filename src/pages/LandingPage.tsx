@@ -65,14 +65,14 @@ const especialidades = [
     desc: 'Diagnóstico e terapia para linguagem, fala, voz e desenvolvimento infantil.',
   },
   {
-    icon: Heart,
-    title: 'Terapia de Casal',
-    desc: 'Mediação de conflitos, comunicação e reconstrução de vínculos afetivos.',
+    icon: HeartPulse,
+    title: 'Clínico Geral',
+    desc: 'Avaliação clínica abrangente, acompanhamento de saúde, exames de rotina e cuidado preventivo.',
   },
   {
     icon: Baby,
-    title: 'Terapia Infantil',
-    desc: 'Atendimento lúdico especializado em desenvolvimento emocional de crianças.',
+    title: 'RN1',
+    desc: 'Atendimento especializado em recém-nascidos com foco em desenvolvimento, vínculo e orientação familiar.',
   },
 ];
 
@@ -83,14 +83,6 @@ const diferenciais = [
   { icon: MapPin, title: 'Localização estratégica', desc: 'Asa Norte — Brasília, fácil acesso e estacionamento.' },
   { icon: Calendar, title: 'Presencial e online', desc: 'Você escolhe a modalidade que melhor se adapta à sua rotina.' },
   { icon: ShieldCheck, title: 'Ambiente acolhedor', desc: 'Espaço pensado para o seu conforto e sigilo absoluto.' },
-];
-
-// Placeholders — substituir depois pelos profissionais reais
-const equipe = [
-  { nome: 'Dra. Ana Beatriz Costa', cargo: 'Psicóloga Clínica', formacao: 'CRP 01/12345 · Especialista em TCC', tempo: '+10 anos de atuação' },
-  { nome: 'Dr. Rafael Mendes', cargo: 'Médico Psiquiatra', formacao: 'CRM-DF 23456 · Residência em Psiquiatria HUB-UnB', tempo: '+8 anos de atuação' },
-  { nome: 'Dra. Larissa Almeida', cargo: 'Psicóloga Infantil', formacao: 'CRP 01/34567 · Mestre em Psicologia do Desenvolvimento', tempo: '+6 anos de atuação' },
-  { nome: 'Dra. Camila Ribeiro', cargo: 'Nutricionista Comportamental', formacao: 'CRN-1 5678 · Pós em Nutrição e Saúde Mental', tempo: '+7 anos de atuação' },
 ];
 
 const depoimentos = [
