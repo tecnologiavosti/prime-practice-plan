@@ -247,20 +247,14 @@ export default function LandingPage() {
               </motion.p>
 
               <motion.div variants={fadeUp} className="mt-7 md:mt-9 flex flex-col sm:flex-row gap-3">
-                <Button size="lg" asChild className="h-12 px-6 rounded-xl bg-[hsl(var(--lp-blue))] hover:bg-[hsl(var(--lp-blue-ink))] text-white text-[14.5px] font-semibold shadow-[0_14px_36px_-12px_hsl(var(--lp-blue)/0.6)] transition-all hover:-translate-y-0.5">
-                  <Link to="/cadastro">
-                    Agendar Consulta
-                    <ArrowRight className="ml-1 h-4 w-4" />
-                  </Link>
-                </Button>
                 <a
-                  href={wa('Olá! Gostaria de falar com um especialista da Clínica Pacem.')}
+                  href={wa('Olá! Gostaria de agendar uma consulta na Clínica Pacem.')}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl bg-[#25D366] hover:bg-[#1ebe5d] text-white text-[14.5px] font-semibold shadow-[0_14px_36px_-12px_rgba(37,211,102,0.6)] transition-all hover:-translate-y-0.5"
                 >
                   <WhatsAppIcon className="h-5 w-5" />
-                  Atendimento Imediato
+                  Agendar
                 </a>
               </motion.div>
 
