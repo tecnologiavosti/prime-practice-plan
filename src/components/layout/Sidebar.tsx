@@ -25,6 +25,7 @@ import {
   UsersRound,
   TrendingUp,
   Search,
+  Newspaper,
 } from 'lucide-react';
 
 const menuItems = [
