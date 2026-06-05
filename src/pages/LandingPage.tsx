@@ -447,7 +447,7 @@ export default function LandingPage() {
               Depoimentos
             </span>
             <h2 className="mt-5 text-[28px] md:text-[42px] font-extrabold tracking-[-0.02em] leading-[1.1]">
-              Histórias de quem <span className="text-[hsl(var(--lp-blue))]">confia</span> na Pacem
+              Histórias de quem <br className="hidden sm:block" /><span className="text-[hsl(var(--lp-blue))]">confia na Pacem</span>
             </h2>
             <div className="mt-5 inline-flex items-center gap-2 text-[14px] text-[hsl(var(--lp-muted))]">
               <div className="flex text-[hsl(var(--lp-blue))]">
