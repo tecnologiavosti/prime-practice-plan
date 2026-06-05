@@ -402,18 +402,40 @@ export default function LandingPage() {
       {/* EQUIPE */}
       <section id="equipe" className="py-16 md:py-24 bg-white border-y border-[hsl(var(--lp-line))]">
         <div className="container mx-auto px-5 md:px-10">
-          <div className="max-w-2xl mx-auto text-center mb-12 md:mb-16">
+          <div className="max-w-2xl mx-auto text-center mb-10">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-[hsl(var(--lp-line))] bg-[hsl(var(--lp-bg))] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[hsl(var(--lp-blue))]">
-              Nossa equipe
+              Quem cuida de você
             </span>
             <h2 className="mt-5 text-[28px] md:text-[42px] font-extrabold tracking-[-0.02em] leading-[1.1]">
-              Profissionais <span className="text-[hsl(var(--lp-blue))]">qualificados</span> e dedicados
+              Profissionais qualificados <br className="hidden sm:block" /><span className="text-[hsl(var(--lp-blue))]">e dedicados</span>
             </h2>
             <p className="mt-4 text-[15.5px] text-[hsl(var(--lp-muted))]">
               Formação sólida, atualização constante e compromisso com o seu bem-estar.
             </p>
           </div>
 
+          <div className="grid sm:grid-cols-3 gap-5 max-w-4xl mx-auto">
+            {[
+              { icon: GraduationCap, title: 'Formação sólida', desc: 'Pós-graduação e especializações reconhecidas.' },
+              { icon: ShieldCheck, title: 'Registro profissional', desc: 'Equipe regularizada e ética profissional rigorosa.' },
+              { icon: Heart, title: 'Escuta humanizada', desc: 'Cuidado verdadeiro, respeito ao seu tempo.' },
+            ].map((b) => (
+              <div key={b.title} className="rounded-2xl border border-[hsl(var(--lp-line))] bg-[hsl(var(--lp-bg))] p-6 text-center">
+                <div className="mx-auto mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white text-[hsl(var(--lp-blue))] border border-[hsl(var(--lp-line))]">
+                  <b.icon className="h-5 w-5" />
+                </div>
+                <h3 className="text-[15.5px] font-bold mb-1">{b.title}</h3>
+                <p className="text-[13.5px] text-[hsl(var(--lp-muted))] leading-relaxed">{b.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-10 text-center">
+            <a href={wa('Olá! Gostaria de conhecer a equipe da Clínica Pacem.')} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 h-11 px-6 rounded-xl bg-[hsl(var(--lp-blue))] text-white font-semibold hover:bg-[hsl(var(--lp-blue-ink))] transition-colors">
+              Falar com nossa equipe <ArrowRight className="h-4 w-4" />
+            </a>
+          </div>
         </div>
       </section>
 
