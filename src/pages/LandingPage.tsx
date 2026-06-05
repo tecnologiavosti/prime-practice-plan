@@ -355,15 +355,13 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-[17px] font-bold mb-2">{sp.title}</h3>
                 <p className="text-[14px] text-[hsl(var(--lp-muted))] leading-relaxed mb-4">{sp.desc}</p>
-                <a
-                  href={wa(`Olá! Gostaria de saber mais sobre ${sp.title} na Clínica Pacem.`)}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  to={`/especialidades/${sp.slug}`}
                   className="inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-[hsl(var(--lp-blue))] hover:text-[hsl(var(--lp-blue-ink))] transition-colors"
                 >
                   Saiba mais
                   <ArrowRight className="h-3.5 w-3.5" />
-                </a>
+                </Link>
               </motion.div>
             ))}
           </motion.div>
