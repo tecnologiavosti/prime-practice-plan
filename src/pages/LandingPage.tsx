@@ -376,7 +376,7 @@ export default function LandingPage() {
               Por que escolher
             </span>
             <h2 className="mt-5 text-[28px] md:text-[42px] font-extrabold tracking-[-0.02em] leading-[1.1]">
-              Por que escolher a <span className="text-[hsl(var(--lp-blue))]">Clínica Pacem</span>?
+              Por que escolher a <br className="hidden sm:block" /><span className="text-[hsl(var(--lp-blue))]">Clínica Pacem</span>
             </h2>
           </div>
 
