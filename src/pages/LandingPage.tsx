@@ -19,7 +19,7 @@ import {
   Apple,
   MessageSquare,
   Heart,
-  Baby,
+  Briefcase,
   CheckCircle,
   ArrowRight,
   Star,
@@ -45,34 +45,40 @@ const wa = (msg = 'Olá! Gostaria de agendar uma consulta na Clínica Pacem.') =
 
 const especialidades = [
   {
+    slug: 'psicologia',
     icon: Brain,
     title: 'Psicologia',
     desc: 'Acompanhamento psicoterapêutico individual para adultos, adolescentes e crianças.',
   },
   {
+    slug: 'psiquiatria',
     icon: Stethoscope,
     title: 'Psiquiatria',
     desc: 'Avaliação e tratamento medicamentoso para depressão, ansiedade, TDAH e outros transtornos.',
   },
   {
+    slug: 'nutricao',
     icon: Apple,
     title: 'Nutrição',
     desc: 'Nutrição comportamental integrada à saúde mental e qualidade de vida.',
   },
   {
+    slug: 'fonoaudiologia',
     icon: MessageSquare,
     title: 'Fonoaudiologia',
     desc: 'Diagnóstico e terapia para linguagem, fala, voz e desenvolvimento infantil.',
   },
   {
+    slug: 'clinico-geral',
     icon: HeartPulse,
     title: 'Clínico Geral',
     desc: 'Avaliação clínica abrangente, acompanhamento de saúde, exames de rotina e cuidado preventivo.',
   },
   {
-    icon: Baby,
+    slug: 'rn1',
+    icon: Briefcase,
     title: 'RN1',
-    desc: 'Atendimento especializado em recém-nascidos com foco em desenvolvimento, vínculo e orientação familiar.',
+    desc: 'Cuidado completo para colaboradores com acesso à Psiquiatria, Psicologia, Nutrição e Personal Trainer, além de atendimento médico 24h e teleconsultas. Mais saúde, bem-estar e produtividade para sua equipe.',
   },
 ];
 
@@ -324,7 +330,7 @@ export default function LandingPage() {
               Especialidades
             </span>
             <h2 className="mt-5 text-[28px] md:text-[42px] font-extrabold tracking-[-0.02em] leading-[1.1]">
-              Cuidado integral para sua <span className="text-[hsl(var(--lp-blue))]">saúde mental</span>
+              Cuidado integral para sua <br className="hidden sm:block" /><span className="text-[hsl(var(--lp-blue))]">saúde mental</span>
             </h2>
             <p className="mt-4 text-[15.5px] text-[hsl(var(--lp-muted))]">
               Equipe multidisciplinar para acompanhar cada etapa da sua jornada.
@@ -349,15 +355,13 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-[17px] font-bold mb-2">{sp.title}</h3>
                 <p className="text-[14px] text-[hsl(var(--lp-muted))] leading-relaxed mb-4">{sp.desc}</p>
-                <a
-                  href={wa(`Olá! Gostaria de saber mais sobre ${sp.title} na Clínica Pacem.`)}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  to={`/especialidades/${sp.slug}`}
                   className="inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-[hsl(var(--lp-blue))] hover:text-[hsl(var(--lp-blue-ink))] transition-colors"
                 >
                   Saiba mais
                   <ArrowRight className="h-3.5 w-3.5" />
-                </a>
+                </Link>
               </motion.div>
             ))}
           </motion.div>
@@ -372,7 +376,7 @@ export default function LandingPage() {
               Por que escolher
             </span>
             <h2 className="mt-5 text-[28px] md:text-[42px] font-extrabold tracking-[-0.02em] leading-[1.1]">
-              Por que escolher a <span className="text-[hsl(var(--lp-blue))]">Clínica Pacem</span>?
+              Por que escolher a <br className="hidden sm:block" /><span className="text-[hsl(var(--lp-blue))]">Clínica Pacem</span>
             </h2>
           </div>
 
@@ -398,18 +402,40 @@ export default function LandingPage() {
       {/* EQUIPE */}
       <section id="equipe" className="py-16 md:py-24 bg-white border-y border-[hsl(var(--lp-line))]">
         <div className="container mx-auto px-5 md:px-10">
-          <div className="max-w-2xl mx-auto text-center mb-12 md:mb-16">
+          <div className="max-w-2xl mx-auto text-center mb-10">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-[hsl(var(--lp-line))] bg-[hsl(var(--lp-bg))] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[hsl(var(--lp-blue))]">
-              Nossa equipe
+              Quem cuida de você
             </span>
             <h2 className="mt-5 text-[28px] md:text-[42px] font-extrabold tracking-[-0.02em] leading-[1.1]">
-              Profissionais <span className="text-[hsl(var(--lp-blue))]">qualificados</span> e dedicados
+              Profissionais qualificados <br className="hidden sm:block" /><span className="text-[hsl(var(--lp-blue))]">e dedicados</span>
             </h2>
             <p className="mt-4 text-[15.5px] text-[hsl(var(--lp-muted))]">
               Formação sólida, atualização constante e compromisso com o seu bem-estar.
             </p>
           </div>
 
+          <div className="grid sm:grid-cols-3 gap-5 max-w-4xl mx-auto">
+            {[
+              { icon: GraduationCap, title: 'Formação sólida', desc: 'Pós-graduação e especializações reconhecidas.' },
+              { icon: ShieldCheck, title: 'Registro profissional', desc: 'Equipe regularizada e ética profissional rigorosa.' },
+              { icon: Heart, title: 'Escuta humanizada', desc: 'Cuidado verdadeiro, respeito ao seu tempo.' },
+            ].map((b) => (
+              <div key={b.title} className="rounded-2xl border border-[hsl(var(--lp-line))] bg-[hsl(var(--lp-bg))] p-6 text-center">
+                <div className="mx-auto mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white text-[hsl(var(--lp-blue))] border border-[hsl(var(--lp-line))]">
+                  <b.icon className="h-5 w-5" />
+                </div>
+                <h3 className="text-[15.5px] font-bold mb-1">{b.title}</h3>
+                <p className="text-[13.5px] text-[hsl(var(--lp-muted))] leading-relaxed">{b.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-10 text-center">
+            <a href={wa('Olá! Gostaria de conhecer a equipe da Clínica Pacem.')} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 h-11 px-6 rounded-xl bg-[hsl(var(--lp-blue))] text-white font-semibold hover:bg-[hsl(var(--lp-blue-ink))] transition-colors">
+              Falar com nossa equipe <ArrowRight className="h-4 w-4" />
+            </a>
+          </div>
         </div>
       </section>
 
@@ -421,7 +447,7 @@ export default function LandingPage() {
               Depoimentos
             </span>
             <h2 className="mt-5 text-[28px] md:text-[42px] font-extrabold tracking-[-0.02em] leading-[1.1]">
-              Histórias de quem <span className="text-[hsl(var(--lp-blue))]">confia</span> na Pacem
+              Histórias de quem <br className="hidden sm:block" /><span className="text-[hsl(var(--lp-blue))]">confia na Pacem</span>
             </h2>
             <div className="mt-5 inline-flex items-center gap-2 text-[14px] text-[hsl(var(--lp-muted))]">
               <div className="flex text-[hsl(var(--lp-blue))]">
@@ -457,7 +483,7 @@ export default function LandingPage() {
                 Blog
               </span>
               <h2 className="mt-5 text-[28px] md:text-[42px] font-extrabold tracking-[-0.02em] leading-[1.1]">
-                Conteúdo sobre <span className="text-[hsl(var(--lp-blue))]">saúde mental</span>
+                Conteúdo sobre <br className="hidden sm:block" /><span className="text-[hsl(var(--lp-blue))]">saúde mental</span>
               </h2>
               <p className="mt-4 text-[15.5px] text-[hsl(var(--lp-muted))]">
                 Artigos escritos pela nossa equipe para informar e cuidar de você.
@@ -525,7 +551,7 @@ export default function LandingPage() {
               Dúvidas frequentes
             </span>
             <h2 className="mt-5 text-[28px] md:text-[42px] font-extrabold tracking-[-0.02em] leading-[1.1]">
-              Perguntas <span className="text-[hsl(var(--lp-blue))]">Frequentes</span>
+              Perguntas <br className="hidden sm:block" /><span className="text-[hsl(var(--lp-blue))]">Frequentes</span>
             </h2>
           </div>
 
@@ -646,16 +672,6 @@ export default function LandingPage() {
         </div>
       </footer>
 
-      {/* WHATSAPP FLOAT */}
-      <a
-        href={wa()}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Falar no WhatsApp"
-        className="fixed bottom-6 right-6 z-[60] inline-flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_12px_28px_-8px_rgba(37,211,102,0.6)] hover:scale-105 hover:bg-[#1ebe5d] transition-all duration-300"
-      >
-        <WhatsAppIcon className="h-7 w-7" />
-      </a>
     </div>
   );
 }
