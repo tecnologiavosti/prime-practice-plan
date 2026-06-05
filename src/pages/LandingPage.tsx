@@ -19,7 +19,7 @@ import {
   Apple,
   MessageSquare,
   Heart,
-  Baby,
+  Briefcase,
   CheckCircle,
   ArrowRight,
   Star,
