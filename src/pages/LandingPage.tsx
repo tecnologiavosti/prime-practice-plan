@@ -45,34 +45,40 @@ const wa = (msg = 'Olá! Gostaria de agendar uma consulta na Clínica Pacem.') =
 
 const especialidades = [
   {
+    slug: 'psicologia',
     icon: Brain,
     title: 'Psicologia',
     desc: 'Acompanhamento psicoterapêutico individual para adultos, adolescentes e crianças.',
   },
   {
+    slug: 'psiquiatria',
     icon: Stethoscope,
     title: 'Psiquiatria',
     desc: 'Avaliação e tratamento medicamentoso para depressão, ansiedade, TDAH e outros transtornos.',
   },
   {
+    slug: 'nutricao',
     icon: Apple,
     title: 'Nutrição',
     desc: 'Nutrição comportamental integrada à saúde mental e qualidade de vida.',
   },
   {
+    slug: 'fonoaudiologia',
     icon: MessageSquare,
     title: 'Fonoaudiologia',
     desc: 'Diagnóstico e terapia para linguagem, fala, voz e desenvolvimento infantil.',
   },
   {
+    slug: 'clinico-geral',
     icon: HeartPulse,
     title: 'Clínico Geral',
     desc: 'Avaliação clínica abrangente, acompanhamento de saúde, exames de rotina e cuidado preventivo.',
   },
   {
-    icon: Baby,
+    slug: 'rn1',
+    icon: Briefcase,
     title: 'RN1',
-    desc: 'Atendimento especializado em recém-nascidos com foco em desenvolvimento, vínculo e orientação familiar.',
+    desc: 'Cuidado completo para colaboradores com acesso à Psiquiatria, Psicologia, Nutrição e Personal Trainer, além de atendimento médico 24h e teleconsultas. Mais saúde, bem-estar e produtividade para sua equipe.',
   },
 ];
 
