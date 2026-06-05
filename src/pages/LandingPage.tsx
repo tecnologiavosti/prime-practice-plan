@@ -483,7 +483,7 @@ export default function LandingPage() {
                 Blog
               </span>
               <h2 className="mt-5 text-[28px] md:text-[42px] font-extrabold tracking-[-0.02em] leading-[1.1]">
-                Conteúdo sobre <span className="text-[hsl(var(--lp-blue))]">saúde mental</span>
+                Conteúdo sobre <br className="hidden sm:block" /><span className="text-[hsl(var(--lp-blue))]">saúde mental</span>
               </h2>
               <p className="mt-4 text-[15.5px] text-[hsl(var(--lp-muted))]">
                 Artigos escritos pela nossa equipe para informar e cuidar de você.
