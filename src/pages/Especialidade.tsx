@@ -2,6 +2,7 @@ import { Link, useParams, Navigate } from 'react-router-dom';
 import { useClinicSettings } from '@/hooks/useClinicSettings';
 import { SeoHead } from '@/components/SeoHead';
 import logoPacem from '@/assets/logoPacem.png';
+import type { LucideIcon } from 'lucide-react';
 import {
   ArrowLeft, ArrowRight, Brain, Stethoscope, Apple, MessageSquare,
   HeartPulse, Briefcase, CheckCircle2, Sparkles, Clock, Users, ShieldCheck,
@@ -15,7 +16,7 @@ type Especialidade = {
   title: string;
   tagline: string;
   intro: string;
-  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  icon: LucideIcon;
   beneficios: string[];
   indicacoes: string[];
   custom?: 'rn1';
