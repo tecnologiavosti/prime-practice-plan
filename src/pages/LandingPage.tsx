@@ -330,7 +330,7 @@ export default function LandingPage() {
               Especialidades
             </span>
             <h2 className="mt-5 text-[28px] md:text-[42px] font-extrabold tracking-[-0.02em] leading-[1.1]">
-              Cuidado integral para sua <span className="text-[hsl(var(--lp-blue))]">saúde mental</span>
+              Cuidado integral para sua <br className="hidden sm:block" /><span className="text-[hsl(var(--lp-blue))]">saúde mental</span>
             </h2>
             <p className="mt-4 text-[15.5px] text-[hsl(var(--lp-muted))]">
               Equipe multidisciplinar para acompanhar cada etapa da sua jornada.
