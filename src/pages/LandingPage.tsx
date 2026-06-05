@@ -551,7 +551,7 @@ export default function LandingPage() {
               Dúvidas frequentes
             </span>
             <h2 className="mt-5 text-[28px] md:text-[42px] font-extrabold tracking-[-0.02em] leading-[1.1]">
-              Perguntas <span className="text-[hsl(var(--lp-blue))]">Frequentes</span>
+              Perguntas <br className="hidden sm:block" /><span className="text-[hsl(var(--lp-blue))]">Frequentes</span>
             </h2>
           </div>
 
