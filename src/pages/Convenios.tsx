@@ -12,6 +12,33 @@ import { Building2, ArrowLeft, ShieldCheck, Stethoscope } from 'lucide-react';
 interface Specialty { id: string; name: string }
 interface Insurance { id: string; name: string; code: string | null; ans_registration: string | null }
 
+const LOGO_MAP: [RegExp, string][] = [
+  [/unimed/i, 'unimed.coop.br'],
+  [/amil/i, 'amil.com.br'],
+  [/bradesco/i, 'bradescosaude.com.br'],
+  [/sul ?am[eé]rica/i, 'sulamerica.com.br'],
+  [/hapvida/i, 'hapvida.com.br'],
+  [/notre ?dame|gndi|interm[eé]dica/i, 'gndi.com.br'],
+  [/cassi/i, 'cassi.com.br'],
+  [/geap/i, 'geap.com.br'],
+  [/allianz/i, 'allianz.com.br'],
+  [/porto ?seguro/i, 'portoseguro.com.br'],
+  [/golden ?cross/i, 'goldencross.com.br'],
+  [/care ?plus/i, 'careplus.com.br'],
+  [/omint/i, 'omint.com.br'],
+  [/medsenior/i, 'medsenior.com.br'],
+  [/prevent ?senior/i, 'preventsenior.com.br'],
+  [/petrobr[aá]s|petrobras|apse?b?/i, 'petrobras.com.br'],
+  [/banco do brasil|cassi/i, 'bb.com.br'],
+  [/saude ?caixa|caixa/i, 'caixa.gov.br'],
+  [/postal ?sa[uú]de|correios/i, 'correios.com.br'],
+];
+
+function logoFor(name: string): string | null {
+  for (const [r, d] of LOGO_MAP) if (r.test(name)) return `https://logo.clearbit.com/${d}`;
+  return null;
+}
+
 export default function Convenios() {
   const { settings } = useClinicSettings();
   const clinicName = settings?.nome_fantasia || 'Clínica Pacem';
@@ -37,14 +64,19 @@ export default function Convenios() {
     if (!selected) { setInsurances([]); return; }
     setLoading(true);
     (async () => {
-      const { data } = await supabase
+      const { data: links } = await supabase
         .from('specialty_health_insurances')
-        .select('health_insurance:health_insurances(id, name, code, ans_registration, active)')
+        .select('health_insurance_id')
         .eq('specialty_id', selected);
-      const list = (data || [])
-        .map((r: any) => r.health_insurance)
-        .filter((i: any) => i && i.active);
-      setInsurances(list);
+      const ids = (links || []).map((r: any) => r.health_insurance_id);
+      if (ids.length === 0) { setInsurances([]); setLoading(false); return; }
+      const { data: ins } = await supabase
+        .from('health_insurances')
+        .select('id, name, code, ans_registration, active')
+        .in('id', ids)
+        .eq('active', true)
+        .order('name');
+      setInsurances((ins || []) as Insurance[]);
       setLoading(false);
     })();
   }, [selected]);
@@ -109,22 +141,43 @@ export default function Convenios() {
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {insurances.map((ins) => (
-                <div key={ins.id} className="rounded-2xl border border-[hsl(214_32%_91%)] bg-white p-5 hover:shadow-[0_18px_40px_-18px_hsl(221_83%_53%/0.25)] transition-shadow">
-                  <div className="flex items-start gap-3">
-                    <div className="h-10 w-10 rounded-xl bg-[hsl(214_95%_93%)] text-[hsl(221_83%_53%)] flex items-center justify-center shrink-0">
-                      <Building2 className="h-5 w-5" />
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="text-[15.5px] font-bold leading-tight">{ins.name}</h3>
-                      <p className="text-[12px] text-[hsl(215_16%_47%)] mt-1">
-                        {ins.code && <>Código: {ins.code} · </>}
-                        {ins.ans_registration && <>ANS: {ins.ans_registration}</>}
-                      </p>
+              {insurances.map((ins) => {
+                const logo = logoFor(ins.name);
+                return (
+                  <div key={ins.id} className="rounded-2xl border border-[hsl(214_32%_91%)] bg-white p-5 hover:shadow-[0_18px_40px_-18px_hsl(221_83%_53%/0.25)] transition-shadow">
+                    <div className="flex items-start gap-3">
+                      <div className="h-14 w-14 rounded-xl bg-[hsl(214_95%_93%)] flex items-center justify-center shrink-0 overflow-hidden p-1">
+                        {logo ? (
+                          <img
+                            src={logo}
+                            alt={`Logo ${ins.name}`}
+                            className="max-h-full max-w-full object-contain"
+                            onError={(e) => {
+                              const t = e.currentTarget;
+                              t.style.display = 'none';
+                              const fb = t.nextElementSibling as HTMLElement | null;
+                              if (fb) fb.style.display = 'flex';
+                            }}
+                          />
+                        ) : null}
+                        <div
+                          className="h-full w-full items-center justify-center text-[hsl(221_83%_53%)]"
+                          style={{ display: logo ? 'none' : 'flex' }}
+                        >
+                          <Building2 className="h-6 w-6" />
+                        </div>
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="text-[15.5px] font-bold leading-tight">{ins.name}</h3>
+                        <p className="text-[12px] text-[hsl(215_16%_47%)] mt-1">
+                          {ins.code && <>Código: {ins.code} · </>}
+                          {ins.ans_registration && <>ANS: {ins.ans_registration}</>}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
