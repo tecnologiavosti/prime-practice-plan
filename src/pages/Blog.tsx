@@ -112,19 +112,66 @@ export default function Blog() {
     fetchPosts();
   }
 
+  async function handleGenerateAI() {
+    setAiLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-blog-post', {
+        body: { topic: aiTopic.trim() || undefined, publish: true },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      toast({ title: 'Post gerado com IA!', description: (data as any)?.post?.title });
+      setAiOpen(false);
+      setAiTopic('');
+      fetchPosts();
+    } catch (e: any) {
+      toast({ variant: 'destructive', title: 'Erro ao gerar', description: e.message });
+    } finally {
+      setAiLoading(false);
+    }
+  }
+
   const filtered = posts.filter((p) => p.title.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <div className="p-6">
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex items-center justify-between gap-2 flex-wrap">
         <div>
           <h1 className="text-3xl font-bold">Blog</h1>
-          <p className="text-muted-foreground">Publique artigos que aparecerão na home do site.</p>
+          <p className="text-muted-foreground">Publique artigos que aparecerão na home do site. Gere automaticamente com IA ou crie manualmente.</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={openNew}><Plus className="mr-2 h-4 w-4" /> Novo Post</Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <Dialog open={aiOpen} onOpenChange={setAiOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline"><Sparkles className="mr-2 h-4 w-4" /> Gerar com IA</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Gerar artigo com IA</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label>Tema (opcional)</Label>
+                  <Input
+                    value={aiTopic}
+                    onChange={(e) => setAiTopic(e.target.value)}
+                    placeholder="Ex: ansiedade no trabalho. Deixe vazio para tema aleatório."
+                  />
+                  <p className="text-xs text-muted-foreground">A IA gerará título, conteúdo e imagem de capa automaticamente.</p>
+                </div>
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button variant="outline" onClick={() => setAiOpen(false)} disabled={aiLoading}>Cancelar</Button>
+                  <Button onClick={handleGenerateAI} disabled={aiLoading}>
+                    {aiLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Gerando...</> : <><Sparkles className="mr-2 h-4 w-4" /> Gerar</>}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={openNew}><Plus className="mr-2 h-4 w-4" /> Novo Post</Button>
+            </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editing ? 'Editar Post' : 'Novo Post'}</DialogTitle>
