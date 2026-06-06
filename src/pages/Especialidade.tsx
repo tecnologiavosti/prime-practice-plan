@@ -1,15 +1,16 @@
 import { Link, useParams, Navigate } from 'react-router-dom';
 import { useClinicSettings } from '@/hooks/useClinicSettings';
 import { SeoHead } from '@/components/SeoHead';
-import logoPacem from '@/assets/logoPacem.png';
+import { PublicHeader } from '@/components/site/PublicHeader';
 import type { LucideIcon } from 'lucide-react';
 import {
-  ArrowLeft, ArrowRight, Brain, Stethoscope, Apple, MessageSquare,
+  ArrowRight, Brain, Stethoscope, Apple, MessageSquare,
   HeartPulse, Briefcase, CheckCircle2, Sparkles, Clock, Users, ShieldCheck,
 } from 'lucide-react';
 
 const WHATSAPP = '5561998117985';
 const wa = (msg: string) => `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
+
 
 type Especialidade = {
   slug: string;
