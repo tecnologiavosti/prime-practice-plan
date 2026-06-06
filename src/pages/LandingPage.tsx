@@ -193,51 +193,8 @@ export default function LandingPage() {
     >
       <SeoHead />
 
-      {/* HEADER */}
-      <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled
-            ? 'border-b border-[hsl(var(--lp-line))] bg-white/90 backdrop-blur-xl'
-            : 'border-b border-transparent bg-transparent'
-        }`}
-      >
-        <div className="container mx-auto flex h-16 md:h-18 items-center justify-between px-4 md:px-10 py-2 md:py-3">
-          <Link to="/" className="flex items-center gap-2.5 min-w-0">
-            <img src={clinicLogo} alt={clinicName} className="h-9 w-auto object-contain shrink-0" />
-            <div className="leading-tight min-w-0">
-              <div className="text-[15px] font-bold tracking-tight truncate">{clinicName}</div>
-              <div className="hidden sm:block text-[9px] font-medium uppercase tracking-[0.22em] text-[hsl(var(--lp-muted))]">
-                Psicologia · Psiquiatria · Brasília
-              </div>
-            </div>
-          </Link>
-          <nav className="hidden lg:flex items-center gap-8 text-[14px] font-medium text-[hsl(var(--lp-ink))]/75">
-            <a href="#especialidades" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Especialidades</a>
-            <a href="#diferenciais" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Diferenciais</a>
-            <a href="#equipe" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Equipe</a>
-            <Link to="/convenios" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Convênios</Link>
-            <a href="#blog" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Blog</a>
-            <a href="#faq" className="hover:text-[hsl(var(--lp-blue))] transition-colors">FAQ</a>
-          </nav>
-          <div className="flex items-center gap-2 shrink-0">
-            <a
-              href={wa()}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden sm:inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-[#25D366] text-white text-sm font-semibold hover:bg-[#1ebe5d] transition-colors"
-            >
-              <WhatsAppIcon className="h-4 w-4" />
-              Agendar
-            </a>
-            <Button asChild size="sm" variant="outline" className="rounded-xl border-[hsl(var(--lp-blue))] text-[hsl(var(--lp-blue))] hover:bg-[hsl(var(--lp-blue))] hover:text-white px-3 md:px-4">
-              <Link to="/login">
-                <span className="hidden sm:inline">Entrar / Cadastrar-se</span>
-                <span className="sm:hidden">Entrar</span>
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </header>
+      <PublicHeader floating />
+
 
       {/* HERO */}
       <section className="relative pt-24 pb-14 md:pt-36 md:pb-24">
