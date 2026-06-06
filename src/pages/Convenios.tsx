@@ -3,11 +3,11 @@ import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useClinicSettings } from '@/hooks/useClinicSettings';
 import { SeoHead } from '@/components/SeoHead';
-import logoPacem from '@/assets/logoPacem.png';
+import { PublicHeader } from '@/components/site/PublicHeader';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { Building2, ArrowLeft, ShieldCheck, Stethoscope } from 'lucide-react';
+import { Building2, ShieldCheck, Stethoscope } from 'lucide-react';
 
 interface Specialty { id: string; name: string }
 interface Insurance { id: string; name: string; code: string | null; ans_registration: string | null }
