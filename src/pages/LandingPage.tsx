@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/accordion';
 import { useClinicSettings } from '@/hooks/useClinicSettings';
 import { SeoHead } from '@/components/SeoHead';
+import { PublicHeader } from '@/components/site/PublicHeader';
 import { supabase } from '@/integrations/supabase/client';
 import logoPacem from '@/assets/logoPacem.png';
 import clinicHero from '@/assets/clinic-hero.jpg';
@@ -192,51 +193,8 @@ export default function LandingPage() {
     >
       <SeoHead />
 
-      {/* HEADER */}
-      <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled
-            ? 'border-b border-[hsl(var(--lp-line))] bg-white/90 backdrop-blur-xl'
-            : 'border-b border-transparent bg-transparent'
-        }`}
-      >
-        <div className="container mx-auto flex h-16 md:h-18 items-center justify-between px-4 md:px-10 py-2 md:py-3">
-          <Link to="/" className="flex items-center gap-2.5 min-w-0">
-            <img src={clinicLogo} alt={clinicName} className="h-9 w-auto object-contain shrink-0" />
-            <div className="leading-tight min-w-0">
-              <div className="text-[15px] font-bold tracking-tight truncate">{clinicName}</div>
-              <div className="hidden sm:block text-[9px] font-medium uppercase tracking-[0.22em] text-[hsl(var(--lp-muted))]">
-                Psicologia · Psiquiatria · Brasília
-              </div>
-            </div>
-          </Link>
-          <nav className="hidden lg:flex items-center gap-8 text-[14px] font-medium text-[hsl(var(--lp-ink))]/75">
-            <a href="#especialidades" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Especialidades</a>
-            <a href="#diferenciais" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Diferenciais</a>
-            <a href="#equipe" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Equipe</a>
-            <Link to="/convenios" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Convênios</Link>
-            <a href="#blog" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Blog</a>
-            <a href="#faq" className="hover:text-[hsl(var(--lp-blue))] transition-colors">FAQ</a>
-          </nav>
-          <div className="flex items-center gap-2 shrink-0">
-            <a
-              href={wa()}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden sm:inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-[#25D366] text-white text-sm font-semibold hover:bg-[#1ebe5d] transition-colors"
-            >
-              <WhatsAppIcon className="h-4 w-4" />
-              Agendar
-            </a>
-            <Button asChild size="sm" variant="outline" className="rounded-xl border-[hsl(var(--lp-blue))] text-[hsl(var(--lp-blue))] hover:bg-[hsl(var(--lp-blue))] hover:text-white px-3 md:px-4">
-              <Link to="/login">
-                <span className="hidden sm:inline">Entrar / Cadastrar-se</span>
-                <span className="sm:hidden">Entrar</span>
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </header>
+      <PublicHeader floating />
+
 
       {/* HERO */}
       <section className="relative pt-24 pb-14 md:pt-36 md:pb-24">
@@ -348,7 +306,7 @@ export default function LandingPage() {
               <motion.div
                 key={sp.title}
                 variants={fadeUp}
-                className="group rounded-2xl border border-[hsl(var(--lp-line))] bg-[hsl(var(--lp-bg))] p-7 transition-all duration-300 hover:-translate-y-1 hover:bg-white hover:shadow-[0_18px_40px_-18px_hsl(var(--lp-blue)/0.3)] hover:border-[hsl(var(--lp-blue)/0.3)]"
+                className="group flex h-full flex-col rounded-2xl border border-[hsl(var(--lp-line))] bg-[hsl(var(--lp-bg))] p-7 transition-all duration-300 hover:-translate-y-1 hover:bg-white hover:shadow-[0_18px_40px_-18px_hsl(var(--lp-blue)/0.3)] hover:border-[hsl(var(--lp-blue)/0.3)]"
               >
                 <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-xl bg-white border border-[hsl(var(--lp-line))] text-[hsl(var(--lp-blue))] group-hover:bg-[hsl(var(--lp-blue))] group-hover:text-white group-hover:border-transparent transition-colors">
                   <sp.icon className="h-6 w-6" strokeWidth={1.8} />
@@ -357,7 +315,7 @@ export default function LandingPage() {
                 <p className="text-[14px] text-[hsl(var(--lp-muted))] leading-relaxed mb-4">{sp.desc}</p>
                 <Link
                   to={`/especialidades/${sp.slug}`}
-                  className="inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-[hsl(var(--lp-blue))] hover:text-[hsl(var(--lp-blue-ink))] transition-colors"
+                  className="mt-auto inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-[hsl(var(--lp-blue))] hover:text-[hsl(var(--lp-blue-ink))] transition-colors"
                 >
                   Saiba mais
                   <ArrowRight className="h-3.5 w-3.5" />

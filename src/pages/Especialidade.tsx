@@ -1,15 +1,16 @@
 import { Link, useParams, Navigate } from 'react-router-dom';
 import { useClinicSettings } from '@/hooks/useClinicSettings';
 import { SeoHead } from '@/components/SeoHead';
-import logoPacem from '@/assets/logoPacem.png';
+import { PublicHeader } from '@/components/site/PublicHeader';
 import type { LucideIcon } from 'lucide-react';
 import {
-  ArrowLeft, ArrowRight, Brain, Stethoscope, Apple, MessageSquare,
+  ArrowRight, Brain, Stethoscope, Apple, MessageSquare,
   HeartPulse, Briefcase, CheckCircle2, Sparkles, Clock, Users, ShieldCheck,
 } from 'lucide-react';
 
 const WHATSAPP = '5561998117985';
 const wa = (msg: string) => `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
+
 
 type Especialidade = {
   slug: string;
@@ -158,7 +159,6 @@ export default function EspecialidadePage() {
   const { slug } = useParams<{ slug: string }>();
   const { settings } = useClinicSettings();
   const clinicName = settings?.nome_fantasia || 'Clínica Pacem';
-  const clinicLogo = settings?.logo_url || logoPacem;
 
   const data = slug ? ESPECIALIDADES[slug] : null;
   if (!data) return <Navigate to="/" replace />;
@@ -169,17 +169,8 @@ export default function EspecialidadePage() {
   return (
     <div className="min-h-screen bg-[hsl(210_40%_98%)] font-['Inter',_sans-serif] text-[hsl(222_47%_11%)]">
       <SeoHead />
-      <header className="border-b border-[hsl(214_32%_91%)] bg-white">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-10">
-          <Link to="/" className="flex items-center gap-2.5">
-            <img src={clinicLogo} alt={clinicName} className="h-9 w-auto object-contain" />
-            <span className="text-[15px] font-bold tracking-tight">{clinicName}</span>
-          </Link>
-          <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-[hsl(215_16%_47%)] hover:text-[hsl(221_83%_53%)]">
-            <ArrowLeft className="h-4 w-4" /> Início
-          </Link>
-        </div>
-      </header>
+      <PublicHeader />
+
 
       <section className="container mx-auto px-5 md:px-10 py-12 md:py-16">
         <div className="max-w-3xl">

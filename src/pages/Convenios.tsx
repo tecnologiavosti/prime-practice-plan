@@ -3,11 +3,11 @@ import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useClinicSettings } from '@/hooks/useClinicSettings';
 import { SeoHead } from '@/components/SeoHead';
-import logoPacem from '@/assets/logoPacem.png';
+import { PublicHeader } from '@/components/site/PublicHeader';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { Building2, ArrowLeft, ShieldCheck, Stethoscope } from 'lucide-react';
+import { Building2, ShieldCheck, Stethoscope } from 'lucide-react';
 
 interface Specialty { id: string; name: string }
 interface Insurance { id: string; name: string; code: string | null; ans_registration: string | null }
@@ -42,7 +42,6 @@ function logoFor(name: string): string | null {
 export default function Convenios() {
   const { settings } = useClinicSettings();
   const clinicName = settings?.nome_fantasia || 'Clínica Pacem';
-  const clinicLogo = settings?.logo_url || logoPacem;
 
   const [specialties, setSpecialties] = useState<Specialty[]>([]);
   const [selected, setSelected] = useState<string>('');
@@ -84,17 +83,8 @@ export default function Convenios() {
   return (
     <div className="min-h-screen bg-[hsl(210_40%_98%)] font-['Inter',_sans-serif] text-[hsl(222_47%_11%)]">
       <SeoHead />
-      <header className="border-b border-[hsl(214_32%_91%)] bg-white">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-10">
-          <Link to="/" className="flex items-center gap-2.5">
-            <img src={clinicLogo} alt={clinicName} className="h-9 w-auto object-contain" />
-            <span className="text-[15px] font-bold tracking-tight">{clinicName}</span>
-          </Link>
-          <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-[hsl(215_16%_47%)] hover:text-[hsl(221_83%_53%)]">
-            <ArrowLeft className="h-4 w-4" /> Início
-          </Link>
-        </div>
-      </header>
+      <PublicHeader />
+
 
       <main className="container mx-auto px-5 md:px-10 py-12 md:py-20">
         <div className="max-w-2xl mx-auto text-center mb-10">
