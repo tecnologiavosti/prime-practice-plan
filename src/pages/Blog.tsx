@@ -43,6 +43,9 @@ export default function Blog() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Post | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiTopic, setAiTopic] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
   const { toast } = useToast();
 
   const [form, setForm] = useState({
