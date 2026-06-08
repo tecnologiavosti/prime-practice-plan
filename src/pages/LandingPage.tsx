@@ -39,6 +39,7 @@ import {
   Calendar,
   MessageCircle,
 } from 'lucide-react';
+import { PublicFooter } from '@/components/site/PublicFooter';
 
 const WHATSAPP = '5561998117985';
 const wa = (msg = 'Olá! Gostaria de agendar uma consulta na Clínica Pacem.') =>
@@ -576,64 +577,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer id="contato" className="bg-white border-t border-[hsl(var(--lp-line))] text-[hsl(var(--lp-muted))]">
-        <div className="container mx-auto px-5 md:px-10 py-12 md:py-14 grid sm:grid-cols-2 md:grid-cols-4 gap-8 md:gap-10">
-          <div>
-            <div className="flex items-center gap-3 mb-4">
-              <img src={clinicLogo} alt={clinicName} className="h-9 w-auto object-contain" />
-              <div className="leading-tight">
-                <div className="text-[hsl(var(--lp-ink))] font-bold">{clinicName}</div>
-                <div className="text-[10px] uppercase tracking-[0.22em]">Saúde Mental · Brasília</div>
-              </div>
-            </div>
-            <p className="text-[13px] leading-relaxed">
-              Clínica multidisciplinar especializada em saúde mental, com atendimento humanizado em Brasília.
-            </p>
-            <div className="flex items-center gap-3 mt-4">
-              <a href="https://www.instagram.com/clinicapacem" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[hsl(var(--lp-line))] bg-white hover:text-[hsl(var(--lp-blue))] hover:border-[hsl(var(--lp-blue)/0.4)] transition-colors">
-                <Instagram className="h-[18px] w-[18px]" strokeWidth={1.8} />
-              </a>
-              <a href="https://www.facebook.com/clinicapacem" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[hsl(var(--lp-line))] bg-white hover:text-[hsl(var(--lp-blue))] hover:border-[hsl(var(--lp-blue)/0.4)] transition-colors">
-                <Facebook className="h-[18px] w-[18px]" strokeWidth={1.8} />
-              </a>
-            </div>
-          </div>
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[hsl(var(--lp-ink))] mb-4">Especialidades</p>
-            <ul className="space-y-2.5 text-[13.5px]">
-              {especialidades.slice(0, 6).map((s) => (
-                <li key={s.title}><a href="#especialidades" className="hover:text-[hsl(var(--lp-blue))]">{s.title}</a></li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[hsl(var(--lp-ink))] mb-4">Atendimento</p>
-            <ul className="space-y-2.5 text-[13.5px]">
-              <li className="flex items-start gap-2"><Clock className="h-4 w-4 mt-0.5 shrink-0 text-[hsl(var(--lp-blue))]" /><div><div className="text-[hsl(var(--lp-ink))] font-semibold">Seg a Sex</div>08h às 19h</div></li>
-              <li className="flex items-start gap-2"><Clock className="h-4 w-4 mt-0.5 shrink-0 text-[hsl(var(--lp-blue))]" /><div><div className="text-[hsl(var(--lp-ink))] font-semibold">Sábado</div>08h às 13h</div></li>
-              <li><Link to="/convenios" className="hover:text-[hsl(var(--lp-blue))]">Convênios</Link></li>
-              <li><a href="#blog" className="hover:text-[hsl(var(--lp-blue))]">Blog</a></li>
-              <li><Link to="/politica-de-privacidade" className="inline-flex items-center gap-1.5 hover:text-[hsl(var(--lp-blue))]"><Lock className="h-3.5 w-3.5" />Política de Privacidade</Link></li>
-            </ul>
-          </div>
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[hsl(var(--lp-ink))] mb-4">Contato</p>
-            <ul className="space-y-2.5 text-[13.5px]">
-              <li className="flex items-start gap-2"><MapPin className="h-4 w-4 mt-0.5 shrink-0 text-[hsl(var(--lp-blue))]" />{settings?.endereco_completo || 'SCN Quadra 1 Bloco E Sala 1905 — Asa Norte, Brasília/DF'}</li>
-              <li className="flex items-center gap-2"><Phone className="h-4 w-4 shrink-0 text-[hsl(var(--lp-blue))]" />(61) 99811-7985</li>
-              <li className="flex items-center gap-2"><Mail className="h-4 w-4 shrink-0 text-[hsl(var(--lp-blue))]" />{settings?.email_contato || 'contato@clinicapacem.com.br'}</li>
-            </ul>
-          </div>
-        </div>
-        <div className="border-t border-[hsl(var(--lp-line))]">
-          <div className="container mx-auto px-5 md:px-10 py-5 flex flex-col md:flex-row items-center justify-between gap-3 text-[12.5px]">
-            <p>© {new Date().getFullYear()} {clinicName}. Todos os direitos reservados.</p>
-            <Link to="/admin/auth" className="hover:text-[hsl(var(--lp-blue))] transition-colors">Área Administrativa</Link>
-          </div>
-        </div>
-      </footer>
-
+      <PublicFooter />
     </div>
   );
 }
