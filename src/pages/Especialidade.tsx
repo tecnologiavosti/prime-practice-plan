@@ -295,6 +295,7 @@ export default function EspecialidadePage() {
           </a>
         </div>
       </section>
+      <PublicFooter />
     </div>
   );
 }

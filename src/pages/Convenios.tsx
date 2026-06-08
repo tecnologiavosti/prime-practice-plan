@@ -173,6 +173,7 @@ export default function Convenios() {
           )}
         </div>
       </main>
+      <PublicFooter />
     </div>
   );
 }

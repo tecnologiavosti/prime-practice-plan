@@ -130,6 +130,7 @@ export default function BlogPost() {
           )}
         </div>
       </main>
+      <PublicFooter />
     </div>
   );
 }
