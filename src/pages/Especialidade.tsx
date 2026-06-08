@@ -2,6 +2,7 @@ import { Link, useParams, Navigate } from 'react-router-dom';
 import { useClinicSettings } from '@/hooks/useClinicSettings';
 import { SeoHead } from '@/components/SeoHead';
 import { PublicHeader } from '@/components/site/PublicHeader';
+import { PublicFooter } from '@/components/site/PublicFooter';
 import type { LucideIcon } from 'lucide-react';
 import {
   ArrowRight, Brain, Stethoscope, Apple, MessageSquare,

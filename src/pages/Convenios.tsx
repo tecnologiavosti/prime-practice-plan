@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useClinicSettings } from '@/hooks/useClinicSettings';
 import { SeoHead } from '@/components/SeoHead';
 import { PublicHeader } from '@/components/site/PublicHeader';
+import { PublicFooter } from '@/components/site/PublicFooter';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';

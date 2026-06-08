@@ -39,6 +39,7 @@ import {
   Calendar,
   MessageCircle,
 } from 'lucide-react';
+import { PublicFooter } from '@/components/site/PublicFooter';
 
 const WHATSAPP = '5561998117985';
 const wa = (msg = 'Olá! Gostaria de agendar uma consulta na Clínica Pacem.') =>

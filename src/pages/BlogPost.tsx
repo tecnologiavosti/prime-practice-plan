@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import { supabase } from '@/integrations/supabase/client';
 import { PublicHeader } from '@/components/site/PublicHeader';
+import { PublicFooter } from '@/components/site/PublicFooter';
 import { SeoHead } from '@/components/SeoHead';
 import { ArrowLeft, Calendar, User } from 'lucide-react';
 
