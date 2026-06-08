@@ -32,6 +32,7 @@ import SeoSettings from "./pages/SeoSettings";
 import Blog from "./pages/Blog";
 import Convenios from "./pages/Convenios";
 import EspecialidadePage from "./pages/Especialidade";
+import BlogPost from "./pages/BlogPost";
 
 import ScheduleConfig from "./pages/ScheduleConfig";
 import ClinicProfile from "./pages/ClinicProfile";
@@ -69,6 +70,7 @@ const App = () => (
             <Route path="/" element={<LandingPage />} />
             <Route path="/convenios" element={<Convenios />} />
             <Route path="/especialidades/:slug" element={<EspecialidadePage />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
             
             

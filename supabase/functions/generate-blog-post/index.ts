@@ -160,6 +160,27 @@ Retorne APENAS um JSON no formato:
 
     if (insErr) throw insErr;
 
+    // 5) Prune older published posts — keep only the N most recent
+    const KEEP = Number(body.keep ?? 6);
+    try {
+      const { data: keepRows } = await admin
+        .from("blog_posts")
+        .select("id")
+        .eq("published", true)
+        .order("published_at", { ascending: false })
+        .limit(KEEP);
+      const keepIds = (keepRows || []).map((r: any) => r.id);
+      if (keepIds.length > 0) {
+        await admin
+          .from("blog_posts")
+          .delete()
+          .eq("published", true)
+          .not("id", "in", `(${keepIds.map((i) => `"${i}"`).join(",")})`);
+      }
+    } catch (e) {
+      console.error("Prune failed:", e);
+    }
+
     return new Response(JSON.stringify({ post: inserted }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
