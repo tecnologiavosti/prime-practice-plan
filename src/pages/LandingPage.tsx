@@ -79,7 +79,7 @@ const especialidades = [
   {
     slug: 'rn1',
     icon: Briefcase,
-    title: 'RN1',
+    title: 'RN-1',
     desc: 'Cuidado completo para colaboradores com acesso à Psiquiatria, Psicologia, Nutrição e Personal Trainer, além de atendimento médico 24h e teleconsultas. Mais saúde, bem-estar e produtividade para sua equipe.',
   },
 ];
