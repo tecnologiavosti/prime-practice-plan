@@ -127,7 +127,7 @@ const ESPECIALIDADES: Record<string, Especialidade> = {
   },
   'rn1': {
     slug: 'rn1',
-    title: 'RN1',
+    title: 'RN-1',
     tagline: 'Plano corporativo de saúde mental e bem-estar',
     intro: 'Cuidado completo para colaboradores com acesso à Psiquiatria, Psicologia, Nutrição e Personal Trainer, além de atendimento médico 24h e teleconsultas. Mais saúde, bem-estar e produtividade para sua equipe.',
     icon: Briefcase,
