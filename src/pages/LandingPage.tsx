@@ -449,7 +449,11 @@ export default function LandingPage() {
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto">
               {posts.map((p) => (
-                <article key={p.id} className="rounded-2xl border border-[hsl(var(--lp-line))] bg-white overflow-hidden hover:shadow-[0_18px_40px_-18px_hsl(var(--lp-blue)/0.3)] transition-all hover:-translate-y-1">
+                <Link
+                  key={p.id}
+                  to={`/blog/${p.slug}`}
+                  className="group rounded-2xl border border-[hsl(var(--lp-line))] bg-white overflow-hidden hover:shadow-[0_18px_40px_-18px_hsl(var(--lp-blue)/0.3)] transition-all hover:-translate-y-1"
+                >
                   {p.cover_url ? (
                     <img src={p.cover_url} alt={p.title} className="w-full h-44 object-cover" loading="lazy" />
                   ) : (
@@ -458,14 +462,14 @@ export default function LandingPage() {
                     </div>
                   )}
                   <div className="p-5">
-                    <h3 className="text-[16px] font-bold leading-snug mb-2 line-clamp-2">{p.title}</h3>
+                    <h3 className="text-[16px] font-bold leading-snug mb-2 line-clamp-2 group-hover:text-[hsl(var(--lp-blue))] transition-colors">{p.title}</h3>
                     {p.excerpt && <p className="text-[13.5px] text-[hsl(var(--lp-muted))] leading-relaxed line-clamp-3">{p.excerpt}</p>}
                     <p className="text-[11.5px] text-[hsl(var(--lp-muted))] mt-3">
                       {p.author && <>por <span className="font-semibold text-[hsl(var(--lp-ink))]">{p.author}</span> · </>}
                       {new Date(p.published_at).toLocaleDateString('pt-BR')}
                     </p>
                   </div>
-                </article>
+                </Link>
               ))}
             </div>
           </div>
