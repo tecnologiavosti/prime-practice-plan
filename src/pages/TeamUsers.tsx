@@ -11,7 +11,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { UserPlus, Trash2, Mail, Copy, Stethoscope, Shield } from 'lucide-react';
+import { UserPlus, Trash2, Mail, Copy, Stethoscope, Shield, ShieldCheck } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { ADMIN_MODULES } from '@/lib/adminModules';
 import { z } from 'zod';
 
 const inviteSchema = z.object({
@@ -28,6 +31,7 @@ interface AuthorizedAdmin {
   used_at: string | null;
   created_at: string;
   role: 'administrador' | 'profissional';
+  allowed_modules: string[] | null;
 }
 
 export default function TeamUsers() {
@@ -39,8 +43,36 @@ export default function TeamUsers() {
   const [form, setForm] = useState<{ full_name: string; email: string; role: 'administrador' | 'profissional' }>({ full_name: '', email: '', role: 'administrador' });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [toDelete, setToDelete] = useState<AuthorizedAdmin | null>(null);
+  const [permEditing, setPermEditing] = useState<AuthorizedAdmin | null>(null);
+  const [permSelected, setPermSelected] = useState<string[]>([]);
+  const [permSaving, setPermSaving] = useState(false);
 
   const isAdmin = hasRole('administrador');
+
+  const openPermissions = (item: AuthorizedAdmin) => {
+    setPermEditing(item);
+    setPermSelected(item.allowed_modules ?? []);
+  };
+
+  const togglePerm = (key: string, checked: boolean) => {
+    setPermSelected((prev) => (checked ? Array.from(new Set([...prev, key])) : prev.filter((k) => k !== key)));
+  };
+
+  const savePermissions = async () => {
+    if (!permEditing) return;
+    setPermSaving(true);
+    const { error } = await (supabase.from('authorized_admins') as any)
+      .update({ allowed_modules: permSelected })
+      .eq('id', permEditing.id);
+    setPermSaving(false);
+    if (error) {
+      toast({ variant: 'destructive', title: 'Erro', description: error.message });
+      return;
+    }
+    toast({ title: 'Permissões atualizadas', description: 'O usuário verá apenas os módulos selecionados.' });
+    setPermEditing(null);
+    fetchData();
+  };
 
   const fetchData = async () => {
     const { data, error } = await supabase
@@ -169,6 +201,11 @@ export default function TeamUsers() {
                 </TableCell>
                 <TableCell>{new Date(it.created_at).toLocaleDateString('pt-BR')}</TableCell>
                 <TableCell className="text-right">
+                  {it.role === 'administrador' && (
+                    <Button variant="ghost" size="icon" onClick={() => openPermissions(it)} title="Permissões / Módulos">
+                      <ShieldCheck className="h-4 w-4 text-primary" />
+                    </Button>
+                  )}
                   <Button variant="ghost" size="icon" onClick={() => setToDelete(it)} title="Remover convite">
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
@@ -234,6 +271,45 @@ export default function TeamUsers() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={!!permEditing} onOpenChange={(o) => !o && setPermEditing(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Permissões de acesso</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Selecione os módulos que <span className="font-medium">{permEditing?.full_name}</span> poderá acessar no painel.
+              Se nada for selecionado, o usuário verá todos os módulos do seu perfil.
+            </p>
+            <div className="flex items-center gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={() => setPermSelected(ADMIN_MODULES.map((m) => m.key))}>
+                Selecionar todos
+              </Button>
+              <Button type="button" variant="outline" size="sm" onClick={() => setPermSelected([])}>
+                Limpar
+              </Button>
+            </div>
+            <ScrollArea className="h-72 rounded border p-3">
+              <div className="grid grid-cols-1 gap-2">
+                {ADMIN_MODULES.map((m) => (
+                  <label key={m.key} className="flex items-center gap-2 text-sm cursor-pointer">
+                    <Checkbox
+                      checked={permSelected.includes(m.key)}
+                      onCheckedChange={(c) => togglePerm(m.key, !!c)}
+                    />
+                    <span>{m.label}</span>
+                  </label>
+                ))}
+              </div>
+            </ScrollArea>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPermEditing(null)}>Cancelar</Button>
+            <Button onClick={savePermissions} disabled={permSaving}>{permSaving ? 'Salvando...' : 'Salvar permissões'}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

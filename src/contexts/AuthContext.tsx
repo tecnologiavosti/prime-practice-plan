@@ -9,6 +9,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   roles: AppRole[];
+  allowedModules: string[] | null; // null = not loaded yet, [] = no row, list = explicit
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -23,6 +24,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [roles, setRoles] = useState<AppRole[]>([]);
+  const [allowedModules, setAllowedModules] = useState<string[] | null>(null);
+
+  const fetchAllowedModules = async (email: string | null | undefined) => {
+    if (!email) return [];
+    const { data } = await supabase
+      .from('authorized_admins')
+      .select('allowed_modules')
+      .ilike('email', email)
+      .maybeSingle();
+    return ((data as any)?.allowed_modules as string[]) ?? [];
+  };
 
   const provisionCurrentSignup = async (account: { email: string; fullName: string; cpf?: string | null }) => {
     const { error } = await (supabase.rpc as any)('provision_current_user_signup', {
@@ -82,15 +94,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (session?.user) {
           setTimeout(() => {
             if (!mounted) return;
-            fetchUserRoles(session.user.id, session.user).then((r) => {
+            Promise.all([
+              fetchUserRoles(session.user.id, session.user),
+              fetchAllowedModules(session.user.email),
+            ]).then(([r, mods]) => {
               if (mounted) {
                 setRoles(r);
+                setAllowedModules(mods);
                 setLoading(false);
               }
             });
           }, 0);
         } else {
           setRoles([]);
+          setAllowedModules(null);
           setLoading(false);
         }
       }
@@ -102,9 +119,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        fetchUserRoles(session.user.id, session.user).then((r) => {
+        Promise.all([
+          fetchUserRoles(session.user.id, session.user),
+          fetchAllowedModules(session.user.email),
+        ]).then(([r, mods]) => {
           if (mounted) {
             setRoles(r);
+            setAllowedModules(mods);
             setLoading(false);
           }
         });
@@ -155,6 +176,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
     setSession(null);
     setRoles([]);
+    setAllowedModules(null);
   };
 
   const hasRole = (role: AppRole) => roles.includes(role);
@@ -167,6 +189,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         session,
         loading,
         roles,
+        allowedModules,
         signIn,
         signUp,
         signOut,

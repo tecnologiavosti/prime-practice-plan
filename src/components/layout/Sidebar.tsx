@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import logoPacem from '@/assets/logoPacem.png';
 import { useClinicSettings } from '@/hooks/useClinicSettings';
+import { ADMIN_MODULES } from '@/lib/adminModules';
 import {
   Calendar,
   Users,
@@ -28,36 +29,34 @@ import {
   Newspaper,
 } from 'lucide-react';
 
-const menuItems = [
-  { to: '/admin', icon: LayoutDashboard, label: 'Dashboard', roles: ['administrador', 'recepcao', 'financeiro'] },
-  { to: '/admin/agenda', icon: Calendar, label: 'Agenda', roles: ['administrador', 'recepcao'] },
-  { to: '/admin/agendamentos', icon: ClipboardList, label: 'Agendamentos', roles: ['administrador', 'recepcao'] },
-  { to: '/admin/pacientes', icon: Users, label: 'Pacientes', roles: ['administrador', 'recepcao'] },
-  { to: '/admin/profissionais', icon: UserCog, label: 'Profissionais', roles: ['administrador'] },
-  { to: '/admin/procedimentos', icon: FileText, label: 'Procedimentos', roles: ['administrador'] },
-  { to: '/admin/convenios', icon: Building2, label: 'Convênios', roles: ['administrador'] },
-  { to: '/admin/administradoras', icon: CreditCard, label: 'Administradoras', roles: ['administrador'] },
-  { to: '/admin/pacotes', icon: Package, label: 'Pacotes', roles: ['administrador', 'recepcao'] },
-  { to: '/admin/especialidades', icon: Stethoscope, label: 'Especialidades', roles: ['administrador'] },
-  { to: '/admin/financeiro', icon: DollarSign, label: 'Contas a Receber', roles: ['administrador', 'financeiro'] },
-  { to: '/admin/fluxo-caixa', icon: TrendingUp, label: 'Fluxo de Caixa', roles: ['administrador', 'financeiro'] },
-  { to: '/admin/guias', icon: Receipt, label: 'Guias Médicas', roles: ['administrador', 'financeiro', 'recepcao'] },
-  { to: '/admin/lotes-faturamento', icon: FileBarChart, label: 'Faturamento', roles: ['administrador', 'financeiro'] },
-  { to: '/admin/repasses', icon: Wallet, label: 'Repasses', roles: ['administrador', 'financeiro'] },
-  { to: '/admin/repasse-convenios', icon: Banknote, label: 'Rep. Convênios', roles: ['administrador', 'financeiro'] },
-  { to: '/admin/relatorios-financeiros', icon: FileBarChart, label: 'Relatórios', roles: ['administrador', 'financeiro'] },
-  { to: '/admin/formas-pagamento', icon: Banknote, label: 'Formas Pgto', roles: ['administrador'] },
-  { to: '/admin/escalas', icon: Calendar, label: 'Configurar Escalas', roles: ['administrador'] },
-  { to: '/admin/perfil-clinica', icon: Settings, label: 'Perfil da Clínica', roles: ['administrador'] },
-  { to: '/admin/equipe', icon: UsersRound, label: 'Equipe / Usuários', roles: ['administrador'] },
-  { to: '/admin/seo', icon: Search, label: 'SEO / Google', roles: ['administrador'] },
-  { to: '/admin/blog', icon: Newspaper, label: 'Blog', roles: ['administrador'] },
-  
-  
-];
+const ICONS: Record<string, any> = {
+  dashboard: LayoutDashboard,
+  agenda: Calendar,
+  agendamentos: ClipboardList,
+  pacientes: Users,
+  profissionais: UserCog,
+  procedimentos: FileText,
+  convenios: Building2,
+  administradoras: CreditCard,
+  pacotes: Package,
+  especialidades: Stethoscope,
+  financeiro: DollarSign,
+  'fluxo-caixa': TrendingUp,
+  guias: Receipt,
+  'lotes-faturamento': FileBarChart,
+  repasses: Wallet,
+  'repasse-convenios': Banknote,
+  'relatorios-financeiros': FileBarChart,
+  'formas-pagamento': Banknote,
+  escalas: Calendar,
+  'perfil-clinica': Settings,
+  equipe: UsersRound,
+  seo: Search,
+  blog: Newspaper,
+};
 
 export function Sidebar() {
-  const { signOut, roles, user } = useAuth();
+  const { signOut, roles, user, allowedModules } = useAuth();
   const { settings } = useClinicSettings();
   const navigate = useNavigate();
   const logoSrc = settings?.logo_url || logoPacem;
@@ -68,9 +67,17 @@ export function Sidebar() {
     navigate('/admin/auth');
   };
 
-  const filteredItems = menuItems.filter((item) =>
-    item.roles.some((role) => roles.includes(role as any))
-  );
+  const isAdmin = roles.includes('administrador');
+
+  // Administradores veem tudo. Para os demais, filtra pelas permissões.
+  // Se nenhum módulo foi definido, mantém o comportamento antigo (apenas por role).
+  const filteredItems = ADMIN_MODULES.filter((item) => {
+    const allowedByRole = item.roles.some((role) => roles.includes(role as any));
+    if (!allowedByRole) return false;
+    if (isAdmin) return true;
+    if (!allowedModules || allowedModules.length === 0) return true;
+    return allowedModules.includes(item.key);
+  });
 
   return (
     <aside className="flex h-screen w-60 flex-col bg-sidebar border-r border-sidebar-border">
@@ -85,24 +92,27 @@ export function Sidebar() {
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto py-3 px-2">
         <div className="space-y-0.5">
-          {filteredItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === '/admin'}
-              className={({ isActive }) =>
-                cn(
-                  'flex items-center gap-2.5 rounded-md px-2.5 py-[7px] text-[13px] font-medium transition-all duration-150',
-                  isActive
-                    ? 'bg-sidebar-accent text-accent-foreground font-semibold'
-                    : 'text-sidebar-foreground hover:bg-sidebar-foreground/10 hover:text-sidebar-primary-foreground'
-                )
-              }
-            >
-              <item.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={isActive(item.to) ? 2.25 : 1.75} />
-              {item.label}
-            </NavLink>
-          ))}
+          {filteredItems.map((item) => {
+            const Icon = ICONS[item.key] ?? LayoutDashboard;
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.to === '/admin'}
+                className={({ isActive }) =>
+                  cn(
+                    'flex items-center gap-2.5 rounded-md px-2.5 py-[7px] text-[13px] font-medium transition-all duration-150',
+                    isActive
+                      ? 'bg-sidebar-accent text-accent-foreground font-semibold'
+                      : 'text-sidebar-foreground hover:bg-sidebar-foreground/10 hover:text-sidebar-primary-foreground'
+                  )
+                }
+              >
+                <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.75} />
+                {item.label}
+              </NavLink>
+            );
+          })}
         </div>
       </nav>
 
@@ -126,8 +136,4 @@ export function Sidebar() {
       </div>
     </aside>
   );
-}
-
-function isActive(to: string): boolean {
-  return typeof window !== 'undefined' && window.location.pathname === to;
 }

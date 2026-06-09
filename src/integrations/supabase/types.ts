@@ -251,6 +251,7 @@ export type Database = {
       }
       authorized_admins: {
         Row: {
+          allowed_modules: string[]
           created_at: string
           email: string
           full_name: string
@@ -262,6 +263,7 @@ export type Database = {
           used_at: string | null
         }
         Insert: {
+          allowed_modules?: string[]
           created_at?: string
           email: string
           full_name: string
@@ -273,6 +275,7 @@ export type Database = {
           used_at?: string | null
         }
         Update: {
+          allowed_modules?: string[]
           created_at?: string
           email?: string
           full_name?: string
