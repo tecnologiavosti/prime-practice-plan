@@ -201,6 +201,11 @@ export default function TeamUsers() {
                 </TableCell>
                 <TableCell>{new Date(it.created_at).toLocaleDateString('pt-BR')}</TableCell>
                 <TableCell className="text-right">
+                  {it.role === 'administrador' && (
+                    <Button variant="ghost" size="icon" onClick={() => openPermissions(it)} title="Permissões / Módulos">
+                      <ShieldCheck className="h-4 w-4 text-primary" />
+                    </Button>
+                  )}
                   <Button variant="ghost" size="icon" onClick={() => setToDelete(it)} title="Remover convite">
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
@@ -266,6 +271,45 @@ export default function TeamUsers() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={!!permEditing} onOpenChange={(o) => !o && setPermEditing(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Permissões de acesso</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Selecione os módulos que <span className="font-medium">{permEditing?.full_name}</span> poderá acessar no painel.
+              Se nada for selecionado, o usuário verá todos os módulos do seu perfil.
+            </p>
+            <div className="flex items-center gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={() => setPermSelected(ADMIN_MODULES.map((m) => m.key))}>
+                Selecionar todos
+              </Button>
+              <Button type="button" variant="outline" size="sm" onClick={() => setPermSelected([])}>
+                Limpar
+              </Button>
+            </div>
+            <ScrollArea className="h-72 rounded border p-3">
+              <div className="grid grid-cols-1 gap-2">
+                {ADMIN_MODULES.map((m) => (
+                  <label key={m.key} className="flex items-center gap-2 text-sm cursor-pointer">
+                    <Checkbox
+                      checked={permSelected.includes(m.key)}
+                      onCheckedChange={(c) => togglePerm(m.key, !!c)}
+                    />
+                    <span>{m.label}</span>
+                  </label>
+                ))}
+              </div>
+            </ScrollArea>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPermEditing(null)}>Cancelar</Button>
+            <Button onClick={savePermissions} disabled={permSaving}>{permSaving ? 'Salvando...' : 'Salvar permissões'}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
