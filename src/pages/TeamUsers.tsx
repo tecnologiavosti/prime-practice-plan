@@ -11,7 +11,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { UserPlus, Trash2, Mail, Copy, Stethoscope, Shield } from 'lucide-react';
+import { UserPlus, Trash2, Mail, Copy, Stethoscope, Shield, ShieldCheck } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { ADMIN_MODULES } from '@/lib/adminModules';
 import { z } from 'zod';
 
 const inviteSchema = z.object({
