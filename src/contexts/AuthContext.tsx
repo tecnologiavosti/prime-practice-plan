@@ -94,15 +94,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (session?.user) {
           setTimeout(() => {
             if (!mounted) return;
-            fetchUserRoles(session.user.id, session.user).then((r) => {
+            Promise.all([
+              fetchUserRoles(session.user.id, session.user),
+              fetchAllowedModules(session.user.email),
+            ]).then(([r, mods]) => {
               if (mounted) {
                 setRoles(r);
+                setAllowedModules(mods);
                 setLoading(false);
               }
             });
           }, 0);
         } else {
           setRoles([]);
+          setAllowedModules(null);
           setLoading(false);
         }
       }
@@ -114,9 +119,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        fetchUserRoles(session.user.id, session.user).then((r) => {
+        Promise.all([
+          fetchUserRoles(session.user.id, session.user),
+          fetchAllowedModules(session.user.email),
+        ]).then(([r, mods]) => {
           if (mounted) {
             setRoles(r);
+            setAllowedModules(mods);
             setLoading(false);
           }
         });
@@ -167,6 +176,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
     setSession(null);
     setRoles([]);
+    setAllowedModules(null);
   };
 
   const hasRole = (role: AppRole) => roles.includes(role);
@@ -179,6 +189,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         session,
         loading,
         roles,
+        allowedModules,
         signIn,
         signUp,
         signOut,
