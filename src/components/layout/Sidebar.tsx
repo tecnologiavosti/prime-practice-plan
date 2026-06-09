@@ -29,7 +29,7 @@ import {
   Newspaper,
 } from 'lucide-react';
 
-const ICONS: Record<string, React.ComponentType<{ className?: string; strokeWidth?: number }>> = {
+const ICONS: Record<string, any> = {
   dashboard: LayoutDashboard,
   agenda: Calendar,
   agendamentos: ClipboardList,
