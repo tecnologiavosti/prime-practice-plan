@@ -31,6 +31,7 @@ interface AuthorizedAdmin {
   used_at: string | null;
   created_at: string;
   role: 'administrador' | 'profissional';
+  allowed_modules: string[] | null;
 }
 
 export default function TeamUsers() {
@@ -42,8 +43,36 @@ export default function TeamUsers() {
   const [form, setForm] = useState<{ full_name: string; email: string; role: 'administrador' | 'profissional' }>({ full_name: '', email: '', role: 'administrador' });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [toDelete, setToDelete] = useState<AuthorizedAdmin | null>(null);
+  const [permEditing, setPermEditing] = useState<AuthorizedAdmin | null>(null);
+  const [permSelected, setPermSelected] = useState<string[]>([]);
+  const [permSaving, setPermSaving] = useState(false);
 
   const isAdmin = hasRole('administrador');
+
+  const openPermissions = (item: AuthorizedAdmin) => {
+    setPermEditing(item);
+    setPermSelected(item.allowed_modules ?? []);
+  };
+
+  const togglePerm = (key: string, checked: boolean) => {
+    setPermSelected((prev) => (checked ? Array.from(new Set([...prev, key])) : prev.filter((k) => k !== key)));
+  };
+
+  const savePermissions = async () => {
+    if (!permEditing) return;
+    setPermSaving(true);
+    const { error } = await (supabase.from('authorized_admins') as any)
+      .update({ allowed_modules: permSelected })
+      .eq('id', permEditing.id);
+    setPermSaving(false);
+    if (error) {
+      toast({ variant: 'destructive', title: 'Erro', description: error.message });
+      return;
+    }
+    toast({ title: 'Permissões atualizadas', description: 'O usuário verá apenas os módulos selecionados.' });
+    setPermEditing(null);
+    fetchData();
+  };
 
   const fetchData = async () => {
     const { data, error } = await supabase
