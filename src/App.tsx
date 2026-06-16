@@ -127,6 +127,7 @@ const App = () => (
               <Route path="/admin/equipe" element={<TeamUsers />} />
               <Route path="/admin/seo" element={<SeoSettings />} />
               <Route path="/admin/blog" element={<Blog />} />
+              <Route path="/admin/salas-sublocadas" element={<SubleasedRooms />} />
               
             </Route>
             
