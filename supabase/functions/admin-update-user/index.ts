@@ -72,21 +72,11 @@ Deno.serve(async (req) => {
       if (updErr) return json({ error: updErr.message }, 400);
     }
 
-    // Atualizar dados em authorized_admins / profiles / user_roles
-    const adminPatch: Record<string, unknown> = {};
+    // Atualizar dados em authorized_admins (marca como usado pois usuário existe)
+    const adminPatch: Record<string, unknown> = { used: true };
     if (full_name) adminPatch.full_name = full_name;
     if (role) adminPatch.role = role;
-    if (Object.keys(adminPatch).length > 0) {
-      await admin.from("authorized_admins").update(adminPatch).eq("email", email);
-    }
-
-    // Marca o convite como utilizado (usuário já existe no auth)
-    adminPatch.used = true;
-    if (!adminPatch.full_name) {
-      await admin.from("authorized_admins").update({ used: true }).eq("email", email);
-    } else {
-      await admin.from("authorized_admins").update(adminPatch).eq("email", email);
-    }
+    await admin.from("authorized_admins").update(adminPatch).eq("email", email);
 
     if (full_name) {
       await admin.from("profiles").update({ full_name }).eq("user_id", target.id);
