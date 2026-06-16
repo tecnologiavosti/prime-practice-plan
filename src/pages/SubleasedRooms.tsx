@@ -178,9 +178,11 @@ export default function SubleasedRooms() {
               <TableRow><TableCell colSpan={8} className="text-center py-6 text-muted-foreground">Nenhuma sala cadastrada.</TableCell></TableRow>
             ) : rooms.map((r, i) => (
               <TableRow key={r.id} className={i % 2 ? 'bg-muted/30' : ''}>
-                <TableCell className="font-medium">{r.name}</TableCell>
+                <TableCell className="font-medium">
+                  {r.name}{r.room_number ? <span className="text-muted-foreground"> · nº {r.room_number}</span> : null}
+                </TableCell>
                 <TableCell className="text-sm text-muted-foreground">{r.address || '-'}</TableCell>
-                <TableCell>{r.tenant_name}</TableCell>
+                <TableCell>{r.tenant_name || '-'}</TableCell>
                 <TableCell className="text-sm">{r.tenant_contact || '-'}</TableCell>
                 <TableCell className="text-right font-mono">R$ {Number(r.monthly_value).toFixed(2)}</TableCell>
                 <TableCell>{r.due_day ? `Dia ${r.due_day}` : '-'}</TableCell>
