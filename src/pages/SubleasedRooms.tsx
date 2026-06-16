@@ -202,6 +202,29 @@ export default function SubleasedRooms() {
           <DialogHeader><DialogTitle>{editingId ? 'Editar Sala' : 'Nova Sala'}</DialogTitle></DialogHeader>
           <div className="grid gap-3">
             <div><Label>Nome / Identificação *</Label><Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></div>
+            <div>
+              <Label>CEP</Label>
+              <Input
+                placeholder="00000-000"
+                maxLength={9}
+                onChange={async (e) => {
+                  let v = e.target.value.replace(/\D/g, '').slice(0, 8);
+                  if (v.length > 5) v = v.slice(0, 5) + '-' + v.slice(5);
+                  e.target.value = v;
+                  const digits = v.replace(/\D/g, '');
+                  if (digits.length === 8) {
+                    try {
+                      const r = await window.fetch(`https://viacep.com.br/ws/${digits}/json/`);
+                      const d = await r.json();
+                      if (!d.erro) {
+                        const addr = `${d.logradouro}${d.bairro ? ', ' + d.bairro : ''} - ${d.localidade}/${d.uf}`;
+                        setForm(f => ({ ...f, address: addr }));
+                      }
+                    } catch {}
+                  }
+                }}
+              />
+            </div>
             <div><Label>Endereço</Label><Input value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} /></div>
             <div className="grid grid-cols-2 gap-3">
               <div><Label>Locatário *</Label><Input value={form.tenant_name} onChange={e => setForm({ ...form, tenant_name: e.target.value })} /></div>
