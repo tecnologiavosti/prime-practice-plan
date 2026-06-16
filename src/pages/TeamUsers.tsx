@@ -48,6 +48,11 @@ export default function TeamUsers() {
   const [permEditing, setPermEditing] = useState<AuthorizedAdmin | null>(null);
   const [permSelected, setPermSelected] = useState<string[]>([]);
   const [permSaving, setPermSaving] = useState(false);
+  const [editUser, setEditUser] = useState<AuthorizedAdmin | null>(null);
+  const [editPassword, setEditPassword] = useState('');
+  const [editActive, setEditActive] = useState(true);
+  const [editSaving, setEditSaving] = useState(false);
+
 
   const isAdmin = hasRole('administrador');
 
