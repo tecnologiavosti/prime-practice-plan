@@ -75,8 +75,9 @@ export default function SubleasedRooms() {
     setEditingId(r.id);
     setForm({
       name: r.name,
+      room_number: r.room_number ?? '',
       address: r.address ?? '',
-      tenant_name: r.tenant_name,
+      tenant_name: r.tenant_name ?? '',
       tenant_contact: r.tenant_contact ?? '',
       monthly_value: Number(r.monthly_value),
       due_day: r.due_day ?? 5,
@@ -87,14 +88,15 @@ export default function SubleasedRooms() {
   };
 
   const save = async () => {
-    if (!form.name || !form.tenant_name) {
-      toast({ title: 'Preencha nome da sala e locatário', variant: 'destructive' });
+    if (!form.name) {
+      toast({ title: 'Informe o nome / identificação da sala', variant: 'destructive' });
       return;
     }
     const payload = {
       name: form.name,
+      room_number: form.room_number || null,
       address: form.address || null,
-      tenant_name: form.tenant_name,
+      tenant_name: form.tenant_name || null,
       tenant_contact: form.tenant_contact || null,
       monthly_value: form.monthly_value,
       due_day: form.due_day || null,
