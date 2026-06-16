@@ -11,15 +11,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { UserPlus, Trash2, Mail, Copy, Stethoscope, Shield, ShieldCheck } from 'lucide-react';
+import { UserPlus, Trash2, Mail, Stethoscope, Shield, ShieldCheck } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ADMIN_MODULES } from '@/lib/adminModules';
 import { z } from 'zod';
 
-const inviteSchema = z.object({
+const createSchema = z.object({
   full_name: z.string().trim().min(3, 'Nome deve ter no mínimo 3 caracteres').max(100),
   email: z.string().trim().email('Email inválido').max(255),
+  password: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres').max(72),
   role: z.enum(['administrador', 'profissional']),
 });
 
@@ -40,7 +41,7 @@ export default function TeamUsers() {
   const [items, setItems] = useState<AuthorizedAdmin[]>([]);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState<{ full_name: string; email: string; role: 'administrador' | 'profissional' }>({ full_name: '', email: '', role: 'administrador' });
+  const [form, setForm] = useState<{ full_name: string; email: string; password: string; role: 'administrador' | 'profissional' }>({ full_name: '', email: '', password: '', role: 'administrador' });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [toDelete, setToDelete] = useState<AuthorizedAdmin | null>(null);
   const [permEditing, setPermEditing] = useState<AuthorizedAdmin | null>(null);
@@ -90,9 +91,9 @@ export default function TeamUsers() {
     if (isAdmin) fetchData();
   }, [isAdmin]);
 
-  const handleInvite = async () => {
+  const handleCreate = async () => {
     setErrors({});
-    const result = inviteSchema.safeParse(form);
+    const result = createSchema.safeParse(form);
     if (!result.success) {
       const fe: Record<string, string> = {};
       result.error.errors.forEach((e) => { if (e.path[0]) fe[e.path[0].toString()] = e.message; });
@@ -101,33 +102,27 @@ export default function TeamUsers() {
     }
 
     setSaving(true);
-    const { error } = await (supabase.from('authorized_admins') as any).insert({
-      email: form.email.trim().toLowerCase(),
-      full_name: form.full_name.trim(),
-      role: form.role,
-      invited_by: user?.id,
+    const { data, error } = await supabase.functions.invoke('admin-create-user', {
+      body: {
+        email: form.email.trim().toLowerCase(),
+        full_name: form.full_name.trim(),
+        password: form.password,
+        role: form.role,
+      },
     });
     setSaving(false);
 
-    if (error) {
-      const msg = error.message.includes('duplicate') || error.code === '23505'
-        ? 'Este email já foi convidado'
-        : error.message;
-      toast({ variant: 'destructive', title: 'Erro ao convidar', description: msg });
+    const errMsg = (error as any)?.message || (data as any)?.error;
+    if (errMsg) {
+      toast({ variant: 'destructive', title: 'Erro ao cadastrar', description: errMsg });
       return;
     }
 
     const roleLabel = form.role === 'profissional' ? 'Profissional' : 'Administrador';
-    toast({ title: 'Convite criado', description: `${form.full_name} pode agora se cadastrar como ${roleLabel}.` });
-    setForm({ full_name: '', email: '', role: 'administrador' });
+    toast({ title: 'Usuário cadastrado', description: `${form.full_name} já pode acessar como ${roleLabel}.` });
+    setForm({ full_name: '', email: '', password: '', role: 'administrador' });
     setOpen(false);
     fetchData();
-  };
-
-  const copySignupLink = () => {
-    const link = `${window.location.origin}/admin/auth`;
-    navigator.clipboard.writeText(link);
-    toast({ title: 'Link copiado', description: link });
   };
 
   const handleDelete = async () => {
@@ -150,16 +145,12 @@ export default function TeamUsers() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Equipe / Usuários</h1>
-          <p className="text-sm text-muted-foreground">Convide e-mails autorizados a acessar o sistema (administradores ou profissionais).</p>
+          <p className="text-sm text-muted-foreground">Cadastre usuários (administradores ou profissionais) com email e senha de acesso.</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={copySignupLink} className="gap-2">
-            <Copy className="h-4 w-4" />
-            Copiar link de cadastro
-          </Button>
-          <Button onClick={() => { setForm({ full_name: '', email: '', role: 'administrador' }); setOpen(true); }} className="gap-2">
+          <Button onClick={() => { setForm({ full_name: '', email: '', password: '', role: 'administrador' }); setOpen(true); }} className="gap-2">
             <UserPlus className="h-4 w-4" />
-            Novo Convite
+            Novo Usuário
           </Button>
         </div>
       </div>
@@ -219,7 +210,7 @@ export default function TeamUsers() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Novo Convite</DialogTitle>
+            <DialogTitle>Novo Usuário</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -244,15 +235,19 @@ export default function TeamUsers() {
               <Input id="inv-email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
               {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="inv-password">Senha de acesso</Label>
+              <Input id="inv-password" type="text" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="Mínimo 6 caracteres" />
+              {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+            </div>
             <p className="text-xs text-muted-foreground">
-              {form.role === 'profissional'
-                ? 'Ao se cadastrar com este e-mail, será criado automaticamente um cadastro de profissional vinculado, com acesso ao Portal do Médico.'
-                : 'A pessoa deverá criar a conta usando exatamente este e-mail e receberá o papel de Administrador automaticamente.'}
+              O usuário poderá entrar imediatamente em <span className="font-mono">/admin/auth</span> com este e-mail e senha.
+              {form.role === 'profissional' && ' Um cadastro de profissional vinculado será criado automaticamente.'}
             </p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-            <Button onClick={handleInvite} disabled={saving}>{saving ? 'Salvando...' : 'Convidar'}</Button>
+            <Button onClick={handleCreate} disabled={saving}>{saving ? 'Salvando...' : 'Cadastrar'}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
