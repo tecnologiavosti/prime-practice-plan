@@ -9,7 +9,7 @@ import {
   HeartPulse, Briefcase, CheckCircle2, Sparkles, Clock, Users, ShieldCheck,
 } from 'lucide-react';
 
-const WHATSAPP = '5561998117985';
+const WHATSAPP = '5561981823984';
 const wa = (msg: string) => `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
 
 

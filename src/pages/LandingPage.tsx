@@ -41,7 +41,7 @@ import {
 } from 'lucide-react';
 import { PublicFooter } from '@/components/site/PublicFooter';
 
-const WHATSAPP = '5561998117985';
+const WHATSAPP = '5561981823984';
 const wa = (msg = 'Olá! Gostaria de agendar uma consulta na Clínica Pacem.') =>
   `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
 
@@ -119,7 +119,7 @@ const faqs = [
   },
   {
     q: 'Como agendar uma consulta?',
-    a: 'Você pode agendar online pelo nosso portal do paciente, falar diretamente com nossa equipe pelo WhatsApp (61) 99811-7985 ou criar sua conta gratuitamente em poucos segundos.',
+    a: 'Você pode agendar online pelo nosso portal do paciente, falar diretamente com nossa equipe pelo WhatsApp (61) 98182-3984 ou criar sua conta gratuitamente em poucos segundos.',
   },
 ];
 
