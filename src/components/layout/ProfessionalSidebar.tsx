@@ -4,12 +4,16 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import logoPacem from '@/assets/logoPacem.png';
 import { useClinicSettings } from '@/hooks/useClinicSettings';
-import { Calendar, LayoutDashboard, Wallet, LogOut, Users, Settings as SettingsIcon } from 'lucide-react';
+import { Calendar, LayoutDashboard, Wallet, LogOut, Users, Settings as SettingsIcon, CalendarCog, UserPlus, FileText, CalendarDays } from 'lucide-react';
 
 const menuItems = [
   { to: '/professional/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/professional/agenda', icon: Calendar, label: 'Minha Agenda' },
+  { to: '/professional/agendamentos', icon: CalendarDays, label: 'Agendamentos' },
+  { to: '/professional/escalas', icon: CalendarCog, label: 'Minhas Escalas' },
   { to: '/professional/pacientes', icon: Users, label: 'Meus Pacientes' },
+  { to: '/professional/cadastro-pacientes', icon: UserPlus, label: 'Cadastrar Paciente' },
+  { to: '/professional/guias', icon: FileText, label: 'Guias' },
   { to: '/professional/repasses', icon: Wallet, label: 'Meus Repasses' },
   { to: '/professional/configuracoes', icon: SettingsIcon, label: 'Minha Conta' },
 ];
