@@ -206,9 +206,14 @@ export default function TeamUsers() {
                     ? <Badge variant="secondary">Cadastrado</Badge>
                     : <Badge>Pendente</Badge>}
                 </TableCell>
+                <TableCell>
+                  {it.used
+                    ? <Badge variant="secondary">Ativo</Badge>
+                    : <Badge>Pendente</Badge>}
+                </TableCell>
                 <TableCell>{new Date(it.created_at).toLocaleDateString('pt-BR')}</TableCell>
                 <TableCell className="text-right">
-                  <Button variant="ghost" size="icon" onClick={() => { setEditUser(it); setEditPassword(''); setEditActive(true); }} title="Editar usuário">
+                  <Button variant="ghost" size="icon" onClick={() => openEdit(it)} title="Editar usuário">
                     <Pencil className="h-4 w-4" />
                   </Button>
                   {it.role === 'administrador' && (
