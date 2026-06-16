@@ -214,7 +214,7 @@ export default function SubleasedRooms() {
                   const digits = v.replace(/\D/g, '');
                   if (digits.length === 8) {
                     try {
-                      const r = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
+                      const r = await window.fetch(`https://viacep.com.br/ws/${digits}/json/`);
                       const d = await r.json();
                       if (!d.erro) {
                         const addr = `${d.logradouro}${d.bairro ? ', ' + d.bairro : ''} - ${d.localidade}/${d.uf}`;
