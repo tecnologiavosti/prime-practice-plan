@@ -1896,6 +1896,48 @@ export type Database = {
         }
         Relationships: []
       }
+      subleased_rooms: {
+        Row: {
+          active: boolean
+          address: string | null
+          created_at: string
+          due_day: number | null
+          id: string
+          monthly_value: number
+          name: string
+          notes: string | null
+          tenant_contact: string | null
+          tenant_name: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          address?: string | null
+          created_at?: string
+          due_day?: number | null
+          id?: string
+          monthly_value?: number
+          name: string
+          notes?: string | null
+          tenant_contact?: string | null
+          tenant_name: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          address?: string | null
+          created_at?: string
+          due_day?: number | null
+          id?: string
+          monthly_value?: number
+          name?: string
+          notes?: string | null
+          tenant_contact?: string | null
+          tenant_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
