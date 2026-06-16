@@ -79,7 +79,41 @@ Deno.serve(async (req) => {
       return json({ error: createErr.message }, 400);
     }
 
-    return json({ ok: true, user_id: created.user?.id });
+    const newUserId = created.user?.id;
+
+    // Garante profile + role + marca convite como usado (caso trigger não rode)
+    if (newUserId) {
+      await admin.from("profiles").upsert(
+        { user_id: newUserId, full_name, email },
+        { onConflict: "user_id" }
+      );
+      await admin.from("user_roles").upsert(
+        { user_id: newUserId, role },
+        { onConflict: "user_id,role" }
+      );
+
+      if (role === "profissional") {
+        const { data: existingProf } = await admin
+          .from("professionals")
+          .select("id")
+          .ilike("email", email)
+          .maybeSingle();
+        if (existingProf?.id) {
+          await admin.from("professionals").update({ user_id: newUserId }).eq("id", existingProf.id);
+        } else {
+          await admin.from("professionals").insert({
+            full_name, email, user_id: newUserId, active: true, service_type: "ambos",
+          });
+        }
+      }
+    }
+
+    await admin
+      .from("authorized_admins")
+      .update({ used: true, used_at: new Date().toISOString() })
+      .eq("email", email);
+
+    return json({ ok: true, user_id: newUserId });
   } catch (e) {
     return new Response(JSON.stringify({ error: (e as Error).message }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
