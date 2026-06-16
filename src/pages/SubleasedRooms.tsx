@@ -34,6 +34,7 @@ interface Room {
 
 const emptyForm = {
   name: '',
+  room_number: '',
   address: '',
   tenant_name: '',
   tenant_contact: '',
