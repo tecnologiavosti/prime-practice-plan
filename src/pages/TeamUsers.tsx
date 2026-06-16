@@ -314,6 +314,64 @@ export default function TeamUsers() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!editUser} onOpenChange={(o) => !o && setEditUser(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar usuário</DialogTitle>
+          </DialogHeader>
+          {editUser && (
+            <div className="space-y-4">
+              <div className="text-sm text-muted-foreground">
+                <div><span className="font-medium text-foreground">{editUser.full_name}</span></div>
+                <div className="font-mono">{editUser.email}</div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-pass">Nova senha (opcional)</Label>
+                <Input id="edit-pass" type="text" value={editPassword} onChange={(e) => setEditPassword(e.target.value)} placeholder="Deixe em branco para não alterar" />
+              </div>
+              <div className="flex items-center justify-between rounded border p-3">
+                <div>
+                  <Label htmlFor="edit-active" className="cursor-pointer">Acesso ativo</Label>
+                  <p className="text-xs text-muted-foreground">Desative para bloquear o login imediatamente.</p>
+                </div>
+                <Switch id="edit-active" checked={editActive} onCheckedChange={setEditActive} />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditUser(null)}>Cancelar</Button>
+            <Button
+              disabled={editSaving}
+              onClick={async () => {
+                if (!editUser) return;
+                if (editPassword && editPassword.length < 6) {
+                  toast({ variant: 'destructive', title: 'Senha mínima 6 caracteres' });
+                  return;
+                }
+                setEditSaving(true);
+                const { data, error } = await supabase.functions.invoke('admin-update-user', {
+                  body: {
+                    email: editUser.email,
+                    password: editPassword || undefined,
+                    active: editActive,
+                  },
+                });
+                setEditSaving(false);
+                const errMsg = (error as any)?.message || (data as any)?.error;
+                if (errMsg) {
+                  toast({ variant: 'destructive', title: 'Erro', description: errMsg });
+                  return;
+                }
+                toast({ title: 'Usuário atualizado' });
+                setEditUser(null);
+              }}
+            >
+              {editSaving ? 'Salvando...' : 'Salvar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
