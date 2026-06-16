@@ -203,11 +203,6 @@ export default function TeamUsers() {
                 </TableCell>
                 <TableCell>
                   {it.used
-                    ? <Badge variant="secondary">Cadastrado</Badge>
-                    : <Badge>Pendente</Badge>}
-                </TableCell>
-                <TableCell>
-                  {it.used
                     ? <Badge variant="secondary">Ativo</Badge>
                     : <Badge>Pendente</Badge>}
                 </TableCell>
