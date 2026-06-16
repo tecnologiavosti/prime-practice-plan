@@ -24,6 +24,7 @@ export const ADMIN_MODULES: AdminModule[] = [
   { key: 'lotes-faturamento', label: 'Faturamento', to: '/admin/lotes-faturamento', roles: ['administrador', 'financeiro'] },
   { key: 'repasses', label: 'Repasses', to: '/admin/repasses', roles: ['administrador', 'financeiro'] },
   { key: 'repasse-convenios', label: 'Rep. Convênios', to: '/admin/repasse-convenios', roles: ['administrador', 'financeiro'] },
+  { key: 'salas-sublocadas', label: 'Salas Sublocadas', to: '/admin/salas-sublocadas', roles: ['administrador', 'financeiro'] },
   { key: 'relatorios-financeiros', label: 'Relatórios', to: '/admin/relatorios-financeiros', roles: ['administrador', 'financeiro'] },
   { key: 'formas-pagamento', label: 'Formas Pgto', to: '/admin/formas-pagamento', roles: ['administrador'] },
   { key: 'escalas', label: 'Configurar Escalas', to: '/admin/escalas', roles: ['administrador'] },
