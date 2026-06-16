@@ -332,9 +332,20 @@ export default function TeamUsers() {
           </DialogHeader>
           {editUser && (
             <div className="space-y-4">
-              <div className="text-sm text-muted-foreground">
-                <div><span className="font-medium text-foreground">{editUser.full_name}</span></div>
-                <div className="font-mono">{editUser.email}</div>
+              <div className="text-xs text-muted-foreground font-mono">{editUser.email}</div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-name">Nome completo</Label>
+                <Input id="edit-name" value={editName} onChange={(e) => setEditName(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-role">Tipo de acesso</Label>
+                <Select value={editRole} onValueChange={(v: 'administrador' | 'profissional') => setEditRole(v)}>
+                  <SelectTrigger id="edit-role"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="administrador">Administrador</SelectItem>
+                    <SelectItem value="profissional">Profissional (Médico)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-pass">Nova senha (opcional)</Label>
@@ -355,6 +366,10 @@ export default function TeamUsers() {
               disabled={editSaving}
               onClick={async () => {
                 if (!editUser) return;
+                if (editName.trim().length < 3) {
+                  toast({ variant: 'destructive', title: 'Nome mínimo 3 caracteres' });
+                  return;
+                }
                 if (editPassword && editPassword.length < 6) {
                   toast({ variant: 'destructive', title: 'Senha mínima 6 caracteres' });
                   return;
@@ -363,6 +378,8 @@ export default function TeamUsers() {
                 const { data, error } = await supabase.functions.invoke('admin-update-user', {
                   body: {
                     email: editUser.email,
+                    full_name: editName.trim(),
+                    role: editRole,
                     password: editPassword || undefined,
                     active: editActive,
                   },
@@ -375,6 +392,7 @@ export default function TeamUsers() {
                 }
                 toast({ title: 'Usuário atualizado' });
                 setEditUser(null);
+                fetchData();
               }}
             >
               {editSaving ? 'Salvando...' : 'Salvar'}
