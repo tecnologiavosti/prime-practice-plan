@@ -145,16 +145,12 @@ export default function TeamUsers() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Equipe / Usuários</h1>
-          <p className="text-sm text-muted-foreground">Convide e-mails autorizados a acessar o sistema (administradores ou profissionais).</p>
+          <p className="text-sm text-muted-foreground">Cadastre usuários (administradores ou profissionais) com email e senha de acesso.</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={copySignupLink} className="gap-2">
-            <Copy className="h-4 w-4" />
-            Copiar link de cadastro
-          </Button>
-          <Button onClick={() => { setForm({ full_name: '', email: '', role: 'administrador' }); setOpen(true); }} className="gap-2">
+          <Button onClick={() => { setForm({ full_name: '', email: '', password: '', role: 'administrador' }); setOpen(true); }} className="gap-2">
             <UserPlus className="h-4 w-4" />
-            Novo Convite
+            Novo Usuário
           </Button>
         </div>
       </div>
