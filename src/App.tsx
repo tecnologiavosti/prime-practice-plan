@@ -33,6 +33,7 @@ import Blog from "./pages/Blog";
 import Convenios from "./pages/Convenios";
 import EspecialidadePage from "./pages/Especialidade";
 import BlogPost from "./pages/BlogPost";
+import SubleasedRooms from "./pages/SubleasedRooms";
 
 import ScheduleConfig from "./pages/ScheduleConfig";
 import ClinicProfile from "./pages/ClinicProfile";
