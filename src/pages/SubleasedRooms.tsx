@@ -205,7 +205,10 @@ export default function SubleasedRooms() {
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>{editingId ? 'Editar Sala' : 'Nova Sala'}</DialogTitle></DialogHeader>
           <div className="grid gap-3">
-            <div><Label>Nome / Identificação *</Label><Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></div>
+            <div className="grid grid-cols-[1fr_140px] gap-3">
+              <div><Label>Nome / Identificação *</Label><Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></div>
+              <div><Label>Nº da sala</Label><Input value={form.room_number} onChange={e => setForm({ ...form, room_number: e.target.value })} /></div>
+            </div>
             <div>
               <Label>CEP</Label>
               <Input
@@ -231,7 +234,7 @@ export default function SubleasedRooms() {
             </div>
             <div><Label>Endereço</Label><Input value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} /></div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Locatário *</Label><Input value={form.tenant_name} onChange={e => setForm({ ...form, tenant_name: e.target.value })} /></div>
+              <div><Label>Locatário</Label><Input value={form.tenant_name} onChange={e => setForm({ ...form, tenant_name: e.target.value })} /></div>
               <div><Label>Contato</Label><Input value={form.tenant_contact} onChange={e => setForm({ ...form, tenant_contact: e.target.value })} /></div>
             </div>
             <div className="grid grid-cols-2 gap-3">
