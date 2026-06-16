@@ -198,12 +198,15 @@ export default function TeamUsers() {
                 </TableCell>
                 <TableCell>{new Date(it.created_at).toLocaleDateString('pt-BR')}</TableCell>
                 <TableCell className="text-right">
+                  <Button variant="ghost" size="icon" onClick={() => { setEditUser(it); setEditPassword(''); setEditActive(true); }} title="Editar usuário">
+                    <Pencil className="h-4 w-4" />
+                  </Button>
                   {it.role === 'administrador' && (
                     <Button variant="ghost" size="icon" onClick={() => openPermissions(it)} title="Permissões / Módulos">
                       <ShieldCheck className="h-4 w-4 text-primary" />
                     </Button>
                   )}
-                  <Button variant="ghost" size="icon" onClick={() => setToDelete(it)} title="Remover convite">
+                  <Button variant="ghost" size="icon" onClick={() => setToDelete(it)} title="Remover">
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
                 </TableCell>
