@@ -11,15 +11,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { UserPlus, Trash2, Mail, Copy, Stethoscope, Shield, ShieldCheck } from 'lucide-react';
+import { UserPlus, Trash2, Mail, Stethoscope, Shield, ShieldCheck } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ADMIN_MODULES } from '@/lib/adminModules';
 import { z } from 'zod';
 
-const inviteSchema = z.object({
+const createSchema = z.object({
   full_name: z.string().trim().min(3, 'Nome deve ter no mínimo 3 caracteres').max(100),
   email: z.string().trim().email('Email inválido').max(255),
+  password: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres').max(72),
   role: z.enum(['administrador', 'profissional']),
 });
 
