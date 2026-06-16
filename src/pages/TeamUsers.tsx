@@ -210,7 +210,7 @@ export default function TeamUsers() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Novo Convite</DialogTitle>
+            <DialogTitle>Novo Usuário</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -235,15 +235,19 @@ export default function TeamUsers() {
               <Input id="inv-email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
               {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="inv-password">Senha de acesso</Label>
+              <Input id="inv-password" type="text" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="Mínimo 6 caracteres" />
+              {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+            </div>
             <p className="text-xs text-muted-foreground">
-              {form.role === 'profissional'
-                ? 'Ao se cadastrar com este e-mail, será criado automaticamente um cadastro de profissional vinculado, com acesso ao Portal do Médico.'
-                : 'A pessoa deverá criar a conta usando exatamente este e-mail e receberá o papel de Administrador automaticamente.'}
+              O usuário poderá entrar imediatamente em <span className="font-mono">/admin/auth</span> com este e-mail e senha.
+              {form.role === 'profissional' && ' Um cadastro de profissional vinculado será criado automaticamente.'}
             </p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-            <Button onClick={handleInvite} disabled={saving}>{saving ? 'Salvando...' : 'Convidar'}</Button>
+            <Button onClick={handleCreate} disabled={saving}>{saving ? 'Salvando...' : 'Cadastrar'}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
