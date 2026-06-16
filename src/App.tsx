@@ -93,11 +93,16 @@ const App = () => (
             <Route element={<AuthProvider><ProfessionalLayout /></AuthProvider>}>
               <Route path="/professional/dashboard" element={<ProfessionalDashboard />} />
               <Route path="/professional/agenda" element={<ProfessionalSchedule />} />
+              <Route path="/professional/agendamentos" element={<Appointments />} />
+              <Route path="/professional/escalas" element={<ScheduleConfig />} />
               <Route path="/professional/pacientes" element={<ProfessionalPatients />} />
               <Route path="/professional/pacientes/:patientId" element={<ProfessionalPatientRecord />} />
+              <Route path="/professional/cadastro-pacientes" element={<Patients />} />
+              <Route path="/professional/guias" element={<MedicalGuides />} />
               <Route path="/professional/repasses" element={<ProfessionalPayoutsPortal />} />
               <Route path="/professional/configuracoes" element={<Settings />} />
             </Route>
+
 
             {/* Staff/Admin Routes */}
             <Route path="/admin/auth" element={<AuthProvider><Auth /></AuthProvider>} />
