@@ -1,6 +1,6 @@
 import { MessageCircle } from "lucide-react";
 
-const WHATSAPP_NUMBER = "5561998117985";
+const WHATSAPP_NUMBER = "5561981823984";
 const DEFAULT_MSG = "Olá! Gostaria de agendar uma consulta na Clínica Pacem.";
 
 export function getWhatsAppLink(message: string = DEFAULT_MSG) {

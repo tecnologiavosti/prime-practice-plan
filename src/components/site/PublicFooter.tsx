@@ -70,7 +70,7 @@ export function PublicFooter() {
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[hsl(222_47%_11%)] mb-4">Contato</p>
           <ul className="space-y-2.5 text-[13.5px]">
             <li className="flex items-start gap-2"><MapPin className="h-4 w-4 mt-0.5 shrink-0 text-[hsl(221_83%_53%)]" />{settings?.endereco_completo || 'SCN Quadra 1 Bloco E Sala 1905 — Asa Norte, Brasília/DF'}</li>
-            <li className="flex items-center gap-2"><Phone className="h-4 w-4 shrink-0 text-[hsl(221_83%_53%)]" />(61) 99811-7985</li>
+            <li className="flex items-center gap-2"><Phone className="h-4 w-4 shrink-0 text-[hsl(221_83%_53%)]" />(61) 98182-3984</li>
             <li className="flex items-center gap-2"><Mail className="h-4 w-4 shrink-0 text-[hsl(221_83%_53%)]" />{settings?.email_contato || 'contato@clinicapacem.com.br'}</li>
           </ul>
         </div>

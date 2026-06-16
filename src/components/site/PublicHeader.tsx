@@ -6,7 +6,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useClinicSettings } from '@/hooks/useClinicSettings';
 import logoPacem from '@/assets/logoPacem.png';
 
-const WHATSAPP = '5561998117985';
+const WHATSAPP = '5561981823984';
 const waUrl = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(
   'Olá! Gostaria de agendar uma consulta na Clínica Pacem.'
 )}`;
