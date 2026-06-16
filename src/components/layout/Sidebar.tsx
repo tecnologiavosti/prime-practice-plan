@@ -27,6 +27,7 @@ import {
   TrendingUp,
   Search,
   Newspaper,
+  Home,
 } from 'lucide-react';
 
 const ICONS: Record<string, any> = {
@@ -53,6 +54,7 @@ const ICONS: Record<string, any> = {
   equipe: UsersRound,
   seo: Search,
   blog: Newspaper,
+  'salas-sublocadas': Home,
 };
 
 export function Sidebar() {

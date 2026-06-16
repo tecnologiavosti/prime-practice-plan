@@ -33,6 +33,7 @@ import Blog from "./pages/Blog";
 import Convenios from "./pages/Convenios";
 import EspecialidadePage from "./pages/Especialidade";
 import BlogPost from "./pages/BlogPost";
+import SubleasedRooms from "./pages/SubleasedRooms";
 
 import ScheduleConfig from "./pages/ScheduleConfig";
 import ClinicProfile from "./pages/ClinicProfile";
@@ -126,6 +127,7 @@ const App = () => (
               <Route path="/admin/equipe" element={<TeamUsers />} />
               <Route path="/admin/seo" element={<SeoSettings />} />
               <Route path="/admin/blog" element={<Blog />} />
+              <Route path="/admin/salas-sublocadas" element={<SubleasedRooms />} />
               
             </Route>
             
