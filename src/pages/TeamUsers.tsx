@@ -11,7 +11,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { UserPlus, Trash2, Mail, Stethoscope, Shield, ShieldCheck } from 'lucide-react';
+import { UserPlus, Trash2, Mail, Stethoscope, Shield, ShieldCheck, Pencil } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ADMIN_MODULES } from '@/lib/adminModules';
@@ -47,6 +48,11 @@ export default function TeamUsers() {
   const [permEditing, setPermEditing] = useState<AuthorizedAdmin | null>(null);
   const [permSelected, setPermSelected] = useState<string[]>([]);
   const [permSaving, setPermSaving] = useState(false);
+  const [editUser, setEditUser] = useState<AuthorizedAdmin | null>(null);
+  const [editPassword, setEditPassword] = useState('');
+  const [editActive, setEditActive] = useState(true);
+  const [editSaving, setEditSaving] = useState(false);
+
 
   const isAdmin = hasRole('administrador');
 
@@ -192,12 +198,15 @@ export default function TeamUsers() {
                 </TableCell>
                 <TableCell>{new Date(it.created_at).toLocaleDateString('pt-BR')}</TableCell>
                 <TableCell className="text-right">
+                  <Button variant="ghost" size="icon" onClick={() => { setEditUser(it); setEditPassword(''); setEditActive(true); }} title="Editar usuário">
+                    <Pencil className="h-4 w-4" />
+                  </Button>
                   {it.role === 'administrador' && (
                     <Button variant="ghost" size="icon" onClick={() => openPermissions(it)} title="Permissões / Módulos">
                       <ShieldCheck className="h-4 w-4 text-primary" />
                     </Button>
                   )}
-                  <Button variant="ghost" size="icon" onClick={() => setToDelete(it)} title="Remover convite">
+                  <Button variant="ghost" size="icon" onClick={() => setToDelete(it)} title="Remover">
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
                 </TableCell>
@@ -302,6 +311,64 @@ export default function TeamUsers() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setPermEditing(null)}>Cancelar</Button>
             <Button onClick={savePermissions} disabled={permSaving}>{permSaving ? 'Salvando...' : 'Salvar permissões'}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!editUser} onOpenChange={(o) => !o && setEditUser(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar usuário</DialogTitle>
+          </DialogHeader>
+          {editUser && (
+            <div className="space-y-4">
+              <div className="text-sm text-muted-foreground">
+                <div><span className="font-medium text-foreground">{editUser.full_name}</span></div>
+                <div className="font-mono">{editUser.email}</div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-pass">Nova senha (opcional)</Label>
+                <Input id="edit-pass" type="text" value={editPassword} onChange={(e) => setEditPassword(e.target.value)} placeholder="Deixe em branco para não alterar" />
+              </div>
+              <div className="flex items-center justify-between rounded border p-3">
+                <div>
+                  <Label htmlFor="edit-active" className="cursor-pointer">Acesso ativo</Label>
+                  <p className="text-xs text-muted-foreground">Desative para bloquear o login imediatamente.</p>
+                </div>
+                <Switch id="edit-active" checked={editActive} onCheckedChange={setEditActive} />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditUser(null)}>Cancelar</Button>
+            <Button
+              disabled={editSaving}
+              onClick={async () => {
+                if (!editUser) return;
+                if (editPassword && editPassword.length < 6) {
+                  toast({ variant: 'destructive', title: 'Senha mínima 6 caracteres' });
+                  return;
+                }
+                setEditSaving(true);
+                const { data, error } = await supabase.functions.invoke('admin-update-user', {
+                  body: {
+                    email: editUser.email,
+                    password: editPassword || undefined,
+                    active: editActive,
+                  },
+                });
+                setEditSaving(false);
+                const errMsg = (error as any)?.message || (data as any)?.error;
+                if (errMsg) {
+                  toast({ variant: 'destructive', title: 'Erro', description: errMsg });
+                  return;
+                }
+                toast({ title: 'Usuário atualizado' });
+                setEditUser(null);
+              }}
+            >
+              {editSaving ? 'Salvando...' : 'Salvar'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
