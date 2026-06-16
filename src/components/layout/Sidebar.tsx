@@ -27,6 +27,7 @@ import {
   TrendingUp,
   Search,
   Newspaper,
+  Home,
 } from 'lucide-react';
 
 const ICONS: Record<string, any> = {
