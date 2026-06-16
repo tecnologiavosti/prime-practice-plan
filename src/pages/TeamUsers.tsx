@@ -91,9 +91,9 @@ export default function TeamUsers() {
     if (isAdmin) fetchData();
   }, [isAdmin]);
 
-  const handleInvite = async () => {
+  const handleCreate = async () => {
     setErrors({});
-    const result = inviteSchema.safeParse(form);
+    const result = createSchema.safeParse(form);
     if (!result.success) {
       const fe: Record<string, string> = {};
       result.error.errors.forEach((e) => { if (e.path[0]) fe[e.path[0].toString()] = e.message; });
@@ -102,33 +102,27 @@ export default function TeamUsers() {
     }
 
     setSaving(true);
-    const { error } = await (supabase.from('authorized_admins') as any).insert({
-      email: form.email.trim().toLowerCase(),
-      full_name: form.full_name.trim(),
-      role: form.role,
-      invited_by: user?.id,
+    const { data, error } = await supabase.functions.invoke('admin-create-user', {
+      body: {
+        email: form.email.trim().toLowerCase(),
+        full_name: form.full_name.trim(),
+        password: form.password,
+        role: form.role,
+      },
     });
     setSaving(false);
 
-    if (error) {
-      const msg = error.message.includes('duplicate') || error.code === '23505'
-        ? 'Este email já foi convidado'
-        : error.message;
-      toast({ variant: 'destructive', title: 'Erro ao convidar', description: msg });
+    const errMsg = (error as any)?.message || (data as any)?.error;
+    if (errMsg) {
+      toast({ variant: 'destructive', title: 'Erro ao cadastrar', description: errMsg });
       return;
     }
 
     const roleLabel = form.role === 'profissional' ? 'Profissional' : 'Administrador';
-    toast({ title: 'Convite criado', description: `${form.full_name} pode agora se cadastrar como ${roleLabel}.` });
-    setForm({ full_name: '', email: '', role: 'administrador' });
+    toast({ title: 'Usuário cadastrado', description: `${form.full_name} já pode acessar como ${roleLabel}.` });
+    setForm({ full_name: '', email: '', password: '', role: 'administrador' });
     setOpen(false);
     fetchData();
-  };
-
-  const copySignupLink = () => {
-    const link = `${window.location.origin}/admin/auth`;
-    navigator.clipboard.writeText(link);
-    toast({ title: 'Link copiado', description: link });
   };
 
   const handleDelete = async () => {
