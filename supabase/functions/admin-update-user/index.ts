@@ -80,6 +80,14 @@ Deno.serve(async (req) => {
       await admin.from("authorized_admins").update(adminPatch).eq("email", email);
     }
 
+    // Marca o convite como utilizado (usuário já existe no auth)
+    adminPatch.used = true;
+    if (!adminPatch.full_name) {
+      await admin.from("authorized_admins").update({ used: true }).eq("email", email);
+    } else {
+      await admin.from("authorized_admins").update(adminPatch).eq("email", email);
+    }
+
     if (full_name) {
       await admin.from("profiles").update({ full_name }).eq("user_id", target.id);
     }
