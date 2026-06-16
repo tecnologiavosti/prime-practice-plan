@@ -23,8 +23,9 @@ import { format } from 'date-fns';
 interface Room {
   id: string;
   name: string;
+  room_number: string | null;
   address: string | null;
-  tenant_name: string;
+  tenant_name: string | null;
   tenant_contact: string | null;
   monthly_value: number;
   due_day: number | null;
