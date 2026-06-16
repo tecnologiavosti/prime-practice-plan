@@ -49,9 +49,19 @@ export default function TeamUsers() {
   const [permSelected, setPermSelected] = useState<string[]>([]);
   const [permSaving, setPermSaving] = useState(false);
   const [editUser, setEditUser] = useState<AuthorizedAdmin | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editRole, setEditRole] = useState<'administrador' | 'profissional'>('administrador');
   const [editPassword, setEditPassword] = useState('');
   const [editActive, setEditActive] = useState(true);
   const [editSaving, setEditSaving] = useState(false);
+
+  const openEdit = (it: AuthorizedAdmin) => {
+    setEditUser(it);
+    setEditName(it.full_name);
+    setEditRole(it.role);
+    setEditPassword('');
+    setEditActive(true);
+  };
 
 
   const isAdmin = hasRole('administrador');
