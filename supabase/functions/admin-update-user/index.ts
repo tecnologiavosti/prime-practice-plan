@@ -41,9 +41,13 @@ Deno.serve(async (req) => {
     const email = String(body.email ?? "").trim().toLowerCase();
     const password: string | undefined = body.password ? String(body.password) : undefined;
     const active: boolean | undefined = typeof body.active === "boolean" ? body.active : undefined;
+    const full_name: string | undefined = body.full_name ? String(body.full_name).trim() : undefined;
+    const role: "administrador" | "profissional" | undefined =
+      body.role === "administrador" || body.role === "profissional" ? body.role : undefined;
 
     if (!email) return json({ error: "E-mail obrigatório" }, 400);
     if (password !== undefined && password.length < 6) return json({ error: "Senha mínima 6 caracteres" }, 400);
+    if (full_name !== undefined && full_name.length < 3) return json({ error: "Nome mínimo 3 caracteres" }, 400);
 
     // Find user by email
     let target: { id: string } | null = null;
@@ -61,11 +65,30 @@ Deno.serve(async (req) => {
     const updates: Record<string, unknown> = {};
     if (password) updates.password = password;
     if (active !== undefined) updates.ban_duration = active ? "none" : "876000h";
+    if (full_name) updates.user_metadata = { full_name };
 
-    if (Object.keys(updates).length === 0) return json({ error: "Nada para atualizar" }, 400);
+    if (Object.keys(updates).length > 0) {
+      const { error: updErr } = await admin.auth.admin.updateUserById(target.id, updates);
+      if (updErr) return json({ error: updErr.message }, 400);
+    }
 
-    const { error: updErr } = await admin.auth.admin.updateUserById(target.id, updates);
-    if (updErr) return json({ error: updErr.message }, 400);
+    // Atualizar dados em authorized_admins / profiles / user_roles
+    const adminPatch: Record<string, unknown> = {};
+    if (full_name) adminPatch.full_name = full_name;
+    if (role) adminPatch.role = role;
+    if (Object.keys(adminPatch).length > 0) {
+      await admin.from("authorized_admins").update(adminPatch).eq("email", email);
+    }
+
+    if (full_name) {
+      await admin.from("profiles").update({ full_name }).eq("user_id", target.id);
+    }
+
+    if (role) {
+      // Mantém apenas a role escolhida (entre administrador/profissional)
+      await admin.from("user_roles").delete().eq("user_id", target.id).in("role", ["administrador", "profissional"]);
+      await admin.from("user_roles").insert({ user_id: target.id, role });
+    }
 
     return json({ ok: true });
   } catch (e) {
