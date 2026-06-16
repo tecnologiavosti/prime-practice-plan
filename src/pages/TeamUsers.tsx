@@ -41,7 +41,7 @@ export default function TeamUsers() {
   const [items, setItems] = useState<AuthorizedAdmin[]>([]);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState<{ full_name: string; email: string; role: 'administrador' | 'profissional' }>({ full_name: '', email: '', role: 'administrador' });
+  const [form, setForm] = useState<{ full_name: string; email: string; password: string; role: 'administrador' | 'profissional' }>({ full_name: '', email: '', password: '', role: 'administrador' });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [toDelete, setToDelete] = useState<AuthorizedAdmin | null>(null);
   const [permEditing, setPermEditing] = useState<AuthorizedAdmin | null>(null);
