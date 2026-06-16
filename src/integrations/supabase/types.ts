@@ -1906,8 +1906,9 @@ export type Database = {
           monthly_value: number
           name: string
           notes: string | null
+          room_number: string | null
           tenant_contact: string | null
-          tenant_name: string
+          tenant_name: string | null
           updated_at: string
         }
         Insert: {
@@ -1919,8 +1920,9 @@ export type Database = {
           monthly_value?: number
           name: string
           notes?: string | null
+          room_number?: string | null
           tenant_contact?: string | null
-          tenant_name: string
+          tenant_name?: string | null
           updated_at?: string
         }
         Update: {
@@ -1932,8 +1934,9 @@ export type Database = {
           monthly_value?: number
           name?: string
           notes?: string | null
+          room_number?: string | null
           tenant_contact?: string | null
-          tenant_name?: string
+          tenant_name?: string | null
           updated_at?: string
         }
         Relationships: []
