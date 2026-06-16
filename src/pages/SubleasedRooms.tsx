@@ -23,8 +23,9 @@ import { format } from 'date-fns';
 interface Room {
   id: string;
   name: string;
+  room_number: string | null;
   address: string | null;
-  tenant_name: string;
+  tenant_name: string | null;
   tenant_contact: string | null;
   monthly_value: number;
   due_day: number | null;
@@ -34,6 +35,7 @@ interface Room {
 
 const emptyForm = {
   name: '',
+  room_number: '',
   address: '',
   tenant_name: '',
   tenant_contact: '',
@@ -73,8 +75,9 @@ export default function SubleasedRooms() {
     setEditingId(r.id);
     setForm({
       name: r.name,
+      room_number: r.room_number ?? '',
       address: r.address ?? '',
-      tenant_name: r.tenant_name,
+      tenant_name: r.tenant_name ?? '',
       tenant_contact: r.tenant_contact ?? '',
       monthly_value: Number(r.monthly_value),
       due_day: r.due_day ?? 5,
@@ -85,14 +88,15 @@ export default function SubleasedRooms() {
   };
 
   const save = async () => {
-    if (!form.name || !form.tenant_name) {
-      toast({ title: 'Preencha nome da sala e locatário', variant: 'destructive' });
+    if (!form.name) {
+      toast({ title: 'Informe o nome / identificação da sala', variant: 'destructive' });
       return;
     }
     const payload = {
       name: form.name,
+      room_number: form.room_number || null,
       address: form.address || null,
-      tenant_name: form.tenant_name,
+      tenant_name: form.tenant_name || null,
       tenant_contact: form.tenant_contact || null,
       monthly_value: form.monthly_value,
       due_day: form.due_day || null,
@@ -174,9 +178,11 @@ export default function SubleasedRooms() {
               <TableRow><TableCell colSpan={8} className="text-center py-6 text-muted-foreground">Nenhuma sala cadastrada.</TableCell></TableRow>
             ) : rooms.map((r, i) => (
               <TableRow key={r.id} className={i % 2 ? 'bg-muted/30' : ''}>
-                <TableCell className="font-medium">{r.name}</TableCell>
+                <TableCell className="font-medium">
+                  {r.name}{r.room_number ? <span className="text-muted-foreground"> · nº {r.room_number}</span> : null}
+                </TableCell>
                 <TableCell className="text-sm text-muted-foreground">{r.address || '-'}</TableCell>
-                <TableCell>{r.tenant_name}</TableCell>
+                <TableCell>{r.tenant_name || '-'}</TableCell>
                 <TableCell className="text-sm">{r.tenant_contact || '-'}</TableCell>
                 <TableCell className="text-right font-mono">R$ {Number(r.monthly_value).toFixed(2)}</TableCell>
                 <TableCell>{r.due_day ? `Dia ${r.due_day}` : '-'}</TableCell>
@@ -201,7 +207,10 @@ export default function SubleasedRooms() {
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>{editingId ? 'Editar Sala' : 'Nova Sala'}</DialogTitle></DialogHeader>
           <div className="grid gap-3">
-            <div><Label>Nome / Identificação *</Label><Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></div>
+            <div className="grid grid-cols-[1fr_140px] gap-3">
+              <div><Label>Nome / Identificação *</Label><Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></div>
+              <div><Label>Nº da sala</Label><Input value={form.room_number} onChange={e => setForm({ ...form, room_number: e.target.value })} /></div>
+            </div>
             <div>
               <Label>CEP</Label>
               <Input
@@ -227,7 +236,7 @@ export default function SubleasedRooms() {
             </div>
             <div><Label>Endereço</Label><Input value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} /></div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Locatário *</Label><Input value={form.tenant_name} onChange={e => setForm({ ...form, tenant_name: e.target.value })} /></div>
+              <div><Label>Locatário</Label><Input value={form.tenant_name} onChange={e => setForm({ ...form, tenant_name: e.target.value })} /></div>
               <div><Label>Contato</Label><Input value={form.tenant_contact} onChange={e => setForm({ ...form, tenant_contact: e.target.value })} /></div>
             </div>
             <div className="grid grid-cols-2 gap-3">
