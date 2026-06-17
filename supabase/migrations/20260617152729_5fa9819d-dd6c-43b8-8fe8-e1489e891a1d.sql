@@ -1,0 +1,2 @@
+DROP POLICY IF EXISTS "Professionals can view their patients" ON public.patients;
+CREATE POLICY "Professionals can view all patients" ON public.patients FOR SELECT TO authenticated USING (has_role(auth.uid(), 'profissional'::app_role));
