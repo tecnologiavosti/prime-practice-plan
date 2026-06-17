@@ -1,0 +1,2 @@
+CREATE POLICY "Professionals can insert patients" ON public.patients FOR INSERT TO authenticated WITH CHECK (has_role(auth.uid(), 'profissional'::app_role));
+CREATE POLICY "Professionals can update their patients" ON public.patients FOR UPDATE TO authenticated USING (has_role(auth.uid(), 'profissional'::app_role)) WITH CHECK (has_role(auth.uid(), 'profissional'::app_role));
