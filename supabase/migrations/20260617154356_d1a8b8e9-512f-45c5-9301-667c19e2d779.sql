@@ -1,0 +1,1 @@
+CREATE POLICY "Professionals can delete own registered patients" ON public.patients FOR DELETE USING (has_role(auth.uid(),'profissional'::app_role) AND (created_by = auth.uid() OR professional_treats_patient(id)));
