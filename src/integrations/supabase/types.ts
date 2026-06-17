@@ -1128,6 +1128,7 @@ export type Database = {
           city: string | null
           cpf: string | null
           created_at: string
+          created_by: string | null
           document_url: string | null
           email: string | null
           emergency_contact_name: string | null
@@ -1159,6 +1160,7 @@ export type Database = {
           city?: string | null
           cpf?: string | null
           created_at?: string
+          created_by?: string | null
           document_url?: string | null
           email?: string | null
           emergency_contact_name?: string | null
@@ -1190,6 +1192,7 @@ export type Database = {
           city?: string | null
           cpf?: string | null
           created_at?: string
+          created_by?: string | null
           document_url?: string | null
           email?: string | null
           emergency_contact_name?: string | null
