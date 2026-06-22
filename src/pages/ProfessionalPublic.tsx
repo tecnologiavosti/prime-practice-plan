@@ -49,7 +49,7 @@ export default function ProfessionalPublic() {
             <header className="flex flex-col sm:flex-row gap-6 items-start sm:items-center border-b pb-8 mb-8">
               {prof.photo_url ? (
                 <img src={prof.photo_url} alt={prof.full_name}
-                  className="h-32 w-32 rounded-full object-cover border" />
+                  className="h-32 w-32 rounded-full object-cover object-top border" />
               ) : (
                 <div className="h-32 w-32 rounded-full border bg-slate-100 inline-flex items-center justify-center">
                   <Users className="h-10 w-10 text-slate-400" />

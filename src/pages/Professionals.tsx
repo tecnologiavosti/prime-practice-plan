@@ -402,7 +402,7 @@ export default function Professionals() {
                     <Label>Foto</Label>
                     <div className="flex items-center gap-4">
                       {formData.photo_url ? (
-                        <img src={formData.photo_url} alt="Foto" className="h-20 w-20 rounded-full object-cover border" />
+                        <img src={formData.photo_url} alt="Foto" className="h-20 w-20 rounded-full object-cover object-top border" />
                       ) : (
                         <div className="h-20 w-20 rounded-full border bg-muted" />
                       )}
@@ -413,20 +413,27 @@ export default function Professionals() {
                           accept="image/*"
                           className="hidden"
                           onChange={async (e) => {
-                            const file = e.target.files?.[0];
-                            if (!file) return;
+                            const original = e.target.files?.[0];
+                            if (!original) return;
+                            let file = original;
+                            try {
+                              const { enhanceProfilePhoto } = await import('@/lib/imageEnhance');
+                              file = await enhanceProfilePhoto(original);
+                            } catch {
+                              // fallback to original if enhancement fails
+                            }
                             const ext = file.name.split('.').pop();
                             const path = `professionals/${crypto.randomUUID()}.${ext}`;
                             const { error: upErr } = await supabase.storage
                               .from('clinic-assets')
-                              .upload(path, file, { upsert: true });
+                              .upload(path, file, { upsert: true, contentType: file.type });
                             if (upErr) {
                               toast({ variant: 'destructive', title: 'Erro no upload', description: upErr.message });
                               return;
                             }
                             const { data: pub } = supabase.storage.from('clinic-assets').getPublicUrl(path);
                             setFormData({ ...formData, photo_url: pub.publicUrl });
-                            toast({ title: 'Foto enviada!' });
+                            toast({ title: 'Foto otimizada e enviada!' });
                           }}
                         />
                         <Button type="button" variant="outline" onClick={() => document.getElementById('photo-upload')?.click()}>
