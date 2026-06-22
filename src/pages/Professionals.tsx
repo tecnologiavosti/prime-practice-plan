@@ -443,12 +443,31 @@ export default function Professionals() {
                   <div className="space-y-2">
                     <Label>Mini bio (opcional)</Label>
                     <Textarea
-                      rows={3}
+                      rows={2}
                       value={formData.landing_bio}
                       onChange={(e) => setFormData({ ...formData, landing_bio: e.target.value })}
-                      placeholder="Breve descrição que aparece no site"
+                      placeholder="Frase curta exibida nos cards da home"
                     />
                   </div>
+                  <div className="space-y-2">
+                    <Label>Sobre o profissional</Label>
+                    <Textarea
+                      rows={5}
+                      value={formData.landing_about}
+                      onChange={(e) => setFormData({ ...formData, landing_about: e.target.value })}
+                      placeholder="Texto exibido na página do profissional"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Histórico curricular</Label>
+                    <Textarea
+                      rows={6}
+                      value={formData.landing_curriculum}
+                      onChange={(e) => setFormData({ ...formData, landing_curriculum: e.target.value })}
+                      placeholder="Formação, especializações, experiência..."
+                    />
+                  </div>
+
                 </TabsContent>
               </Tabs>
 
