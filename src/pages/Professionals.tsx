@@ -224,7 +224,11 @@ export default function Professionals() {
       city: '',
       state: '',
       zip_code: '',
+      photo_url: professional.photo_url || '',
+      show_on_landing: professional.show_on_landing || false,
+      landing_bio: professional.landing_bio || '',
     });
+
     const insIds = await fetchProfessionalInsurances(professional.id);
     setSelectedInsurances(insIds);
     setDialogOpen(true);
