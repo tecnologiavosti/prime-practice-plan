@@ -51,6 +51,9 @@ interface Professional {
   photo_url: string | null;
   show_on_landing: boolean;
   landing_bio: string | null;
+  landing_about: string | null;
+  landing_curriculum: string | null;
+
 }
 
 
