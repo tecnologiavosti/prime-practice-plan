@@ -75,7 +75,11 @@ const emptyProfessional = {
   city: '',
   state: '',
   zip_code: '',
+  photo_url: '',
+  show_on_landing: false,
+  landing_bio: '',
 };
+
 
 
 export default function Professionals() {
