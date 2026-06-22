@@ -1660,10 +1660,13 @@ export type Database = {
           email: string | null
           full_name: string
           id: string
+          landing_bio: string | null
           notes: string | null
           phone: string | null
+          photo_url: string | null
           rg: string | null
           service_type: Database["public"]["Enums"]["service_type"]
+          show_on_landing: boolean
           specialty_id: string | null
           state: string | null
           uf_crm: string | null
@@ -1682,10 +1685,13 @@ export type Database = {
           email?: string | null
           full_name: string
           id?: string
+          landing_bio?: string | null
           notes?: string | null
           phone?: string | null
+          photo_url?: string | null
           rg?: string | null
           service_type?: Database["public"]["Enums"]["service_type"]
+          show_on_landing?: boolean
           specialty_id?: string | null
           state?: string | null
           uf_crm?: string | null
@@ -1704,10 +1710,13 @@ export type Database = {
           email?: string | null
           full_name?: string
           id?: string
+          landing_bio?: string | null
           notes?: string | null
           phone?: string | null
+          photo_url?: string | null
           rg?: string | null
           service_type?: Database["public"]["Enums"]["service_type"]
+          show_on_landing?: boolean
           specialty_id?: string | null
           state?: string | null
           uf_crm?: string | null
@@ -2002,6 +2011,16 @@ export type Database = {
     }
     Functions: {
       current_professional_id: { Args: never; Returns: string }
+      get_landing_professionals: {
+        Args: never
+        Returns: {
+          full_name: string
+          id: string
+          landing_bio: string
+          photo_url: string
+          specialty_name: string
+        }[]
+      }
       get_landing_stats: {
         Args: never
         Returns: {
