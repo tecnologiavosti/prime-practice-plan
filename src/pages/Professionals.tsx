@@ -274,8 +274,10 @@ export default function Professionals() {
                 <TabsList className="w-full">
                   <TabsTrigger value="dados" className="flex-1">Dados</TabsTrigger>
                   <TabsTrigger value="convenios" className="flex-1">Convênios</TabsTrigger>
+                  <TabsTrigger value="site" className="flex-1">Site</TabsTrigger>
                 </TabsList>
                 <TabsContent value="dados" className="space-y-4">
+
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
                       <Label>Nome Completo *</Label>
