@@ -32,7 +32,7 @@ export default function ProfessionalPublic() {
 
   return (
     <div className="min-h-screen bg-white text-slate-900">
-      <SeoHead title={prof?.full_name} description={prof?.landing_bio ?? undefined} />
+      <SeoHead />
       <PublicHeader />
 
       <main className="container mx-auto px-5 md:px-10 py-12 max-w-4xl">
