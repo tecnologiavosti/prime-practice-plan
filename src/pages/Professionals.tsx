@@ -236,7 +236,10 @@ export default function Professionals() {
       photo_url: professional.photo_url || '',
       show_on_landing: professional.show_on_landing || false,
       landing_bio: professional.landing_bio || '',
+      landing_about: professional.landing_about || '',
+      landing_curriculum: professional.landing_curriculum || '',
     });
+
 
     const insIds = await fetchProfessionalInsurances(professional.id);
     setSelectedInsurances(insIds);
