@@ -189,6 +189,14 @@ export default function LandingPage() {
     })();
   }, []);
 
+  useEffect(() => {
+    (async () => {
+      const { data } = await (supabase.rpc as any)('get_landing_professionals');
+      if (data) setTeam(data as any);
+    })();
+  }, []);
+
+
   return (
     <div
       style={lpStyles}
