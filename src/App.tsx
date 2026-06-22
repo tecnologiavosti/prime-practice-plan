@@ -42,7 +42,9 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 // Patient Portal
 import LandingPage from "./pages/LandingPage";
+import ProfessionalPublic from "./pages/ProfessionalPublic";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+
 import CookieBanner from "@/components/CookieBanner";
 import PatientAuth from "./pages/patient/PatientAuth";
 import PatientDashboard from "./pages/patient/PatientDashboard";
@@ -72,7 +74,10 @@ const App = () => (
             <Route path="/convenios" element={<Convenios />} />
             <Route path="/especialidades/:slug" element={<EspecialidadePage />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
+            <Route path="/equipe/:id" element={<ProfessionalPublic />} />
             <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
+            
+
             
             
             {/* Patient Auth Routes */}

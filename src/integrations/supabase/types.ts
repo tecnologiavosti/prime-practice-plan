@@ -1660,7 +1660,9 @@ export type Database = {
           email: string | null
           full_name: string
           id: string
+          landing_about: string | null
           landing_bio: string | null
+          landing_curriculum: string | null
           notes: string | null
           phone: string | null
           photo_url: string | null
@@ -1685,7 +1687,9 @@ export type Database = {
           email?: string | null
           full_name: string
           id?: string
+          landing_about?: string | null
           landing_bio?: string | null
+          landing_curriculum?: string | null
           notes?: string | null
           phone?: string | null
           photo_url?: string | null
@@ -1710,7 +1714,9 @@ export type Database = {
           email?: string | null
           full_name?: string
           id?: string
+          landing_about?: string | null
           landing_bio?: string | null
+          landing_curriculum?: string | null
           notes?: string | null
           phone?: string | null
           photo_url?: string | null
@@ -2011,6 +2017,18 @@ export type Database = {
     }
     Functions: {
       current_professional_id: { Args: never; Returns: string }
+      get_landing_professional: {
+        Args: { _id: string }
+        Returns: {
+          full_name: string
+          id: string
+          landing_about: string
+          landing_bio: string
+          landing_curriculum: string
+          photo_url: string
+          specialty_name: string
+        }[]
+      }
       get_landing_professionals: {
         Args: never
         Returns: {
