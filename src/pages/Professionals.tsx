@@ -27,12 +27,15 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search, Edit, Trash2 } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Upload } from 'lucide-react';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
+
 
 interface Professional {
   id: string;
@@ -45,7 +48,11 @@ interface Professional {
   uf_crm: string | null;
   service_type: string;
   active: boolean;
+  photo_url: string | null;
+  show_on_landing: boolean;
+  landing_bio: string | null;
 }
+
 
 interface Specialty {
   id: string;
@@ -71,7 +78,11 @@ const emptyProfessional = {
   city: '',
   state: '',
   zip_code: '',
+  photo_url: '',
+  show_on_landing: false,
+  landing_bio: '',
 };
+
 
 
 export default function Professionals() {
@@ -216,7 +227,11 @@ export default function Professionals() {
       city: '',
       state: '',
       zip_code: '',
+      photo_url: professional.photo_url || '',
+      show_on_landing: professional.show_on_landing || false,
+      landing_bio: professional.landing_bio || '',
     });
+
     const insIds = await fetchProfessionalInsurances(professional.id);
     setSelectedInsurances(insIds);
     setDialogOpen(true);
@@ -259,8 +274,10 @@ export default function Professionals() {
                 <TabsList className="w-full">
                   <TabsTrigger value="dados" className="flex-1">Dados</TabsTrigger>
                   <TabsTrigger value="convenios" className="flex-1">Convênios</TabsTrigger>
+                  <TabsTrigger value="site" className="flex-1">Site</TabsTrigger>
                 </TabsList>
                 <TabsContent value="dados" className="space-y-4">
+
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
                       <Label>Nome Completo *</Label>
@@ -361,7 +378,71 @@ export default function Professionals() {
                     ))}
                   </div>
                 </TabsContent>
+                <TabsContent value="site" className="space-y-4">
+                  <div className="flex items-center justify-between rounded-md border p-3">
+                    <div>
+                      <Label className="text-sm font-medium">Exibir na página inicial do site</Label>
+                      <p className="text-xs text-muted-foreground">Quando ativo, este profissional aparece na home.</p>
+                    </div>
+                    <Switch
+                      checked={formData.show_on_landing}
+                      onCheckedChange={(v) => setFormData({ ...formData, show_on_landing: v })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Foto</Label>
+                    <div className="flex items-center gap-4">
+                      {formData.photo_url ? (
+                        <img src={formData.photo_url} alt="Foto" className="h-20 w-20 rounded-full object-cover border" />
+                      ) : (
+                        <div className="h-20 w-20 rounded-full border bg-muted" />
+                      )}
+                      <div>
+                        <input
+                          id="photo-upload"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            const ext = file.name.split('.').pop();
+                            const path = `professionals/${crypto.randomUUID()}.${ext}`;
+                            const { error: upErr } = await supabase.storage
+                              .from('clinic-assets')
+                              .upload(path, file, { upsert: true });
+                            if (upErr) {
+                              toast({ variant: 'destructive', title: 'Erro no upload', description: upErr.message });
+                              return;
+                            }
+                            const { data: pub } = supabase.storage.from('clinic-assets').getPublicUrl(path);
+                            setFormData({ ...formData, photo_url: pub.publicUrl });
+                            toast({ title: 'Foto enviada!' });
+                          }}
+                        />
+                        <Button type="button" variant="outline" onClick={() => document.getElementById('photo-upload')?.click()}>
+                          <Upload className="mr-2 h-4 w-4" /> Enviar foto
+                        </Button>
+                        {formData.photo_url && (
+                          <Button type="button" variant="ghost" className="ml-2" onClick={() => setFormData({ ...formData, photo_url: '' })}>
+                            Remover
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Mini bio (opcional)</Label>
+                    <Textarea
+                      rows={3}
+                      value={formData.landing_bio}
+                      onChange={(e) => setFormData({ ...formData, landing_bio: e.target.value })}
+                      placeholder="Breve descrição que aparece no site"
+                    />
+                  </div>
+                </TabsContent>
               </Tabs>
+
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                   Cancelar
