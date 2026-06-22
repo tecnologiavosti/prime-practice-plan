@@ -383,7 +383,8 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-3 gap-5 max-w-4xl mx-auto">
+
+
           {team.length > 0 ? (
             <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-5 max-w-5xl mx-auto">
               {team.map((m) => (
