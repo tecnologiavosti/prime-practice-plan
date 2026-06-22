@@ -74,7 +74,10 @@ const App = () => (
             <Route path="/convenios" element={<Convenios />} />
             <Route path="/especialidades/:slug" element={<EspecialidadePage />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
+            <Route path="/equipe/:id" element={<ProfessionalPublic />} />
             <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
+            
+
             
             
             {/* Patient Auth Routes */}
