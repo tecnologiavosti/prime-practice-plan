@@ -394,8 +394,10 @@ export default function LandingPage() {
                   className="group rounded-2xl border border-[hsl(var(--lp-line))] bg-[hsl(var(--lp-bg))] p-6 text-center transition-all hover:shadow-md hover:-translate-y-0.5"
                 >
                   {m.photo_url ? (
-                    <img src={m.photo_url} alt={m.full_name} loading="lazy"
-                      className="mx-auto mb-4 h-24 w-24 rounded-full object-cover object-top border border-[hsl(var(--lp-line))]" />
+                    <div className="mx-auto mb-4 h-24 w-24 rounded-full overflow-hidden border border-[hsl(var(--lp-line))] bg-white">
+                      <img src={m.photo_url} alt={m.full_name} loading="lazy"
+                        className="h-full w-full object-cover object-top scale-110" />
+                    </div>
                   ) : (
                     <div className="mx-auto mb-4 inline-flex h-24 w-24 items-center justify-center rounded-full bg-white text-[hsl(var(--lp-blue))] border border-[hsl(var(--lp-line))]">
                       <Users className="h-8 w-8" />
