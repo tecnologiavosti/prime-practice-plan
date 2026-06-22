@@ -384,20 +384,46 @@ export default function LandingPage() {
           </div>
 
           <div className="grid sm:grid-cols-3 gap-5 max-w-4xl mx-auto">
-            {[
-              { icon: GraduationCap, title: 'Formação sólida', desc: 'Pós-graduação e especializações reconhecidas.' },
-              { icon: ShieldCheck, title: 'Registro profissional', desc: 'Equipe regularizada e ética profissional rigorosa.' },
-              { icon: Heart, title: 'Escuta humanizada', desc: 'Cuidado verdadeiro, respeito ao seu tempo.' },
-            ].map((b) => (
-              <div key={b.title} className="rounded-2xl border border-[hsl(var(--lp-line))] bg-[hsl(var(--lp-bg))] p-6 text-center">
-                <div className="mx-auto mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white text-[hsl(var(--lp-blue))] border border-[hsl(var(--lp-line))]">
-                  <b.icon className="h-5 w-5" />
+          {team.length > 0 ? (
+            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-5 max-w-5xl mx-auto">
+              {team.map((m) => (
+                <div key={m.id} className="rounded-2xl border border-[hsl(var(--lp-line))] bg-[hsl(var(--lp-bg))] p-6 text-center">
+                  {m.photo_url ? (
+                    <img src={m.photo_url} alt={m.full_name} loading="lazy"
+                      className="mx-auto mb-4 h-24 w-24 rounded-full object-cover border border-[hsl(var(--lp-line))]" />
+                  ) : (
+                    <div className="mx-auto mb-4 inline-flex h-24 w-24 items-center justify-center rounded-full bg-white text-[hsl(var(--lp-blue))] border border-[hsl(var(--lp-line))]">
+                      <Users className="h-8 w-8" />
+                    </div>
+                  )}
+                  <h3 className="text-[16px] font-bold mb-0.5">{m.full_name}</h3>
+                  {m.specialty_name && (
+                    <p className="text-[13px] text-[hsl(var(--lp-blue))] font-semibold mb-2">{m.specialty_name}</p>
+                  )}
+                  {m.landing_bio && (
+                    <p className="text-[13.5px] text-[hsl(var(--lp-muted))] leading-relaxed">{m.landing_bio}</p>
+                  )}
                 </div>
-                <h3 className="text-[15.5px] font-bold mb-1">{b.title}</h3>
-                <p className="text-[13.5px] text-[hsl(var(--lp-muted))] leading-relaxed">{b.desc}</p>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-3 gap-5 max-w-4xl mx-auto">
+              {[
+                { icon: GraduationCap, title: 'Formação sólida', desc: 'Pós-graduação e especializações reconhecidas.' },
+                { icon: ShieldCheck, title: 'Registro profissional', desc: 'Equipe regularizada e ética profissional rigorosa.' },
+                { icon: Heart, title: 'Escuta humanizada', desc: 'Cuidado verdadeiro, respeito ao seu tempo.' },
+              ].map((b) => (
+                <div key={b.title} className="rounded-2xl border border-[hsl(var(--lp-line))] bg-[hsl(var(--lp-bg))] p-6 text-center">
+                  <div className="mx-auto mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white text-[hsl(var(--lp-blue))] border border-[hsl(var(--lp-line))]">
+                    <b.icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="text-[15.5px] font-bold mb-1">{b.title}</h3>
+                  <p className="text-[13.5px] text-[hsl(var(--lp-muted))] leading-relaxed">{b.desc}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
 
           <div className="mt-10 text-center">
             <a href={wa('Olá! Gostaria de conhecer a equipe da Clínica Pacem.')} target="_blank" rel="noopener noreferrer"
