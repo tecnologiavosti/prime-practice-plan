@@ -45,7 +45,11 @@ interface Professional {
   uf_crm: string | null;
   service_type: string;
   active: boolean;
+  photo_url: string | null;
+  show_on_landing: boolean;
+  landing_bio: string | null;
 }
+
 
 interface Specialty {
   id: string;
