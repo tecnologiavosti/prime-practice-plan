@@ -388,7 +388,11 @@ export default function LandingPage() {
           {team.length > 0 ? (
             <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-5 max-w-5xl mx-auto">
               {team.map((m) => (
-                <div key={m.id} className="rounded-2xl border border-[hsl(var(--lp-line))] bg-[hsl(var(--lp-bg))] p-6 text-center">
+                <Link
+                  key={m.id}
+                  to={`/equipe/${m.id}`}
+                  className="group rounded-2xl border border-[hsl(var(--lp-line))] bg-[hsl(var(--lp-bg))] p-6 text-center transition-all hover:shadow-md hover:-translate-y-0.5"
+                >
                   {m.photo_url ? (
                     <img src={m.photo_url} alt={m.full_name} loading="lazy"
                       className="mx-auto mb-4 h-24 w-24 rounded-full object-cover border border-[hsl(var(--lp-line))]" />
@@ -397,15 +401,14 @@ export default function LandingPage() {
                       <Users className="h-8 w-8" />
                     </div>
                   )}
-                  <h3 className="text-[16px] font-bold mb-0.5">{m.full_name}</h3>
+                  <h3 className="text-[16px] font-bold mb-0.5 group-hover:text-[hsl(var(--lp-blue))]">{m.full_name}</h3>
                   {m.specialty_name && (
                     <p className="text-[13px] text-[hsl(var(--lp-blue))] font-semibold mb-2">{m.specialty_name}</p>
                   )}
-                  {m.landing_bio && (
-                    <p className="text-[13.5px] text-[hsl(var(--lp-muted))] leading-relaxed">{m.landing_bio}</p>
-                  )}
-                </div>
+                  <span className="text-[12.5px] text-[hsl(var(--lp-muted))] underline-offset-2 group-hover:underline">Ver perfil</span>
+                </Link>
               ))}
+
             </div>
           ) : (
             <div className="grid sm:grid-cols-3 gap-5 max-w-4xl mx-auto">
