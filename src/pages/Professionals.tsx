@@ -84,6 +84,9 @@ const emptyProfessional = {
   photo_url: '',
   show_on_landing: false,
   landing_bio: '',
+  landing_about: '',
+  landing_curriculum: '',
+
 };
 
 
