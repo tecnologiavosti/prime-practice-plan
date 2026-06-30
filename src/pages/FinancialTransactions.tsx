@@ -110,6 +110,17 @@ export default function FinancialTransactions() {
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | 'particular' | 'convenio'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pendente' | 'pago' | 'cancelado'>('all');
+  const [professionalFilter, setProfessionalFilter] = useState<string>('all');
+  const [insuranceFilter, setInsuranceFilter] = useState<string>('all');
+  const [procedureFilter, setProcedureFilter] = useState<string>('all');
+  const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>('all');
+  const [dueFrom, setDueFrom] = useState<string>('');
+  const [dueTo, setDueTo] = useState<string>('');
+  const [payFrom, setPayFrom] = useState<string>('');
+  const [payTo, setPayTo] = useState<string>('');
+  const [amountMin, setAmountMin] = useState<string>('');
+  const [amountMax, setAmountMax] = useState<string>('');
+  const [showFilters, setShowFilters] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formData, setFormData] = useState(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
