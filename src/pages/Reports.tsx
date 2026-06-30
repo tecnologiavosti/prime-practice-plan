@@ -397,6 +397,22 @@ export default function Reports() {
               ))}>
                 <Download className="h-4 w-4 mr-1" />CSV
               </Button>
+              <Button size="sm" variant="outline" className="ml-2" onClick={() => exportPDF({
+                title: 'Fluxo de Caixa',
+                period: `${from} a ${to}`,
+                fileName: 'fluxo-caixa',
+                headers: ['Data', 'Tipo', 'Categoria', 'Descrição', 'Valor'],
+                rows: cashflow.map((c) => [
+                  fmtDate(c.entry_date), c.entry_type, c.category, c.description || '', fmtBRL(Number(c.amount)),
+                ]),
+                summary: [
+                  { label: 'Entradas', value: fmtBRL(cfTotals.inAmt) },
+                  { label: 'Saídas', value: fmtBRL(cfTotals.outAmt) },
+                  { label: 'Saldo', value: fmtBRL(cfTotals.saldo) },
+                ],
+              })}>
+                <FileText className="h-4 w-4 mr-1" />PDF
+              </Button>
             </CardHeader>
             <CardContent>
               <Table>
