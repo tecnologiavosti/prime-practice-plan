@@ -2048,6 +2048,13 @@ export type Database = {
           specialties_count: number
         }[]
       }
+      get_professional_insurances: {
+        Args: { _id: string }
+        Returns: {
+          id: string
+          name: string
+        }[]
+      }
       get_professionals_for_patients: {
         Args: never
         Returns: {
