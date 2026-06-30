@@ -58,8 +58,7 @@ export function DiverseReceiptsPanel() {
     setLoading(true);
     const { data, error } = await supabase
       .from('cash_flow_entries')
-      .select('id, category, description, amount, entry_date, notes')
-      .eq('entry_type', 'entrada')
+      .select('id, entry_type, category, description, amount, entry_date, notes')
       .order('entry_date', { ascending: false });
     if (error) toast({ variant: 'destructive', title: 'Erro', description: error.message });
     setEntries((data as any) || []);
@@ -71,7 +70,7 @@ export function DiverseReceiptsPanel() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     const { error } = await supabase.from('cash_flow_entries').insert([{
-      entry_type: 'entrada',
+      entry_type: form.entry_type,
       category: form.category,
       description: form.description || null,
       amount: form.amount,
@@ -82,9 +81,9 @@ export function DiverseReceiptsPanel() {
       toast({ variant: 'destructive', title: 'Erro', description: error.message });
       return;
     }
-    toast({ title: 'Recebimento registrado!' });
+    toast({ title: 'Lançamento registrado!' });
     setOpen(false);
-    setForm({ category: 'Receita avulsa', description: '', amount: 0, entry_date: format(new Date(), 'yyyy-MM-dd'), notes: '' });
+    setForm({ entry_type: 'entrada', category: 'Receita avulsa', description: '', amount: 0, entry_date: format(new Date(), 'yyyy-MM-dd'), notes: '' });
     fetchEntries();
   };
 
