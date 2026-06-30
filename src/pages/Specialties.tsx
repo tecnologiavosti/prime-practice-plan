@@ -221,17 +221,23 @@ export default function Specialties() {
                           </span>
                         </label>
                         {admins.length > 0 && (
-                          <div className="ml-6 grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                          <div className="ml-6 space-y-1.5">
                             {admins.map((adm) => {
                               const key = k(ins.id, adm.id);
+                              const checked = selected.has(key);
                               return (
-                                <label key={adm.id} className="flex items-center gap-2 text-xs cursor-pointer text-muted-foreground">
-                                  <Checkbox
-                                    checked={selected.has(key)}
-                                    onCheckedChange={() => toggleKey(key)}
+                                <div key={adm.id} className="flex items-center gap-2 text-xs">
+                                  <label className="flex items-center gap-2 cursor-pointer text-muted-foreground flex-1">
+                                    <Checkbox checked={checked} onCheckedChange={() => toggleKey(key)} />
+                                    {adm.name}
+                                  </label>
+                                  <span className="text-[11px] text-muted-foreground">R$</span>
+                                  <CurrencyInput
+                                    className="h-7 w-24 text-xs"
+                                    value={prices[key] ?? 0}
+                                    onChange={(v) => setPrices((p) => ({ ...p, [key]: v }))}
                                   />
-                                  {adm.name}
-                                </label>
+                                </div>
                               );
                             })}
                           </div>
