@@ -496,29 +496,38 @@ export default function FinancialTransactions() {
         </Dialog>
       </div>
 
-      {/* Stats Cards */}
-      <div className="mb-6 grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Pendentes</CardTitle>
-            <Clock className="h-4 w-4 text-yellow-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.totalPendente)}</div>
-            <p className="text-xs text-muted-foreground">{stats.countPendente} lançamentos</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Recebidos</CardTitle>
-            <DollarSign className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.totalPago)}</div>
-            <p className="text-xs text-muted-foreground">{stats.countPago} lançamentos</p>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Stats Cards (refletem os filtros aplicados) */}
+      {(() => {
+        const pend = filtered.filter((t) => t.status === 'pendente');
+        const pagos = filtered.filter((t) => t.status === 'pago');
+        const totPend = pend.reduce((a, t) => a + Number(t.amount), 0);
+        const totPago = pagos.reduce((a, t) => a + Number(t.amount), 0);
+        return (
+          <div className="mb-6 grid gap-4 md:grid-cols-2">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Pendentes</CardTitle>
+                <Clock className="h-4 w-4 text-yellow-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{formatCurrency(totPend)}</div>
+                <p className="text-xs text-muted-foreground">{pend.length} lançamentos</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Recebidos</CardTitle>
+                <DollarSign className="h-4 w-4 text-green-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{formatCurrency(totPago)}</div>
+                <p className="text-xs text-muted-foreground">{pagos.length} lançamentos</p>
+              </CardContent>
+            </Card>
+          </div>
+        );
+      })()}
+
 
       {/* Filters */}
       <div className="mb-4 space-y-3">
