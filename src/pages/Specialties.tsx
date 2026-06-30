@@ -39,6 +39,7 @@ export default function Specialties() {
   const [editing, setEditing] = useState<Specialty | null>(null);
   const [name, setName] = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [prices, setPrices] = useState<Record<string, number>>({}); // key insId|admId -> billing_rate
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -49,7 +50,7 @@ export default function Specialties() {
       supabase.from('specialties').select('*').order('name'),
       supabase.from('health_insurances').select('id, name').eq('active', true).order('name'),
       supabase.from('administrators').select('id, name').eq('active', true).order('name'),
-      supabase.from('insurance_administrators_map').select('insurance_id, administrator_id'),
+      supabase.from('insurance_administrators_map').select('insurance_id, administrator_id, billing_rate'),
       supabase.from('specialty_health_insurances').select('specialty_id, health_insurance_id, administrator_id'),
     ]);
     if (s.error) toast({ variant: 'destructive', title: 'Erro', description: s.error.message });
