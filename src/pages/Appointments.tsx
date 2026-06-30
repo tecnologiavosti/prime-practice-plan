@@ -539,6 +539,10 @@ export default function Appointments() {
         {apt.consultation_type}
         {apt.health_insurance && ` (${apt.health_insurance.name})`}
       </TableCell>
+      <TableCell>{apt.administrator?.name || '-'}</TableCell>
+      <TableCell className="font-mono whitespace-nowrap">
+        {apt.custom_amount != null ? formatCurrency(Number(apt.custom_amount)) : (apt.procedure?.private_price ? formatCurrency(Number(apt.procedure.private_price)) : '-')}
+      </TableCell>
       <TableCell>
         <Select value={apt.status} onValueChange={(v) => handleStatusChange(apt.id, v)}>
           <SelectTrigger className={cn('w-[140px]', statusColors[apt.status])}>
