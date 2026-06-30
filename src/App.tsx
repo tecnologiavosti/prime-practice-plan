@@ -35,6 +35,8 @@ import Convenios from "./pages/Convenios";
 import EspecialidadePage from "./pages/Especialidade";
 import BlogPost from "./pages/BlogPost";
 import SubleasedRooms from "./pages/SubleasedRooms";
+import Prontuarios from "./pages/Prontuarios";
+import ProntuarioDetail from "./pages/ProntuarioDetail";
 
 import ScheduleConfig from "./pages/ScheduleConfig";
 import ClinicProfile from "./pages/ClinicProfile";
