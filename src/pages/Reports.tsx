@@ -483,6 +483,32 @@ export default function Reports() {
               ))}>
                 <Download className="h-4 w-4 mr-1" />CSV
               </Button>
+              <Button size="sm" variant="outline" className="ml-2" onClick={() => exportPDF({
+                title: 'Agendamentos',
+                period: `${from} a ${to}`,
+                fileName: 'agendamentos',
+                headers: ['Data', 'Paciente', 'Profissional', 'Tipo', 'Convênio', 'Adm.', 'Status', 'Valor'],
+                rows: appointments.map((a) => [
+                  `${fmtDate(a.appointment_date)} ${a.start_time?.slice(0, 5) || ''}`,
+                  a.patient?.full_name || '—',
+                  a.professional?.full_name || '—',
+                  a.consultation_type,
+                  a.health_insurance?.name || '—',
+                  a.administrator?.name || '—',
+                  a.status,
+                  fmtBRL(Number(a.custom_amount ?? a.procedure?.private_price ?? 0)),
+                ]),
+                summary: [
+                  { label: 'Total', value: String(apMetrics.total) },
+                  { label: 'Finalizados', value: String(apMetrics.finalizado || 0) },
+                  { label: 'Agendados', value: String(apMetrics.agendado || 0) },
+                  { label: 'Cancelados', value: String(apMetrics.cancelado || 0) },
+                  { label: 'Faltas', value: String(apMetrics.faltou || 0) },
+                  { label: 'Faturado', value: fmtBRL(apMetrics.valor) },
+                ],
+              })}>
+                <FileText className="h-4 w-4 mr-1" />PDF
+              </Button>
             </CardHeader>
             <CardContent>
               <Table>
