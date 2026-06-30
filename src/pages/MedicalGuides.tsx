@@ -298,12 +298,23 @@ export default function MedicalGuides() {
     // 1) procedure_insurance_prices (preço específico por procedimento)
     const pip = procedureInsurancePrices.find(p => p.procedure_id === procedureId && p.health_insurance_id === insuranceId);
     if (pip) return Number(pip.price) || 0;
-    // 2) billing_rate da administradora selecionada
+    // 2) valor editável do convênio na guia
+    if (insuranceRate > 0) return insuranceRate;
+    // 3) billing_rate da administradora selecionada
     if (formData.administrator_id) {
       const m = insAdminMap.find(x => x.insurance_id === insuranceId && x.administrator_id === formData.administrator_id);
       if (m && m.billing_rate != null) return Number(m.billing_rate) || 0;
     }
     return null;
+  };
+
+  const applyInsuranceRate = (rate: number) => {
+    setInsuranceRate(rate);
+    setItems(prev => prev.map(it => ({
+      ...it,
+      unit_value: rate,
+      total_value: (it.quantity || 1) * rate,
+    })));
   };
 
   const updateItem = (index: number, field: keyof typeof emptyItem, value: any) => {
