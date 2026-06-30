@@ -97,6 +97,8 @@ export default function Appointments() {
   const [packages, setPackages] = useState<PrivatePackage[]>([]);
   const [procedureInsurancePrices, setProcedureInsurancePrices] = useState<ProcedureInsurancePrice[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [administrators, setAdministrators] = useState<Administrator[]>([]);
+  const [insAdminMap, setInsAdminMap] = useState<InsAdminMap[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [dateFilter, setDateFilter] = useState(format(new Date(), 'yyyy-MM-dd'));
