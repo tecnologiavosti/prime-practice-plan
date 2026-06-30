@@ -463,6 +463,7 @@ export default function MedicalGuides() {
     setFormData({
       guide_number: g.guide_number,
       patient_id: g.patient?.id || '',
+      administrator_id: (g as any).administrator_id || '',
       health_insurance_id: g.health_insurance?.id || '',
       professional_id: g.professional?.id || '',
       guide_date: g.guide_date,
