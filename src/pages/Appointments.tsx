@@ -109,6 +109,9 @@ export default function Appointments() {
   const [viewMode, setViewMode] = useState<ViewMode>('daily');
   const [filterProfessionalId, setFilterProfessionalId] = useState('');
   const [filterPatientId, setFilterPatientId] = useState('');
+  const [filterAdministratorId, setFilterAdministratorId] = useState('');
+  const [filterInsuranceId, setFilterInsuranceId] = useState('');
+  const [filterType, setFilterType] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formData, setFormData] = useState(emptyForm);
   const [submitting, setSubmitting] = useState(false);
