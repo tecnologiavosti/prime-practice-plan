@@ -35,6 +35,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { ProfessionalFinancePanel } from '@/components/professionals/ProfessionalFinancePanel';
 
 
 interface Professional {
