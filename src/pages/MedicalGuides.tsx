@@ -841,7 +841,12 @@ export default function MedicalGuides() {
                 <Label>Convênio *</Label>
                 <Select
                   value={formData.health_insurance_id}
-                  onValueChange={(v) => setFormData({ ...formData, health_insurance_id: v })}
+                  onValueChange={(v) => {
+                    setFormData({ ...formData, health_insurance_id: v });
+                    const m = insAdminMap.find(x => x.administrator_id === formData.administrator_id && x.insurance_id === v);
+                    const rate = m?.billing_rate != null ? Number(m.billing_rate) : 0;
+                    applyInsuranceRate(rate);
+                  }}
                   disabled={!formData.administrator_id}
                 >
                   <SelectTrigger>
@@ -866,6 +871,18 @@ export default function MedicalGuides() {
                 )}
               </div>
 
+              {formData.health_insurance_id && (
+                <div className="space-y-2">
+                  <Label>Valor do Convênio (R$)</Label>
+                  <CurrencyInput
+                    value={insuranceRate}
+                    onChange={(v) => applyInsuranceRate(Number(v) || 0)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Esse valor será aplicado a cada atendimento adicionado. Você pode editar o valor individual de cada item abaixo.
+                  </p>
+                </div>
+              )}
 
               {/* Profissional Executante */}
               <div className="space-y-2">
