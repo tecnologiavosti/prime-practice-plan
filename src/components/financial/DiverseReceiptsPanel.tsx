@@ -121,19 +121,31 @@ export function DiverseReceiptsPanel() {
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button><Plus className="mr-2 h-4 w-4" />Novo recebimento</Button>
+            <Button><Plus className="mr-2 h-4 w-4" />Novo lançamento</Button>
           </DialogTrigger>
           <DialogContent className="max-w-md">
-            <DialogHeader><DialogTitle>Novo recebimento</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>Novo lançamento</DialogTitle></DialogHeader>
             <form onSubmit={handleSave} className="space-y-3">
-              <div className="space-y-1">
-                <Label>Categoria *</Label>
-                <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label>Tipo *</Label>
+                  <Select value={form.entry_type} onValueChange={(v) => setForm({ ...form, entry_type: v as 'entrada' | 'saida' })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="entrada">Entrada</SelectItem>
+                      <SelectItem value="saida">Saída</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label>Categoria *</Label>
+                  <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
