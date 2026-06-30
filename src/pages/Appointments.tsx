@@ -248,6 +248,7 @@ export default function Appointments() {
 
     setSubmitting(true);
     try {
+      const isConv = formData.consultation_type === 'convenio';
       const payload = {
         patient_id: formData.patient_id,
         professional_id: formData.professional_id,
@@ -256,7 +257,9 @@ export default function Appointments() {
         start_time: formData.start_time,
         end_time: formData.end_time,
         consultation_type: formData.consultation_type,
-        health_insurance_id: formData.consultation_type === 'convenio' ? formData.health_insurance_id || null : null,
+        health_insurance_id: isConv ? formData.health_insurance_id || null : null,
+        administrator_id: isConv ? formData.administrator_id || null : null,
+        custom_amount: formData.custom_amount > 0 ? formData.custom_amount : null,
         patient_package_id: null,
         notes: formData.notes || null,
         status: formData.status,
