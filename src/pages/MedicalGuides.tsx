@@ -180,9 +180,22 @@ export default function MedicalGuides() {
       fetchInsurances(),
       fetchProcedures(),
       fetchProcedureInsurancePrices(),
+      fetchAdministrators(),
+      fetchInsAdminMap(),
     ]);
     setLoading(false);
   };
+
+  const fetchAdministrators = async () => {
+    const { data } = await supabase.from('administrators').select('id, name').eq('active', true).order('name');
+    setAdministrators(data || []);
+  };
+
+  const fetchInsAdminMap = async () => {
+    const { data } = await supabase.from('insurance_administrators_map').select('insurance_id, administrator_id, billing_rate');
+    setInsAdminMap((data as any) || []);
+  };
+
 
   const fetchGuides = async () => {
     let query = supabase
