@@ -331,8 +331,8 @@ export default function MedicalGuides() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.patient_id || !formData.health_insurance_id || !formData.professional_id) {
-      toast({ variant: 'destructive', title: 'Erro', description: 'Preencha paciente, convênio e profissional executante' });
+    if (!formData.patient_id || !formData.administrator_id || !formData.health_insurance_id || !formData.professional_id) {
+      toast({ variant: 'destructive', title: 'Erro', description: 'Preencha paciente, administradora, convênio e profissional executante' });
       return;
     }
 
@@ -346,6 +346,7 @@ export default function MedicalGuides() {
     const payload = {
       guide_number: formData.guide_number || generateGuideNumber(),
       patient_id: formData.patient_id,
+      administrator_id: formData.administrator_id,
       health_insurance_id: formData.health_insurance_id,
       professional_id: formData.professional_id || null,
       guide_date: formData.guide_date,
