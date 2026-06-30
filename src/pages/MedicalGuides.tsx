@@ -124,6 +124,7 @@ const statusLabels: Record<string, string> = {
 const emptyForm = {
   guide_number: '',
   patient_id: '',
+  administrator_id: '',
   health_insurance_id: '',
   professional_id: '',
   guide_date: format(new Date(), 'yyyy-MM-dd'),
@@ -131,6 +132,9 @@ const emptyForm = {
   cid_10: '',
   clinical_indication: '',
 };
+
+interface Administrator { id: string; name: string; }
+interface InsuranceAdminMap { insurance_id: string; administrator_id: string; billing_rate: number | null; }
 
 const emptyItem: Omit<GuideItem, 'id' | 'procedure' | 'professional'> = {
   procedure_id: '',
@@ -147,6 +151,8 @@ export default function MedicalGuides() {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [insurances, setInsurances] = useState<HealthInsurance[]>([]);
+  const [administrators, setAdministrators] = useState<Administrator[]>([]);
+  const [insAdminMap, setInsAdminMap] = useState<InsuranceAdminMap[]>([]);
   const [procedures, setProcedures] = useState<Procedure[]>([]);
   const [procedureInsurancePrices, setProcedureInsurancePrices] = useState<ProcedureInsurancePrice[]>([]);
   const [loading, setLoading] = useState(true);
@@ -174,9 +180,22 @@ export default function MedicalGuides() {
       fetchInsurances(),
       fetchProcedures(),
       fetchProcedureInsurancePrices(),
+      fetchAdministrators(),
+      fetchInsAdminMap(),
     ]);
     setLoading(false);
   };
+
+  const fetchAdministrators = async () => {
+    const { data } = await supabase.from('administrators').select('id, name').eq('active', true).order('name');
+    setAdministrators(data || []);
+  };
+
+  const fetchInsAdminMap = async () => {
+    const { data } = await supabase.from('insurance_administrators_map').select('insurance_id, administrator_id, billing_rate');
+    setInsAdminMap((data as any) || []);
+  };
+
 
   const fetchGuides = async () => {
     let query = supabase
@@ -274,26 +293,34 @@ export default function MedicalGuides() {
     }
   };
 
+  const getInsuranceDefaultPrice = (procedureId: string, insuranceId: string): number | null => {
+    // 1) procedure_insurance_prices (preço específico por procedimento)
+    const pip = procedureInsurancePrices.find(p => p.procedure_id === procedureId && p.health_insurance_id === insuranceId);
+    if (pip) return Number(pip.price) || 0;
+    // 2) billing_rate da administradora selecionada
+    if (formData.administrator_id) {
+      const m = insAdminMap.find(x => x.insurance_id === insuranceId && x.administrator_id === formData.administrator_id);
+      if (m && m.billing_rate != null) return Number(m.billing_rate) || 0;
+    }
+    return null;
+  };
+
   const updateItem = (index: number, field: keyof typeof emptyItem, value: any) => {
     const newItems = [...items];
     newItems[index] = { ...newItems[index], [field]: value };
-    
-    // Auto-fill unit_value when procedure is selected
+
     if (field === 'procedure_id' && formData.health_insurance_id) {
-      const insurancePrice = procedureInsurancePrices.find(
-        pip => pip.procedure_id === value && pip.health_insurance_id === formData.health_insurance_id
-      );
-      if (insurancePrice) {
-        newItems[index].unit_value = insurancePrice.price;
-        newItems[index].total_value = newItems[index].quantity * insurancePrice.price;
+      const price = getInsuranceDefaultPrice(value, formData.health_insurance_id);
+      if (price != null) {
+        newItems[index].unit_value = price;
+        newItems[index].total_value = newItems[index].quantity * price;
       }
     }
-    
-    // Recalculate total
+
     if (field === 'quantity' || field === 'unit_value') {
       newItems[index].total_value = newItems[index].quantity * newItems[index].unit_value;
     }
-    
+
     setItems(newItems);
   };
 
@@ -304,8 +331,8 @@ export default function MedicalGuides() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.patient_id || !formData.health_insurance_id || !formData.professional_id) {
-      toast({ variant: 'destructive', title: 'Erro', description: 'Preencha paciente, convênio e profissional executante' });
+    if (!formData.patient_id || !formData.administrator_id || !formData.health_insurance_id || !formData.professional_id) {
+      toast({ variant: 'destructive', title: 'Erro', description: 'Preencha paciente, administradora, convênio e profissional executante' });
       return;
     }
 
@@ -319,6 +346,7 @@ export default function MedicalGuides() {
     const payload = {
       guide_number: formData.guide_number || generateGuideNumber(),
       patient_id: formData.patient_id,
+      administrator_id: formData.administrator_id,
       health_insurance_id: formData.health_insurance_id,
       professional_id: formData.professional_id || null,
       guide_date: formData.guide_date,
@@ -459,6 +487,7 @@ export default function MedicalGuides() {
     setFormData({
       guide_number: g.guide_number,
       patient_id: g.patient?.id || '',
+      administrator_id: (g as any).administrator_id || '',
       health_insurance_id: g.health_insurance?.id || '',
       professional_id: g.professional?.id || '',
       guide_date: g.guide_date,
@@ -779,22 +808,52 @@ export default function MedicalGuides() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Convênio *</Label>
+                  <Label>Administradora *</Label>
                   <Select
-                    value={formData.health_insurance_id}
-                    onValueChange={(v) => setFormData({ ...formData, health_insurance_id: v })}
+                    value={formData.administrator_id}
+                    onValueChange={(v) => setFormData({ ...formData, administrator_id: v, health_insurance_id: '' })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecione o convênio" />
+                      <SelectValue placeholder="Selecione a administradora" />
                     </SelectTrigger>
                     <SelectContent>
-                      {insurances.map((i) => (
-                        <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
+                      {administrators.map((a) => (
+                        <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
               </div>
+
+              <div className="space-y-2">
+                <Label>Convênio *</Label>
+                <Select
+                  value={formData.health_insurance_id}
+                  onValueChange={(v) => setFormData({ ...formData, health_insurance_id: v })}
+                  disabled={!formData.administrator_id}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={formData.administrator_id ? 'Selecione o convênio' : 'Selecione a administradora primeiro'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {insurances
+                      .filter((i) => insAdminMap.some(m => m.administrator_id === formData.administrator_id && m.insurance_id === i.id))
+                      .map((i) => {
+                        const m = insAdminMap.find(x => x.administrator_id === formData.administrator_id && x.insurance_id === i.id);
+                        const rate = m?.billing_rate;
+                        return (
+                          <SelectItem key={i.id} value={i.id}>
+                            {i.name}{rate != null ? ` — ${formatCurrency(Number(rate))}` : ''}
+                          </SelectItem>
+                        );
+                      })}
+                  </SelectContent>
+                </Select>
+                {formData.administrator_id && !insurances.some(i => insAdminMap.some(m => m.administrator_id === formData.administrator_id && m.insurance_id === i.id)) && (
+                  <p className="text-xs text-destructive">Esta administradora ainda não possui convênios cadastrados.</p>
+                )}
+              </div>
+
 
               {/* Profissional Executante */}
               <div className="space-y-2">

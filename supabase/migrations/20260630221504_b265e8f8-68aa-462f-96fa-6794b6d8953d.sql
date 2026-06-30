@@ -1,0 +1,1 @@
+ALTER TABLE public.medical_guides ADD COLUMN IF NOT EXISTS administrator_id uuid REFERENCES public.administrators(id) ON DELETE SET NULL;
