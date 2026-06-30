@@ -67,16 +67,23 @@ export default function Specialties() {
     setLoading(false);
   }
 
+  function initPrices() {
+    const p: Record<string, number> = {};
+    insAdminLinks.forEach((l) => { p[k(l.insurance_id, l.administrator_id)] = Number(l.billing_rate || 0); });
+    setPrices(p);
+  }
   function openNew() {
     setEditing(null);
     setName('');
     setSelected(new Set());
+    initPrices();
     setDialogOpen(true);
   }
   function openEdit(s: Specialty) {
     setEditing(s);
     setName(s.name);
     setSelected(new Set(linkedMap[s.id] || []));
+    initPrices();
     setDialogOpen(true);
   }
 
