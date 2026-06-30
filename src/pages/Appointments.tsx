@@ -43,6 +43,7 @@ interface Appointment {
   professional: { id: string; full_name: string } | null;
   procedure: { id: string; name: string; private_price?: number } | null;
   health_insurance: { id: string; name: string } | null;
+  administrator: { id: string; name: string } | null;
 }
 
 interface Patient { id: string; full_name: string; }
@@ -108,6 +109,9 @@ export default function Appointments() {
   const [viewMode, setViewMode] = useState<ViewMode>('daily');
   const [filterProfessionalId, setFilterProfessionalId] = useState('');
   const [filterPatientId, setFilterPatientId] = useState('');
+  const [filterAdministratorId, setFilterAdministratorId] = useState('');
+  const [filterInsuranceId, setFilterInsuranceId] = useState('');
+  const [filterType, setFilterType] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formData, setFormData] = useState(emptyForm);
   const [submitting, setSubmitting] = useState(false);
@@ -161,7 +165,8 @@ export default function Appointments() {
         patient:patients(id, full_name),
         professional:professionals(id, full_name),
         procedure:procedures(id, name, private_price),
-        health_insurance:health_insurances(id, name)
+        health_insurance:health_insurances(id, name),
+        administrator:administrators(id, name)
       `)
       .order('appointment_date')
       .order('start_time');
@@ -503,7 +508,10 @@ export default function Appointments() {
       a.professional?.full_name?.toLowerCase().includes(search.toLowerCase());
     const matchProfessional = !filterProfessionalId || a.professional?.id === filterProfessionalId;
     const matchPatient = !filterPatientId || a.patient?.id === filterPatientId;
-    return matchSearch && matchProfessional && matchPatient;
+    const matchAdmin = !filterAdministratorId || a.administrator?.id === filterAdministratorId;
+    const matchInsurance = !filterInsuranceId || a.health_insurance?.id === filterInsuranceId;
+    const matchType = !filterType || a.consultation_type === filterType;
+    return matchSearch && matchProfessional && matchPatient && matchAdmin && matchInsurance && matchType;
   });
 
   // Group by date for monthly view
@@ -530,6 +538,10 @@ export default function Appointments() {
       <TableCell className="capitalize">
         {apt.consultation_type}
         {apt.health_insurance && ` (${apt.health_insurance.name})`}
+      </TableCell>
+      <TableCell>{apt.administrator?.name || '-'}</TableCell>
+      <TableCell className="font-mono whitespace-nowrap">
+        {apt.custom_amount != null ? formatCurrency(Number(apt.custom_amount)) : (apt.procedure?.private_price ? formatCurrency(Number(apt.procedure.private_price)) : '-')}
       </TableCell>
       <TableCell>
         <Select value={apt.status} onValueChange={(v) => handleStatusChange(apt.id, v)}>
@@ -561,7 +573,7 @@ export default function Appointments() {
     </TableRow>
   );
 
-  const colCount = viewMode === 'monthly' ? 8 : 7;
+  const colCount = viewMode === 'monthly' ? 10 : 9;
 
   return (
     <div className="p-6">
@@ -784,6 +796,38 @@ export default function Appointments() {
               {patients.map((p) => <SelectItem key={p.id} value={p.id}>{p.full_name}</SelectItem>)}
             </SelectContent>
           </Select>
+
+          <Select value={filterType || 'all'} onValueChange={(v) => setFilterType(v === 'all' ? '' : v)}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="Todos os tipos" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os tipos</SelectItem>
+              <SelectItem value="particular">Particular</SelectItem>
+              <SelectItem value="convenio">Convênio</SelectItem>
+              <SelectItem value="pacote">Pacote</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={filterAdministratorId || 'all'} onValueChange={(v) => setFilterAdministratorId(v === 'all' ? '' : v)}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Todas as administradoras" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas as administradoras</SelectItem>
+              {administrators.map((a) => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
+
+          <Select value={filterInsuranceId || 'all'} onValueChange={(v) => setFilterInsuranceId(v === 'all' ? '' : v)}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Todos os convênios" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os convênios</SelectItem>
+              {insurances.map((i) => <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -798,6 +842,8 @@ export default function Appointments() {
               <TableHead>Profissional</TableHead>
               <TableHead>Procedimento</TableHead>
               <TableHead>Tipo</TableHead>
+              <TableHead>Administradora</TableHead>
+              <TableHead>Valor</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Ações</TableHead>
             </TableRow>
@@ -825,6 +871,10 @@ export default function Appointments() {
                     <TableCell className="capitalize">
                       {apt.consultation_type}
                       {apt.health_insurance && ` (${apt.health_insurance.name})`}
+                    </TableCell>
+                    <TableCell>{apt.administrator?.name || '-'}</TableCell>
+                    <TableCell className="font-mono whitespace-nowrap">
+                      {apt.custom_amount != null ? formatCurrency(Number(apt.custom_amount)) : (apt.procedure?.private_price ? formatCurrency(Number(apt.procedure.private_price)) : '-')}
                     </TableCell>
                     <TableCell>
                       <Select value={apt.status} onValueChange={(v) => handleStatusChange(apt.id, v)}>
