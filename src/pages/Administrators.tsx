@@ -536,7 +536,7 @@ export default function Administrators() {
 
                         {settings?.selected && (
                           <div className="flex items-center gap-2">
-                            <DollarSign className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm font-semibold text-muted-foreground">R$</span>
                             <CurrencyInput
                               placeholder="Valor"
                               value={settings.billing_rate || 0}
@@ -545,6 +545,7 @@ export default function Administrators() {
                             />
                           </div>
                         )}
+
                       </div>
                     </div>
                   );
