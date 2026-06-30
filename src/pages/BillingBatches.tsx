@@ -60,7 +60,12 @@ interface MedicalGuide {
 interface HealthInsurance {
   id: string;
   name: string;
-  administrator_ids: string[];
+  administrator_links: InsuranceAdministratorLink[];
+}
+
+interface InsuranceAdministratorLink {
+  administrator_id: string;
+  billing_rate: number;
 }
 
 interface Administrator {
@@ -84,6 +89,7 @@ export default function BillingBatches() {
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedInsurance, setSelectedInsurance] = useState('');
+  const [selectedAdministrator, setSelectedAdministrator] = useState('');
   const [selectedGuides, setSelectedGuides] = useState<string[]>([]);
   const [periodStart, setPeriodStart] = useState(format(new Date(), 'yyyy-MM-01'));
   const [periodEnd, setPeriodEnd] = useState(format(new Date(), 'yyyy-MM-dd'));
@@ -151,13 +157,16 @@ export default function BillingBatches() {
   const fetchInsurances = async () => {
     const { data } = await supabase
       .from('health_insurances')
-      .select('id, name, insurance_administrators_map(administrator_id)')
+      .select('id, name, insurance_administrators_map(administrator_id, billing_rate)')
       .eq('active', true)
       .order('name');
     const mapped: HealthInsurance[] = (data || []).map((i: any) => ({
       id: i.id,
       name: i.name,
-      administrator_ids: (i.insurance_administrators_map || []).map((m: any) => m.administrator_id),
+      administrator_links: (i.insurance_administrators_map || []).map((m: any) => ({
+        administrator_id: m.administrator_id,
+        billing_rate: Number(m.billing_rate || 0),
+      })),
     }));
     setInsurances(mapped);
   };
@@ -178,14 +187,19 @@ export default function BillingBatches() {
       return;
     }
 
+    const linkedAdmins = getSelectedInsuranceAdmins();
+    if (linkedAdmins.length > 0 && !selectedAdministrator) {
+      toast({ variant: 'destructive', title: 'Erro', description: 'Selecione a administradora deste convênio' });
+      return;
+    }
+
     const selectedGuideData = pendingGuides.filter(g => selectedGuides.includes(g.id));
-    const totalAmount = selectedGuideData.reduce((acc, g) => acc + Number(g.total_value), 0);
-    const insurance = insurances.find(i => i.id === selectedInsurance);
+    const totalAmount = calculateSelectedTotal();
 
     const payload = {
       batch_number: generateBatchNumber(),
       health_insurance_id: selectedInsurance,
-      administrator_id: insurance?.administrator_ids[0] || null,
+      administrator_id: selectedAdministrator || null,
       period_start: periodStart,
       period_end: periodEnd,
       total_amount: totalAmount,
@@ -215,6 +229,7 @@ export default function BillingBatches() {
     toast({ title: 'Lote criado com sucesso!' });
     setDialogOpen(false);
     setSelectedInsurance('');
+    setSelectedAdministrator('');
     setSelectedGuides([]);
     fetchBatches();
   };
@@ -304,6 +319,42 @@ export default function BillingBatches() {
     b.health_insurance?.name.toLowerCase().includes(search.toLowerCase())
   );
 
+  const handleInsuranceChange = (insuranceId: string) => {
+    const insurance = insurances.find((i) => i.id === insuranceId);
+    setSelectedInsurance(insuranceId);
+    setSelectedGuides([]);
+    setPendingGuides([]);
+    setSelectedAdministrator(insurance?.administrator_links.length === 1 ? insurance.administrator_links[0].administrator_id : '');
+  };
+
+  const getSelectedInsuranceAdmins = () => {
+    const insurance = insurances.find((i) => i.id === selectedInsurance);
+    return (insurance?.administrator_links || [])
+      .map((link) => {
+        const administrator = administrators.find((a) => a.id === link.administrator_id);
+        return administrator ? { ...administrator, billing_rate: link.billing_rate } : null;
+      })
+      .filter(Boolean) as Array<Administrator & { billing_rate: number }>;
+  };
+
+  const getSelectedAdminRate = () => {
+    const insurance = insurances.find((i) => i.id === selectedInsurance);
+    return Number(
+      insurance?.administrator_links.find((link) => link.administrator_id === selectedAdministrator)?.billing_rate || 0
+    );
+  };
+
+  const getGuideBillingValue = (guide: MedicalGuide) => {
+    const rate = getSelectedAdminRate();
+    return rate > 0 ? rate : Number(guide.total_value);
+  };
+
+  const calculateSelectedTotal = () => {
+    return pendingGuides
+      .filter((guide) => selectedGuides.includes(guide.id))
+      .reduce((acc, guide) => acc + getGuideBillingValue(guide), 0);
+  };
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
   };
@@ -336,16 +387,35 @@ export default function BillingBatches() {
               <DialogTitle>Criar Lote de Faturamento</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-3">
+              <div className="grid gap-4 md:grid-cols-4">
                 <div className="space-y-2">
                   <Label>Convênio *</Label>
-                  <Select value={selectedInsurance} onValueChange={setSelectedInsurance}>
+                  <Select value={selectedInsurance} onValueChange={handleInsuranceChange}>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione" />
                     </SelectTrigger>
                     <SelectContent>
                       {insurances.map((i) => (
                         <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Administradora</Label>
+                  <Select
+                    value={selectedAdministrator}
+                    onValueChange={setSelectedAdministrator}
+                    disabled={!selectedInsurance || getSelectedInsuranceAdmins().length === 0}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getSelectedInsuranceAdmins().map((admin) => (
+                        <SelectItem key={admin.id} value={admin.id}>
+                          {admin.name} {admin.billing_rate > 0 ? `- ${formatCurrency(admin.billing_rate)}` : ''}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -406,7 +476,14 @@ export default function BillingBatches() {
                               <TableCell className="font-mono">{g.guide_number}</TableCell>
                               <TableCell>{format(new Date(g.guide_date), 'dd/MM/yyyy')}</TableCell>
                               <TableCell>{g.patient?.full_name}</TableCell>
-                              <TableCell>{formatCurrency(Number(g.total_value))}</TableCell>
+                              <TableCell>
+                                <div className="font-medium">{formatCurrency(getGuideBillingValue(g))}</div>
+                                {getSelectedAdminRate() > 0 && Number(g.total_value) !== getGuideBillingValue(g) && (
+                                  <div className="text-xs text-muted-foreground">
+                                    Valor guia: {formatCurrency(Number(g.total_value))}
+                                  </div>
+                                )}
+                              </TableCell>
                             </TableRow>
                           ))
                         )}
@@ -418,7 +495,7 @@ export default function BillingBatches() {
                       <div className="flex justify-between">
                         <span>Guias selecionadas: {selectedGuides.length}</span>
                         <span className="font-bold">
-                          Total: {formatCurrency(pendingGuides.filter(g => selectedGuides.includes(g.id)).reduce((acc, g) => acc + Number(g.total_value), 0))}
+                          Total: {formatCurrency(calculateSelectedTotal())}
                         </span>
                       </div>
                     </div>
