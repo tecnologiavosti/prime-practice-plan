@@ -35,6 +35,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { ProfessionalFinancePanel } from '@/components/professionals/ProfessionalFinancePanel';
 
 
 interface Professional {
@@ -283,6 +284,7 @@ export default function Professionals() {
                 <TabsList className="w-full">
                   <TabsTrigger value="dados" className="flex-1">Dados</TabsTrigger>
                   <TabsTrigger value="convenios" className="flex-1">Convênios</TabsTrigger>
+                  <TabsTrigger value="financeiro" className="flex-1" disabled={!editingProfessional}>Financeiro</TabsTrigger>
                   <TabsTrigger value="site" className="flex-1">Site</TabsTrigger>
                 </TabsList>
                 <TabsContent value="dados" className="space-y-4">
@@ -386,6 +388,9 @@ export default function Professionals() {
                       </div>
                     ))}
                   </div>
+                </TabsContent>
+                <TabsContent value="financeiro" className="space-y-4">
+                  {editingProfessional && <ProfessionalFinancePanel professionalId={editingProfessional.id} />}
                 </TabsContent>
                 <TabsContent value="site" className="space-y-4">
                   <div className="flex items-center justify-between rounded-md border p-3">
