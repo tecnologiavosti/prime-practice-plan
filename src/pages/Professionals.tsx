@@ -283,6 +283,7 @@ export default function Professionals() {
                 <TabsList className="w-full">
                   <TabsTrigger value="dados" className="flex-1">Dados</TabsTrigger>
                   <TabsTrigger value="convenios" className="flex-1">Convênios</TabsTrigger>
+                  <TabsTrigger value="financeiro" className="flex-1" disabled={!editingProfessional}>Financeiro</TabsTrigger>
                   <TabsTrigger value="site" className="flex-1">Site</TabsTrigger>
                 </TabsList>
                 <TabsContent value="dados" className="space-y-4">
