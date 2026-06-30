@@ -37,6 +37,8 @@ interface Appointment {
   status: string;
   consultation_type: string;
   notes: string | null;
+  administrator_id: string | null;
+  custom_amount: number | null;
   patient: { id: string; full_name: string } | null;
   professional: { id: string; full_name: string } | null;
   procedure: { id: string; name: string; private_price?: number } | null;
@@ -50,6 +52,8 @@ interface HealthInsurance { id: string; name: string; }
 interface PrivatePackage { id: string; name: string; total_price: number; }
 interface ProcedureInsurancePrice { procedure_id: string; health_insurance_id: string; price: number; }
 interface PaymentMethod { id: string; name: string; }
+interface Administrator { id: string; name: string; }
+interface InsAdminMap { insurance_id: string; administrator_id: string; billing_rate: number | null; }
 
 type ViewMode = 'daily' | 'monthly';
 
@@ -79,7 +83,9 @@ const emptyForm = {
   start_time: '08:00',
   end_time: '08:30',
   consultation_type: 'particular' as 'particular' | 'convenio' | 'pacote',
+  administrator_id: '',
   health_insurance_id: '',
+  custom_amount: 0,
   notes: '',
   status: 'agendado' as 'agendado' | 'confirmado' | 'em_atendimento' | 'finalizado' | 'cancelado' | 'faltou',
 };
@@ -93,6 +99,8 @@ export default function Appointments() {
   const [packages, setPackages] = useState<PrivatePackage[]>([]);
   const [procedureInsurancePrices, setProcedureInsurancePrices] = useState<ProcedureInsurancePrice[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [administrators, setAdministrators] = useState<Administrator[]>([]);
+  const [insAdminMap, setInsAdminMap] = useState<InsAdminMap[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [dateFilter, setDateFilter] = useState(format(new Date(), 'yyyy-MM-dd'));
@@ -135,6 +143,8 @@ export default function Appointments() {
         fetchPackages(),
         fetchProcedureInsurancePrices(),
         fetchPaymentMethods(),
+        fetchAdministrators(),
+        fetchInsAdminMap(),
       ]);
     } catch (err) {
       toast({ variant: 'destructive', title: 'Erro', description: 'Erro ao carregar dados' });
@@ -147,6 +157,7 @@ export default function Appointments() {
       .from('appointments')
       .select(`
         id, appointment_date, start_time, end_time, status, consultation_type, notes,
+        administrator_id, custom_amount,
         patient:patients(id, full_name),
         professional:professionals(id, full_name),
         procedure:procedures(id, name, private_price),
@@ -197,6 +208,14 @@ export default function Appointments() {
     const { data } = await supabase.from('payment_methods').select('id, name').eq('active', true).order('name');
     setPaymentMethods(data || []);
   };
+  const fetchAdministrators = async () => {
+    const { data } = await supabase.from('administrators').select('id, name').eq('active', true).order('name');
+    setAdministrators((data || []) as Administrator[]);
+  };
+  const fetchInsAdminMap = async () => {
+    const { data } = await supabase.from('insurance_administrators_map').select('insurance_id, administrator_id, billing_rate');
+    setInsAdminMap((data || []) as InsAdminMap[]);
+  };
 
   const getProcedurePrice = (): number | null => {
     if (!formData.procedure_id) return null;
@@ -229,6 +248,7 @@ export default function Appointments() {
 
     setSubmitting(true);
     try {
+      const isConv = formData.consultation_type === 'convenio';
       const payload = {
         patient_id: formData.patient_id,
         professional_id: formData.professional_id,
@@ -237,7 +257,9 @@ export default function Appointments() {
         start_time: formData.start_time,
         end_time: formData.end_time,
         consultation_type: formData.consultation_type,
-        health_insurance_id: formData.consultation_type === 'convenio' ? formData.health_insurance_id || null : null,
+        health_insurance_id: isConv ? formData.health_insurance_id || null : null,
+        administrator_id: isConv ? formData.administrator_id || null : null,
+        custom_amount: formData.custom_amount > 0 ? formData.custom_amount : null,
         patient_package_id: null,
         notes: formData.notes || null,
         status: formData.status,
@@ -279,8 +301,9 @@ export default function Appointments() {
       const apt = appointments.find(a => a.id === appointmentId);
       if (apt) {
         setFinalizingAppointment(apt);
+        const custom = (apt as any).custom_amount;
         const price = (apt.procedure as any)?.private_price;
-        setFinalizeAmount(price ? Number(price) : 0);
+        setFinalizeAmount(custom ? Number(custom) : (price ? Number(price) : 0));
         setFinalizePaymentMethodId('');
         setFinalizeNotes('');
         setFinalizeDialogOpen(true);
@@ -424,7 +447,9 @@ export default function Appointments() {
       start_time: apt.start_time?.slice(0, 5) || '08:00',
       end_time: apt.end_time?.slice(0, 5) || '08:30',
       consultation_type: apt.consultation_type as any,
+      administrator_id: apt.administrator_id || '',
       health_insurance_id: apt.health_insurance?.id || '',
+      custom_amount: Number(apt.custom_amount) || 0,
       notes: apt.notes || '',
       status: apt.status as any,
     });
@@ -585,7 +610,7 @@ export default function Appointments() {
                   <Label>Tipo de Consulta *</Label>
                   <Select
                     value={formData.consultation_type}
-                    onValueChange={(v) => setFormData({ ...formData, consultation_type: v as any, health_insurance_id: '' })}
+                    onValueChange={(v) => setFormData({ ...formData, consultation_type: v as any, health_insurance_id: '', administrator_id: '', custom_amount: 0 })}
                   >
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -596,19 +621,49 @@ export default function Appointments() {
                   </Select>
                 </div>
                 {formData.consultation_type === 'convenio' && (
-                  <div className="space-y-2">
-                    <Label>Convênio *</Label>
-                    <Select value={formData.health_insurance_id} onValueChange={(v) => setFormData({ ...formData, health_insurance_id: v })}>
-                      <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                      <SelectContent>
-                        {insurances.length === 0 ? (
-                          <SelectItem value="none" disabled>Nenhum convênio ativo</SelectItem>
-                        ) : (
-                          insurances.map((i) => <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>)
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  <>
+                    <div className="space-y-2">
+                      <Label>Administradora *</Label>
+                      <Select
+                        value={formData.administrator_id}
+                        onValueChange={(v) => setFormData({ ...formData, administrator_id: v, health_insurance_id: '', custom_amount: 0 })}
+                      >
+                        <SelectTrigger><SelectValue placeholder="Selecione a administradora" /></SelectTrigger>
+                        <SelectContent>
+                          {administrators.length === 0 ? (
+                            <SelectItem value="none" disabled>Nenhuma administradora cadastrada</SelectItem>
+                          ) : (
+                            administrators.map((a) => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Convênio *</Label>
+                      <Select
+                        value={formData.health_insurance_id}
+                        onValueChange={(v) => {
+                          const rate = insAdminMap.find(m => m.administrator_id === formData.administrator_id && m.insurance_id === v)?.billing_rate;
+                          setFormData({ ...formData, health_insurance_id: v, custom_amount: Number(rate) || 0 });
+                        }}
+                        disabled={!formData.administrator_id}
+                      >
+                        <SelectTrigger><SelectValue placeholder={formData.administrator_id ? 'Selecione' : 'Escolha a administradora'} /></SelectTrigger>
+                        <SelectContent>
+                          {(() => {
+                            const ids = insAdminMap
+                              .filter(m => m.administrator_id === formData.administrator_id)
+                              .map(m => m.insurance_id);
+                            const filtered = insurances.filter(i => ids.includes(i.id));
+                            if (filtered.length === 0) {
+                              return <SelectItem value="none" disabled>Nenhum convênio nesta administradora</SelectItem>;
+                            }
+                            return filtered.map((i) => <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>);
+                          })()}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </>
                 )}
                 {formData.consultation_type === 'pacote' && (
                   <div className="space-y-2">
@@ -627,7 +682,16 @@ export default function Appointments() {
                     </Select>
                   </div>
                 )}
-                {formData.procedure_id && (formData.consultation_type === 'particular' || (formData.consultation_type === 'convenio' && formData.health_insurance_id)) && (
+                {formData.consultation_type === 'convenio' && formData.health_insurance_id && (
+                  <div className="space-y-2">
+                    <Label>Valor (R$) — editável</Label>
+                    <CurrencyInput
+                      value={formData.custom_amount}
+                      onChange={(v) => setFormData({ ...formData, custom_amount: v })}
+                    />
+                  </div>
+                )}
+                {formData.procedure_id && formData.consultation_type === 'particular' && (
                   <div className="space-y-2">
                     <Label>Valor do Procedimento</Label>
                     <div className="flex h-10 items-center rounded-md border bg-muted px-3 text-sm font-medium">

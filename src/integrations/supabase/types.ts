@@ -141,10 +141,12 @@ export type Database = {
       }
       appointments: {
         Row: {
+          administrator_id: string | null
           appointment_date: string
           consultation_type: Database["public"]["Enums"]["consultation_type"]
           created_at: string
           created_by: string | null
+          custom_amount: number | null
           end_time: string
           health_insurance_id: string | null
           id: string
@@ -160,10 +162,12 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          administrator_id?: string | null
           appointment_date: string
           consultation_type?: Database["public"]["Enums"]["consultation_type"]
           created_at?: string
           created_by?: string | null
+          custom_amount?: number | null
           end_time: string
           health_insurance_id?: string | null
           id?: string
@@ -179,10 +183,12 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          administrator_id?: string | null
           appointment_date?: string
           consultation_type?: Database["public"]["Enums"]["consultation_type"]
           created_at?: string
           created_by?: string | null
+          custom_amount?: number | null
           end_time?: string
           health_insurance_id?: string | null
           id?: string
@@ -198,6 +204,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "appointments_administrator_id_fkey"
+            columns: ["administrator_id"]
+            isOneToOne: false
+            referencedRelation: "administrators"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "appointments_health_insurance_id_fkey"
             columns: ["health_insurance_id"]

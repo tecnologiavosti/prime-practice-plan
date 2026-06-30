@@ -1,0 +1,1 @@
+ALTER TABLE public.appointments ADD COLUMN IF NOT EXISTS administrator_id uuid REFERENCES public.administrators(id) ON DELETE SET NULL; ALTER TABLE public.appointments ADD COLUMN IF NOT EXISTS custom_amount numeric;
