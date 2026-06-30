@@ -315,7 +315,7 @@ export function QuickRecord({
       } catch { /* fallback to baseBytes */ }
     }
 
-    const blob = new Blob([finalBytes], { type: 'application/pdf' });
+    const blob = new Blob([finalBytes as ArrayBuffer], { type: 'application/pdf' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
