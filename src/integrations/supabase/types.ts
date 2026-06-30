@@ -139,6 +139,50 @@ export type Database = {
           },
         ]
       }
+      anamnesis_attachments: {
+        Row: {
+          anamnesis_id: string
+          created_at: string
+          file_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          section: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          anamnesis_id: string
+          created_at?: string
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          section: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          anamnesis_id?: string
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          section?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "anamnesis_attachments_anamnesis_id_fkey"
+            columns: ["anamnesis_id"]
+            isOneToOne: false
+            referencedRelation: "anamnesis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointments: {
         Row: {
           administrator_id: string | null
