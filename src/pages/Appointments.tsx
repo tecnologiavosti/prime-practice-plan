@@ -508,7 +508,10 @@ export default function Appointments() {
       a.professional?.full_name?.toLowerCase().includes(search.toLowerCase());
     const matchProfessional = !filterProfessionalId || a.professional?.id === filterProfessionalId;
     const matchPatient = !filterPatientId || a.patient?.id === filterPatientId;
-    return matchSearch && matchProfessional && matchPatient;
+    const matchAdmin = !filterAdministratorId || a.administrator?.id === filterAdministratorId;
+    const matchInsurance = !filterInsuranceId || a.health_insurance?.id === filterInsuranceId;
+    const matchType = !filterType || a.consultation_type === filterType;
+    return matchSearch && matchProfessional && matchPatient && matchAdmin && matchInsurance && matchType;
   });
 
   // Group by date for monthly view
