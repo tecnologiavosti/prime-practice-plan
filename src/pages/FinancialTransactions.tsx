@@ -504,7 +504,21 @@ export default function FinancialTransactions() {
         </Dialog>
       </div>
 
+      <Tabs value={tab} onValueChange={(v) => setTab(v as any)} className="mb-4">
+        <TabsList>
+          <TabsTrigger value="geral">Geral</TabsTrigger>
+          <TabsTrigger value="particular">A receber — Particular</TabsTrigger>
+          <TabsTrigger value="convenio">A receber — Convênios</TabsTrigger>
+          <TabsTrigger value="diversos">Recebidos diversos</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      {tab === 'diversos' ? (
+        <DiverseReceiptsPanel />
+      ) : (
+      <>
       {/* Stats Cards (refletem os filtros aplicados) */}
+
       {(() => {
         const pend = filtered.filter((t) => t.status === 'pendente');
         const pagos = filtered.filter((t) => t.status === 'pago');
