@@ -569,7 +569,7 @@ export default function Appointments() {
     </TableRow>
   );
 
-  const colCount = viewMode === 'monthly' ? 8 : 7;
+  const colCount = viewMode === 'monthly' ? 10 : 9;
 
   return (
     <div className="p-6">
