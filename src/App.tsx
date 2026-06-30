@@ -25,6 +25,7 @@ import MedicalGuides from "./pages/MedicalGuides";
 import ProfessionalPayouts from "./pages/ProfessionalPayouts";
 import BillingBatches from "./pages/BillingBatches";
 import FinancialReports from "./pages/FinancialReports";
+import Reports from "./pages/Reports";
 import PaymentMethods from "./pages/PaymentMethods";
 import InsuranceReimbursements from "./pages/InsuranceReimbursements";
 import CashFlow from "./pages/CashFlow";
