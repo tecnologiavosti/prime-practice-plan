@@ -491,22 +491,27 @@ export default function MedicalGuides() {
     setFormData({ ...emptyForm, guide_number: generateGuideNumber() });
     setItems([{ ...emptyItem }]);
     setAttachmentUrl('');
+    setInsuranceRate(0);
     setDialogOpen(true);
   };
 
   const handleEdit = (g: MedicalGuide) => {
     setEditingId(g.id);
+    const adminId = (g as any).administrator_id || '';
+    const insId = g.health_insurance?.id || '';
     setFormData({
       guide_number: g.guide_number,
       patient_id: g.patient?.id || '',
-      administrator_id: (g as any).administrator_id || '',
-      health_insurance_id: g.health_insurance?.id || '',
+      administrator_id: adminId,
+      health_insurance_id: insId,
       professional_id: g.professional?.id || '',
       guide_date: g.guide_date,
       validity_date: g.validity_date || '',
       cid_10: g.cid_10 || '',
       clinical_indication: g.clinical_indication || '',
     });
+    const m = insAdminMap.find(x => x.administrator_id === adminId && x.insurance_id === insId);
+    setInsuranceRate(m?.billing_rate != null ? Number(m.billing_rate) : Number(g.unit_value) || 0);
     setItems([{ ...emptyItem }]);
     setAttachmentUrl(g.attachment_url || '');
     setDialogOpen(true);
