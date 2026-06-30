@@ -37,6 +37,8 @@ interface Appointment {
   status: string;
   consultation_type: string;
   notes: string | null;
+  administrator_id: string | null;
+  custom_amount: number | null;
   patient: { id: string; full_name: string } | null;
   professional: { id: string; full_name: string } | null;
   procedure: { id: string; name: string; private_price?: number } | null;
