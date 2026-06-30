@@ -19,13 +19,18 @@ interface PublicProfessional {
 export default function ProfessionalPublic() {
   const { id } = useParams<{ id: string }>();
   const [prof, setProf] = useState<PublicProfessional | null>(null);
+  const [insurances, setInsurances] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!id) return;
     (async () => {
-      const { data } = await (supabase.rpc as any)('get_landing_professional', { _id: id });
+      const [{ data }, { data: ins }] = await Promise.all([
+        (supabase.rpc as any)('get_landing_professional', { _id: id }),
+        (supabase.rpc as any)('get_professional_insurances', { _id: id }),
+      ]);
       setProf((data?.[0] as PublicProfessional) ?? null);
+      setInsurances((ins as any) ?? []);
       setLoading(false);
     })();
   }, [id]);
