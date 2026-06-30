@@ -129,6 +129,12 @@ export default function FinancialTransactions() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const { toast } = useToast();
 
+  useEffect(() => {
+    if (tab === 'particular') setTypeFilter('particular');
+    else if (tab === 'convenio') setTypeFilter('convenio');
+    else if (tab === 'geral') setTypeFilter('all');
+  }, [tab]);
+
   const [stats, setStats] = useState({
     totalPendente: 0,
     totalPago: 0,
