@@ -842,6 +842,8 @@ export default function Appointments() {
               <TableHead>Profissional</TableHead>
               <TableHead>Procedimento</TableHead>
               <TableHead>Tipo</TableHead>
+              <TableHead>Administradora</TableHead>
+              <TableHead>Valor</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Ações</TableHead>
             </TableRow>
