@@ -48,6 +48,7 @@ const ICONS: Record<string, any> = {
   repasses: Wallet,
   'repasse-convenios': Banknote,
   'relatorios-financeiros': FileBarChart,
+  'relatorios': FileBarChart,
   'formas-pagamento': Banknote,
   escalas: Calendar,
   'perfil-clinica': Settings,
