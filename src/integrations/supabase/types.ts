@@ -1898,24 +1898,35 @@ export type Database = {
       }
       specialty_health_insurances: {
         Row: {
+          administrator_id: string | null
           created_at: string
           health_insurance_id: string
           id: string
           specialty_id: string
         }
         Insert: {
+          administrator_id?: string | null
           created_at?: string
           health_insurance_id: string
           id?: string
           specialty_id: string
         }
         Update: {
+          administrator_id?: string | null
           created_at?: string
           health_insurance_id?: string
           id?: string
           specialty_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "specialty_health_insurances_administrator_id_fkey"
+            columns: ["administrator_id"]
+            isOneToOne: false
+            referencedRelation: "administrators"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       subleased_rooms: {
         Row: {
