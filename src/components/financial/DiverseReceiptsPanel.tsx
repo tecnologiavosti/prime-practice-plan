@@ -20,6 +20,7 @@ import { format } from 'date-fns';
 
 interface Entry {
   id: string;
+  entry_type: 'entrada' | 'saida';
   category: string;
   description: string | null;
   amount: number;
@@ -36,7 +37,15 @@ export function DiverseReceiptsPanel() {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{
+    entry_type: 'entrada' | 'saida';
+    category: string;
+    description: string;
+    amount: number;
+    entry_date: string;
+    notes: string;
+  }>({
+    entry_type: 'entrada',
     category: 'Receita avulsa',
     description: '',
     amount: 0,
