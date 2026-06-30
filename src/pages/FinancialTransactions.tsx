@@ -110,6 +110,17 @@ export default function FinancialTransactions() {
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | 'particular' | 'convenio'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pendente' | 'pago' | 'cancelado'>('all');
+  const [professionalFilter, setProfessionalFilter] = useState<string>('all');
+  const [insuranceFilter, setInsuranceFilter] = useState<string>('all');
+  const [procedureFilter, setProcedureFilter] = useState<string>('all');
+  const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>('all');
+  const [dueFrom, setDueFrom] = useState<string>('');
+  const [dueTo, setDueTo] = useState<string>('');
+  const [payFrom, setPayFrom] = useState<string>('');
+  const [payTo, setPayTo] = useState<string>('');
+  const [amountMin, setAmountMin] = useState<string>('');
+  const [amountMax, setAmountMax] = useState<string>('');
+  const [showFilters, setShowFilters] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formData, setFormData] = useState(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -295,11 +306,45 @@ export default function FinancialTransactions() {
     setDeleteId(null);
   };
 
-  const filtered = transactions.filter((t) =>
-    t.patient?.full_name.toLowerCase().includes(search.toLowerCase()) ||
-    t.medical_guide?.guide_number.includes(search) ||
-    t.description?.toLowerCase().includes(search.toLowerCase())
-  );
+  const clearFilters = () => {
+    setSearch('');
+    setTypeFilter('all');
+    setStatusFilter('all');
+    setProfessionalFilter('all');
+    setInsuranceFilter('all');
+    setProcedureFilter('all');
+    setPaymentMethodFilter('all');
+    setDueFrom(''); setDueTo('');
+    setPayFrom(''); setPayTo('');
+    setAmountMin(''); setAmountMax('');
+  };
+
+  const filtered = transactions.filter((t: any) => {
+    const term = search.trim().toLowerCase();
+    if (term) {
+      const haystack = [
+        t.patient?.full_name,
+        t.professional?.full_name,
+        t.medical_guide?.guide_number,
+        t.description,
+        t.procedure?.name,
+        t.health_insurance?.name,
+      ].filter(Boolean).join(' ').toLowerCase();
+      if (!haystack.includes(term)) return false;
+    }
+    if (professionalFilter !== 'all' && t.professional_id !== professionalFilter) return false;
+    if (insuranceFilter !== 'all' && t.health_insurance_id !== insuranceFilter) return false;
+    if (procedureFilter !== 'all' && t.procedure_id !== procedureFilter) return false;
+    if (paymentMethodFilter !== 'all' && t.payment_method_id !== paymentMethodFilter) return false;
+    if (dueFrom && (!t.due_date || t.due_date < dueFrom)) return false;
+    if (dueTo && (!t.due_date || t.due_date > dueTo)) return false;
+    if (payFrom && (!t.payment_date || t.payment_date < payFrom)) return false;
+    if (payTo && (!t.payment_date || t.payment_date > payTo)) return false;
+    const amt = Number(t.amount);
+    if (amountMin && amt < Number(amountMin)) return false;
+    if (amountMax && amt > Number(amountMax)) return false;
+    return true;
+  });
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -451,63 +496,144 @@ export default function FinancialTransactions() {
         </Dialog>
       </div>
 
-      {/* Stats Cards */}
-      <div className="mb-6 grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Pendentes</CardTitle>
-            <Clock className="h-4 w-4 text-yellow-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.totalPendente)}</div>
-            <p className="text-xs text-muted-foreground">{stats.countPendente} lançamentos</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Recebidos</CardTitle>
-            <DollarSign className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.totalPago)}</div>
-            <p className="text-xs text-muted-foreground">{stats.countPago} lançamentos</p>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Stats Cards (refletem os filtros aplicados) */}
+      {(() => {
+        const pend = filtered.filter((t) => t.status === 'pendente');
+        const pagos = filtered.filter((t) => t.status === 'pago');
+        const totPend = pend.reduce((a, t) => a + Number(t.amount), 0);
+        const totPago = pagos.reduce((a, t) => a + Number(t.amount), 0);
+        return (
+          <div className="mb-6 grid gap-4 md:grid-cols-2">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Pendentes</CardTitle>
+                <Clock className="h-4 w-4 text-yellow-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{formatCurrency(totPend)}</div>
+                <p className="text-xs text-muted-foreground">{pend.length} lançamentos</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Recebidos</CardTitle>
+                <DollarSign className="h-4 w-4 text-green-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{formatCurrency(totPago)}</div>
+                <p className="text-xs text-muted-foreground">{pagos.length} lançamentos</p>
+              </CardContent>
+            </Card>
+          </div>
+        );
+      })()}
+
 
       {/* Filters */}
-      <div className="mb-4 flex flex-wrap gap-4">
-        <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Buscar..."
-            className="pl-10"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+      <div className="mb-4 space-y-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative flex-1 min-w-[220px] max-w-sm">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Buscar paciente, guia, descrição..."
+              className="pl-10"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <Select value={typeFilter} onValueChange={(v: any) => setTypeFilter(v)}>
+            <SelectTrigger className="w-[150px]"><SelectValue placeholder="Tipo" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os tipos</SelectItem>
+              <SelectItem value="particular">Particular</SelectItem>
+              <SelectItem value="convenio">Convênio</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
+            <SelectTrigger className="w-[150px]"><SelectValue placeholder="Status" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos status</SelectItem>
+              <SelectItem value="pendente">Pendente</SelectItem>
+              <SelectItem value="pago">Pago</SelectItem>
+              <SelectItem value="cancelado">Cancelado</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button variant="outline" size="sm" onClick={() => setShowFilters((s) => !s)}>
+            {showFilters ? 'Ocultar filtros' : 'Mais filtros'}
+          </Button>
+          <Button variant="ghost" size="sm" onClick={clearFilters}>Limpar</Button>
         </div>
-        <Select value={typeFilter} onValueChange={(v: any) => setTypeFilter(v)}>
-          <SelectTrigger className="w-[150px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="particular">Particular</SelectItem>
-            <SelectItem value="convenio">Convênio</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
-          <SelectTrigger className="w-[150px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="pendente">Pendente</SelectItem>
-            <SelectItem value="pago">Pago</SelectItem>
-            <SelectItem value="cancelado">Cancelado</SelectItem>
-          </SelectContent>
-        </Select>
+
+        {showFilters && (
+          <div className="grid gap-3 rounded-md border bg-muted/30 p-4 md:grid-cols-3 lg:grid-cols-4">
+            <div className="space-y-1">
+              <Label className="text-xs">Profissional</Label>
+              <Select value={professionalFilter} onValueChange={setProfessionalFilter}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  {professionals.map((p) => <SelectItem key={p.id} value={p.id}>{p.full_name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Convênio</Label>
+              <Select value={insuranceFilter} onValueChange={setInsuranceFilter}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  {insurances.map((i) => <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Procedimento</Label>
+              <Select value={procedureFilter} onValueChange={setProcedureFilter}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  {procedures.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Forma de pagamento</Label>
+              <Select value={paymentMethodFilter} onValueChange={setPaymentMethodFilter}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas</SelectItem>
+                  {paymentMethods.map((m) => <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Vencimento de</Label>
+              <Input type="date" value={dueFrom} onChange={(e) => setDueFrom(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Vencimento até</Label>
+              <Input type="date" value={dueTo} onChange={(e) => setDueTo(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Recebido de</Label>
+              <Input type="date" value={payFrom} onChange={(e) => setPayFrom(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Recebido até</Label>
+              <Input type="date" value={payTo} onChange={(e) => setPayTo(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Valor mínimo (R$)</Label>
+              <Input type="number" min="0" step="0.01" value={amountMin} onChange={(e) => setAmountMin(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Valor máximo (R$)</Label>
+              <Input type="number" min="0" step="0.01" value={amountMax} onChange={(e) => setAmountMax(e.target.value)} />
+            </div>
+          </div>
+        )}
       </div>
+
 
       <div className="rounded-md border">
         <Table>
