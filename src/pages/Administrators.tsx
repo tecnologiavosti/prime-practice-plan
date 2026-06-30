@@ -42,9 +42,14 @@ interface HealthInsurance {
   id: string;
   name: string;
   code: string | null;
-  billing_rate: number | null;
   active: boolean;
   administrator_ids: string[];
+  administrator_links: InsuranceAdministratorLink[];
+}
+
+interface InsuranceAdministratorLink {
+  administrator_id: string;
+  billing_rate: number;
 }
 
 interface InsuranceWithValue {
@@ -112,7 +117,7 @@ export default function Administrators() {
   const fetchHealthInsurances = async () => {
     const { data, error } = await supabase
       .from('health_insurances')
-      .select('id, name, code, billing_rate, active, insurance_administrators_map(administrator_id)')
+      .select('id, name, code, active, insurance_administrators_map(administrator_id, billing_rate)')
       .eq('active', true)
       .order('name');
 
@@ -124,9 +129,12 @@ export default function Administrators() {
       id: i.id,
       name: i.name,
       code: i.code,
-      billing_rate: i.billing_rate,
       active: i.active,
       administrator_ids: (i.insurance_administrators_map || []).map((m: any) => m.administrator_id),
+      administrator_links: (i.insurance_administrators_map || []).map((m: any) => ({
+        administrator_id: m.administrator_id,
+        billing_rate: Number(m.billing_rate || 0),
+      })),
     }));
     setHealthInsurances(mapped);
   };
@@ -185,11 +193,12 @@ export default function Administrators() {
     // Initialize settings for all insurances
     const settings = new Map<string, InsuranceWithValue>();
     healthInsurances.forEach(ins => {
-      const linked = ins.administrator_ids.includes(admin.id);
+      const existingLink = ins.administrator_links.find((link) => link.administrator_id === admin.id);
+      const linked = Boolean(existingLink);
       settings.set(ins.id, {
         id: ins.id,
         selected: linked,
-        billing_rate: linked ? Number(ins.billing_rate || 0) : 0,
+        billing_rate: linked ? Number(existingLink?.billing_rate || 0) : 0,
       });
     });
     setInsuranceSettings(settings);
@@ -238,26 +247,20 @@ export default function Administrators() {
       return;
     }
 
-    // Insert new links and update billing rates
+    // Insert new links with their specific values
     const selectedInsurances = Array.from(insuranceSettings.entries())
       .filter(([_, settings]) => settings.selected);
 
     if (selectedInsurances.length > 0) {
-      const links = selectedInsurances.map(([insuranceId]) => ({
+      const links = selectedInsurances.map(([insuranceId, settings]) => ({
         insurance_id: insuranceId,
         administrator_id: selectedAdmin.id,
+        billing_rate: settings.billing_rate || 0,
       }));
       const { error: linkErr } = await supabase.from('insurance_administrators_map').insert(links);
       if (linkErr) {
         toast({ variant: 'destructive', title: 'Erro', description: linkErr.message });
         return;
-      }
-
-      for (const [insuranceId, settings] of selectedInsurances) {
-        await supabase
-          .from('health_insurances')
-          .update({ billing_rate: settings.billing_rate })
-          .eq('id', insuranceId);
       }
     }
 
@@ -268,7 +271,12 @@ export default function Administrators() {
   };
 
   const getLinkedInsurances = (adminId: string) => {
-    return healthInsurances.filter(ins => ins.administrator_ids.includes(adminId));
+    return healthInsurances
+      .map((ins) => {
+        const link = ins.administrator_links.find((item) => item.administrator_id === adminId);
+        return link ? { ...ins, billing_rate: link.billing_rate } : null;
+      })
+      .filter(Boolean) as Array<HealthInsurance & { billing_rate: number }>;
   };
 
   const formatCurrency = (value: number) => {

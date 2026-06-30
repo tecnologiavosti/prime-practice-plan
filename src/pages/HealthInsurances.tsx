@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { CurrencyInput } from '@/components/ui/currency-input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
@@ -38,7 +39,12 @@ interface HealthInsurance {
   contact_email: string | null;
   notes: string | null;
   active: boolean;
-  administrator_ids: string[];
+  administrator_links: InsuranceAdministratorLink[];
+}
+
+interface InsuranceAdministratorLink {
+  administrator_id: string;
+  billing_rate: number;
 }
 
 interface Administrator {
@@ -68,6 +74,7 @@ export default function HealthInsurances() {
   const [adminDialogOpen, setAdminDialogOpen] = useState(false);
   const [selectedInsurance, setSelectedInsurance] = useState<HealthInsurance | null>(null);
   const [selectedAdminIds, setSelectedAdminIds] = useState<Set<string>>(new Set());
+  const [adminValues, setAdminValues] = useState<Record<string, number>>({});
   const { toast } = useToast();
 
   useEffect(() => {
@@ -78,7 +85,7 @@ export default function HealthInsurances() {
   const fetchInsurances = async () => {
     const { data, error } = await supabase
       .from('health_insurances')
-      .select('*, insurance_administrators_map(administrator_id)')
+      .select('*, insurance_administrators_map(administrator_id, billing_rate)')
       .order('name');
 
     if (error) {
@@ -94,7 +101,10 @@ export default function HealthInsurances() {
       contact_email: i.contact_email,
       notes: i.notes,
       active: i.active,
-      administrator_ids: (i.insurance_administrators_map || []).map((m: any) => m.administrator_id),
+      administrator_links: (i.insurance_administrators_map || []).map((m: any) => ({
+        administrator_id: m.administrator_id,
+        billing_rate: Number(m.billing_rate || 0),
+      })),
     }));
     setInsurances(mapped);
     setLoading(false);
@@ -168,17 +178,31 @@ export default function HealthInsurances() {
 
   const openAdminDialog = (insurance: HealthInsurance) => {
     setSelectedInsurance(insurance);
-    setSelectedAdminIds(new Set(insurance.administrator_ids));
+    setSelectedAdminIds(new Set(insurance.administrator_links.map((link) => link.administrator_id)));
+    setAdminValues(
+      insurance.administrator_links.reduce<Record<string, number>>((acc, link) => {
+        acc[link.administrator_id] = Number(link.billing_rate || 0);
+        return acc;
+      }, {})
+    );
     setAdminDialogOpen(true);
   };
 
   const toggleAdmin = (adminId: string) => {
     setSelectedAdminIds(prev => {
       const next = new Set(prev);
-      if (next.has(adminId)) next.delete(adminId);
-      else next.add(adminId);
+      if (next.has(adminId)) {
+        next.delete(adminId);
+      } else {
+        next.add(adminId);
+        setAdminValues((prevValues) => ({ ...prevValues, [adminId]: prevValues[adminId] || 0 }));
+      }
       return next;
     });
+  };
+
+  const updateAdminValue = (adminId: string, value: number) => {
+    setAdminValues((prev) => ({ ...prev, [adminId]: value }));
   };
 
   const handleSaveAdmins = async () => {
@@ -198,6 +222,7 @@ export default function HealthInsurances() {
       const links = Array.from(selectedAdminIds).map(aid => ({
         insurance_id: selectedInsurance.id,
         administrator_id: aid,
+        billing_rate: adminValues[aid] || 0,
       }));
       const { error } = await supabase.from('insurance_administrators_map').insert(links);
       if (error) {
@@ -206,7 +231,7 @@ export default function HealthInsurances() {
       }
     }
 
-    toast({ title: 'Administradoras vinculadas com sucesso!' });
+    toast({ title: 'Administradoras e valores salvos com sucesso!' });
     setAdminDialogOpen(false);
     setSelectedInsurance(null);
     fetchInsurances();
@@ -216,8 +241,16 @@ export default function HealthInsurances() {
     i.name.toLowerCase().includes(search.toLowerCase()) || i.code?.includes(search)
   );
 
-  const getLinkedAdmins = (ids: string[]) =>
-    administrators.filter(a => ids.includes(a.id));
+  const getLinkedAdmins = (links: InsuranceAdministratorLink[]) =>
+    links
+      .map((link) => {
+        const admin = administrators.find((a) => a.id === link.administrator_id);
+        return admin ? { ...admin, billing_rate: link.billing_rate } : null;
+      })
+      .filter(Boolean) as Array<Administrator & { billing_rate: number }>;
+
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
 
   return (
     <div className="p-6">
@@ -342,7 +375,7 @@ export default function HealthInsurances() {
               </TableRow>
             ) : (
               filtered.map((ins) => {
-                const linked = getLinkedAdmins(ins.administrator_ids);
+                const linked = getLinkedAdmins(ins.administrator_links);
                 return (
                   <TableRow key={ins.id}>
                     <TableCell className="font-medium">
@@ -358,7 +391,14 @@ export default function HealthInsurances() {
                           <span className="text-muted-foreground text-sm">Nenhuma administradora</span>
                         ) : (
                           linked.slice(0, 3).map(a => (
-                            <Badge key={a.id} variant="secondary" className="text-xs">{a.name}</Badge>
+                            <Badge key={a.id} variant="secondary" className="text-xs">
+                              {a.name}
+                              {Number(a.billing_rate) > 0 && (
+                                <span className="ml-1 text-muted-foreground">
+                                  ({formatCurrency(Number(a.billing_rate))})
+                                </span>
+                              )}
+                            </Badge>
                           ))
                         )}
                         {linked.length > 3 && (
@@ -415,7 +455,7 @@ export default function HealthInsurances() {
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Selecione as administradoras que aceitam este convênio:
+              Selecione as administradoras que aceitam este convênio e defina o valor de cada uma:
             </p>
             <div className="max-h-[400px] overflow-y-auto space-y-2 border rounded-lg p-3">
               {administrators.length === 0 ? (
@@ -432,15 +472,27 @@ export default function HealthInsurances() {
                         checked ? 'bg-primary/5 border-primary/30' : 'hover:bg-muted/50'
                       }`}
                     >
-                      <div className="flex items-center gap-3">
-                        <Checkbox
-                          id={`adm-${adm.id}`}
-                          checked={checked}
-                          onCheckedChange={() => toggleAdmin(adm.id)}
-                        />
-                        <label htmlFor={`adm-${adm.id}`} className="cursor-pointer flex-1 font-medium">
-                          {adm.name}
-                        </label>
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                        <div className="flex flex-1 items-center gap-3">
+                          <Checkbox
+                            id={`adm-${adm.id}`}
+                            checked={checked}
+                            onCheckedChange={() => toggleAdmin(adm.id)}
+                          />
+                          <label htmlFor={`adm-${adm.id}`} className="cursor-pointer flex-1 font-medium">
+                            {adm.name}
+                          </label>
+                        </div>
+                        {checked && (
+                          <div className="flex items-center gap-2 sm:w-44">
+                            <span className="text-xs font-medium text-muted-foreground">Valor</span>
+                            <CurrencyInput
+                              value={adminValues[adm.id] || 0}
+                              onChange={(value) => updateAdminValue(adm.id, value)}
+                              className="h-9"
+                            />
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
@@ -455,7 +507,7 @@ export default function HealthInsurances() {
                 <Button type="button" variant="outline" onClick={() => setAdminDialogOpen(false)}>
                   Cancelar
                 </Button>
-                <Button onClick={handleSaveAdmins}>Salvar Vínculos</Button>
+                <Button onClick={handleSaveAdmins}>Salvar vínculos e valores</Button>
               </div>
             </div>
           </div>
