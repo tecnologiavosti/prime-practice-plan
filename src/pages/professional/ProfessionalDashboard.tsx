@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, Wallet, CheckCircle2, Clock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Calendar, Wallet, CheckCircle2, Clock, FilePlus, Users } from 'lucide-react';
 import { format } from 'date-fns';
 
 export default function ProfessionalDashboard() {
