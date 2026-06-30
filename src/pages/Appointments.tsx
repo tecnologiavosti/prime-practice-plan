@@ -208,6 +208,14 @@ export default function Appointments() {
     const { data } = await supabase.from('payment_methods').select('id, name').eq('active', true).order('name');
     setPaymentMethods(data || []);
   };
+  const fetchAdministrators = async () => {
+    const { data } = await supabase.from('administrators').select('id, name').eq('active', true).order('name');
+    setAdministrators((data || []) as Administrator[]);
+  };
+  const fetchInsAdminMap = async () => {
+    const { data } = await supabase.from('insurance_administrators_map').select('insurance_id, administrator_id, billing_rate');
+    setInsAdminMap((data || []) as InsAdminMap[]);
+  };
 
   const getProcedurePrice = (): number | null => {
     if (!formData.procedure_id) return null;
