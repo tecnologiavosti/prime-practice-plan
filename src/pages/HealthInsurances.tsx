@@ -115,33 +115,60 @@ export default function HealthInsurances() {
     setAdministrators(data || []);
   };
 
+  const saveAdminLinks = async (insuranceId: string) => {
+    const { error: delErr } = await supabase
+      .from('insurance_administrators_map')
+      .delete()
+      .eq('insurance_id', insuranceId);
+    if (delErr) throw delErr;
+
+    if (selectedAdminIds.size > 0) {
+      const links = Array.from(selectedAdminIds).map((aid) => ({
+        insurance_id: insuranceId,
+        administrator_id: aid,
+        billing_rate: adminValues[aid] || 0,
+      }));
+      const { error } = await supabase.from('insurance_administrators_map').insert(links);
+      if (error) throw error;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (editingInsurance) {
-      const { error } = await supabase
-        .from('health_insurances')
-        .update(formData)
-        .eq('id', editingInsurance.id);
+    try {
+      let insuranceId = editingInsurance?.id;
 
-      if (error) {
-        toast({ variant: 'destructive', title: 'Erro', description: error.message });
-        return;
+      if (editingInsurance) {
+        const { error } = await supabase
+          .from('health_insurances')
+          .update(formData)
+          .eq('id', editingInsurance.id);
+        if (error) throw error;
+      } else {
+        const { data, error } = await supabase
+          .from('health_insurances')
+          .insert(formData)
+          .select('id')
+          .single();
+        if (error) throw error;
+        insuranceId = data.id;
       }
-      toast({ title: 'Convênio atualizado!' });
-    } else {
-      const { error } = await supabase.from('health_insurances').insert(formData);
-      if (error) {
-        toast({ variant: 'destructive', title: 'Erro', description: error.message });
-        return;
+
+      if (insuranceId) {
+        await saveAdminLinks(insuranceId);
       }
-      toast({ title: 'Convênio cadastrado!' });
+
+      toast({ title: editingInsurance ? 'Convênio atualizado!' : 'Convênio cadastrado!' });
+      setDialogOpen(false);
+      setEditingInsurance(null);
+      setFormData(emptyInsurance);
+      setSelectedAdminIds(new Set());
+      setAdminValues({});
+      fetchInsurances();
+    } catch (err: any) {
+      toast({ variant: 'destructive', title: 'Erro', description: err.message });
     }
-
-    setDialogOpen(false);
-    setEditingInsurance(null);
-    setFormData(emptyInsurance);
-    fetchInsurances();
   };
 
   const handleDelete = async () => {
@@ -167,14 +194,24 @@ export default function HealthInsurances() {
       notes: insurance.notes || '',
       active: insurance.active,
     });
+    setSelectedAdminIds(new Set(insurance.administrator_links.map((l) => l.administrator_id)));
+    setAdminValues(
+      insurance.administrator_links.reduce<Record<string, number>>((acc, l) => {
+        acc[l.administrator_id] = Number(l.billing_rate || 0);
+        return acc;
+      }, {})
+    );
     setDialogOpen(true);
   };
 
   const openNew = () => {
     setEditingInsurance(null);
     setFormData(emptyInsurance);
+    setSelectedAdminIds(new Set());
+    setAdminValues({});
     setDialogOpen(true);
   };
+
 
   const openAdminDialog = (insurance: HealthInsurance) => {
     setSelectedInsurance(insurance);
