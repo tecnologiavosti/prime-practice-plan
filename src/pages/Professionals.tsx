@@ -388,6 +388,9 @@ export default function Professionals() {
                     ))}
                   </div>
                 </TabsContent>
+                <TabsContent value="financeiro" className="space-y-4">
+                  {editingProfessional && <ProfessionalFinancePanel professionalId={editingProfessional.id} />}
+                </TabsContent>
                 <TabsContent value="site" className="space-y-4">
                   <div className="flex items-center justify-between rounded-md border p-3">
                     <div>
