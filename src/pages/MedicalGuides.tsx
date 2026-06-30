@@ -293,26 +293,34 @@ export default function MedicalGuides() {
     }
   };
 
+  const getInsuranceDefaultPrice = (procedureId: string, insuranceId: string): number | null => {
+    // 1) procedure_insurance_prices (preço específico por procedimento)
+    const pip = procedureInsurancePrices.find(p => p.procedure_id === procedureId && p.health_insurance_id === insuranceId);
+    if (pip) return Number(pip.price) || 0;
+    // 2) billing_rate da administradora selecionada
+    if (formData.administrator_id) {
+      const m = insAdminMap.find(x => x.insurance_id === insuranceId && x.administrator_id === formData.administrator_id);
+      if (m && m.billing_rate != null) return Number(m.billing_rate) || 0;
+    }
+    return null;
+  };
+
   const updateItem = (index: number, field: keyof typeof emptyItem, value: any) => {
     const newItems = [...items];
     newItems[index] = { ...newItems[index], [field]: value };
-    
-    // Auto-fill unit_value when procedure is selected
+
     if (field === 'procedure_id' && formData.health_insurance_id) {
-      const insurancePrice = procedureInsurancePrices.find(
-        pip => pip.procedure_id === value && pip.health_insurance_id === formData.health_insurance_id
-      );
-      if (insurancePrice) {
-        newItems[index].unit_value = insurancePrice.price;
-        newItems[index].total_value = newItems[index].quantity * insurancePrice.price;
+      const price = getInsuranceDefaultPrice(value, formData.health_insurance_id);
+      if (price != null) {
+        newItems[index].unit_value = price;
+        newItems[index].total_value = newItems[index].quantity * price;
       }
     }
-    
-    // Recalculate total
+
     if (field === 'quantity' || field === 'unit_value') {
       newItems[index].total_value = newItems[index].quantity * newItems[index].unit_value;
     }
-    
+
     setItems(newItems);
   };
 
