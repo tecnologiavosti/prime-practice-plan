@@ -38,6 +38,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { DiverseReceiptsPanel } from '@/components/financial/DiverseReceiptsPanel';
 
 interface Transaction {
   id: string;
