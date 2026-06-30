@@ -211,11 +211,9 @@ export default function TeamUsers() {
                   <Button variant="ghost" size="icon" onClick={() => openEdit(it)} title="Editar usuário">
                     <Pencil className="h-4 w-4" />
                   </Button>
-                  {it.role === 'administrador' && (
-                    <Button variant="ghost" size="icon" onClick={() => openPermissions(it)} title="Permissões / Módulos">
-                      <ShieldCheck className="h-4 w-4 text-primary" />
-                    </Button>
-                  )}
+                  <Button variant="ghost" size="icon" onClick={() => openPermissions(it)} title="Permissões / Módulos">
+                    <ShieldCheck className="h-4 w-4 text-primary" />
+                  </Button>
                   <Button variant="ghost" size="icon" onClick={() => setToDelete(it)} title="Remover">
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
