@@ -151,6 +151,8 @@ export default function MedicalGuides() {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [insurances, setInsurances] = useState<HealthInsurance[]>([]);
+  const [administrators, setAdministrators] = useState<Administrator[]>([]);
+  const [insAdminMap, setInsAdminMap] = useState<InsuranceAdminMap[]>([]);
   const [procedures, setProcedures] = useState<Procedure[]>([]);
   const [procedureInsurancePrices, setProcedureInsurancePrices] = useState<ProcedureInsurancePrice[]>([]);
   const [loading, setLoading] = useState(true);
