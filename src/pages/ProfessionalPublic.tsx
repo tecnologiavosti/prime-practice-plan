@@ -19,13 +19,18 @@ interface PublicProfessional {
 export default function ProfessionalPublic() {
   const { id } = useParams<{ id: string }>();
   const [prof, setProf] = useState<PublicProfessional | null>(null);
+  const [insurances, setInsurances] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!id) return;
     (async () => {
-      const { data } = await (supabase.rpc as any)('get_landing_professional', { _id: id });
+      const [{ data }, { data: ins }] = await Promise.all([
+        (supabase.rpc as any)('get_landing_professional', { _id: id }),
+        (supabase.rpc as any)('get_professional_insurances', { _id: id }),
+      ]);
       setProf((data?.[0] as PublicProfessional) ?? null);
+      setInsurances((ins as any) ?? []);
       setLoading(false);
     })();
   }, [id]);
@@ -79,6 +84,19 @@ export default function ProfessionalPublic() {
               <section className="mb-8">
                 <h2 className="text-xl font-bold mb-3">Histórico curricular</h2>
                 <p className="text-slate-700 whitespace-pre-line leading-relaxed">{prof.landing_curriculum}</p>
+              </section>
+            )}
+
+            {insurances.length > 0 && (
+              <section className="mb-8">
+                <h2 className="text-xl font-bold mb-3">Convênios atendidos</h2>
+                <div className="flex flex-wrap gap-2">
+                  {insurances.map((i) => (
+                    <span key={i.id} className="px-3 py-1 rounded-full bg-sky-50 text-sky-800 border border-sky-200 text-sm">
+                      {i.name}
+                    </span>
+                  ))}
+                </div>
               </section>
             )}
           </article>
