@@ -86,6 +86,19 @@ export default function ProfessionalPublic() {
                 <p className="text-slate-700 whitespace-pre-line leading-relaxed">{prof.landing_curriculum}</p>
               </section>
             )}
+
+            {insurances.length > 0 && (
+              <section className="mb-8">
+                <h2 className="text-xl font-bold mb-3">Convênios atendidos</h2>
+                <div className="flex flex-wrap gap-2">
+                  {insurances.map((i) => (
+                    <span key={i.id} className="px-3 py-1 rounded-full bg-sky-50 text-sky-800 border border-sky-200 text-sm">
+                      {i.name}
+                    </span>
+                  ))}
+                </div>
+              </section>
+            )}
           </article>
         )}
       </main>
