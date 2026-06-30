@@ -67,6 +67,18 @@ export default function ProfessionalPublic() {
                 {prof.specialty_name && (
                   <p className="mt-2 text-base font-semibold text-sky-700">{prof.specialty_name}</p>
                 )}
+                {insurances.length > 0 && (
+                  <div className="mt-3">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1.5">Convênios atendidos</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {insurances.map((i) => (
+                        <span key={i.id} className="px-2.5 py-0.5 rounded-full bg-sky-50 text-sky-800 border border-sky-200 text-xs">
+                          {i.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 {prof.landing_bio && (
                   <p className="mt-3 text-slate-600 max-w-xl">{prof.landing_bio}</p>
                 )}
@@ -84,19 +96,6 @@ export default function ProfessionalPublic() {
               <section className="mb-8">
                 <h2 className="text-xl font-bold mb-3">Histórico curricular</h2>
                 <p className="text-slate-700 whitespace-pre-line leading-relaxed">{prof.landing_curriculum}</p>
-              </section>
-            )}
-
-            {insurances.length > 0 && (
-              <section className="mb-8">
-                <h2 className="text-xl font-bold mb-3">Convênios atendidos</h2>
-                <div className="flex flex-wrap gap-2">
-                  {insurances.map((i) => (
-                    <span key={i.id} className="px-3 py-1 rounded-full bg-sky-50 text-sky-800 border border-sky-200 text-sm">
-                      {i.name}
-                    </span>
-                  ))}
-                </div>
               </section>
             )}
           </article>
