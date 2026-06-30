@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Search, Edit, Trash2, Building2 } from 'lucide-react';
+import { CurrencyInput } from '@/components/ui/currency-input';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -20,7 +21,7 @@ import {
 interface Specialty { id: string; name: string; active: boolean }
 interface Insurance { id: string; name: string }
 interface Administrator { id: string; name: string }
-interface InsAdminLink { insurance_id: string; administrator_id: string }
+interface InsAdminLink { insurance_id: string; administrator_id: string; billing_rate: number | null }
 interface SpecialtyLink { specialty_id: string; health_insurance_id: string; administrator_id: string | null }
 
 // Key format: `${insuranceId}|${administratorId or ''}`
@@ -38,6 +39,7 @@ export default function Specialties() {
   const [editing, setEditing] = useState<Specialty | null>(null);
   const [name, setName] = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [prices, setPrices] = useState<Record<string, number>>({}); // key insId|admId -> billing_rate
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -48,7 +50,7 @@ export default function Specialties() {
       supabase.from('specialties').select('*').order('name'),
       supabase.from('health_insurances').select('id, name').eq('active', true).order('name'),
       supabase.from('administrators').select('id, name').eq('active', true).order('name'),
-      supabase.from('insurance_administrators_map').select('insurance_id, administrator_id'),
+      supabase.from('insurance_administrators_map').select('insurance_id, administrator_id, billing_rate'),
       supabase.from('specialty_health_insurances').select('specialty_id, health_insurance_id, administrator_id'),
     ]);
     if (s.error) toast({ variant: 'destructive', title: 'Erro', description: s.error.message });
@@ -65,16 +67,23 @@ export default function Specialties() {
     setLoading(false);
   }
 
+  function initPrices() {
+    const p: Record<string, number> = {};
+    insAdminLinks.forEach((l) => { p[k(l.insurance_id, l.administrator_id)] = Number(l.billing_rate || 0); });
+    setPrices(p);
+  }
   function openNew() {
     setEditing(null);
     setName('');
     setSelected(new Set());
+    initPrices();
     setDialogOpen(true);
   }
   function openEdit(s: Specialty) {
     setEditing(s);
     setName(s.name);
     setSelected(new Set(linkedMap[s.id] || []));
+    initPrices();
     setDialogOpen(true);
   }
 
@@ -124,6 +133,21 @@ export default function Specialties() {
     }
 
     if (specialtyId) await syncLinks(specialtyId);
+
+    // Persist price edits to insurance_administrators_map
+    const priceUpdates = insAdminLinks.filter((l) => {
+      const key = k(l.insurance_id, l.administrator_id);
+      const newVal = prices[key] ?? 0;
+      return Number(l.billing_rate || 0) !== newVal;
+    });
+    for (const l of priceUpdates) {
+      const key = k(l.insurance_id, l.administrator_id);
+      await supabase.from('insurance_administrators_map')
+        .update({ billing_rate: prices[key] ?? 0 })
+        .eq('insurance_id', l.insurance_id)
+        .eq('administrator_id', l.administrator_id);
+    }
+
     toast({ title: editing ? 'Especialidade atualizada!' : 'Especialidade cadastrada!' });
     setDialogOpen(false);
     fetchAll();
@@ -197,17 +221,23 @@ export default function Specialties() {
                           </span>
                         </label>
                         {admins.length > 0 && (
-                          <div className="ml-6 grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                          <div className="ml-6 space-y-1.5">
                             {admins.map((adm) => {
                               const key = k(ins.id, adm.id);
+                              const checked = selected.has(key);
                               return (
-                                <label key={adm.id} className="flex items-center gap-2 text-xs cursor-pointer text-muted-foreground">
-                                  <Checkbox
-                                    checked={selected.has(key)}
-                                    onCheckedChange={() => toggleKey(key)}
+                                <div key={adm.id} className="flex items-center gap-2 text-xs">
+                                  <label className="flex items-center gap-2 cursor-pointer text-muted-foreground flex-1">
+                                    <Checkbox checked={checked} onCheckedChange={() => toggleKey(key)} />
+                                    {adm.name}
+                                  </label>
+                                  <span className="text-[11px] text-muted-foreground">R$</span>
+                                  <CurrencyInput
+                                    className="h-7 w-24 text-xs"
+                                    value={prices[key] ?? 0}
+                                    onChange={(v) => setPrices((p) => ({ ...p, [key]: v }))}
                                   />
-                                  {adm.name}
-                                </label>
+                                </div>
                               );
                             })}
                           </div>
