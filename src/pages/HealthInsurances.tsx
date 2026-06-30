@@ -115,33 +115,60 @@ export default function HealthInsurances() {
     setAdministrators(data || []);
   };
 
+  const saveAdminLinks = async (insuranceId: string) => {
+    const { error: delErr } = await supabase
+      .from('insurance_administrators_map')
+      .delete()
+      .eq('insurance_id', insuranceId);
+    if (delErr) throw delErr;
+
+    if (selectedAdminIds.size > 0) {
+      const links = Array.from(selectedAdminIds).map((aid) => ({
+        insurance_id: insuranceId,
+        administrator_id: aid,
+        billing_rate: adminValues[aid] || 0,
+      }));
+      const { error } = await supabase.from('insurance_administrators_map').insert(links);
+      if (error) throw error;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (editingInsurance) {
-      const { error } = await supabase
-        .from('health_insurances')
-        .update(formData)
-        .eq('id', editingInsurance.id);
+    try {
+      let insuranceId = editingInsurance?.id;
 
-      if (error) {
-        toast({ variant: 'destructive', title: 'Erro', description: error.message });
-        return;
+      if (editingInsurance) {
+        const { error } = await supabase
+          .from('health_insurances')
+          .update(formData)
+          .eq('id', editingInsurance.id);
+        if (error) throw error;
+      } else {
+        const { data, error } = await supabase
+          .from('health_insurances')
+          .insert(formData)
+          .select('id')
+          .single();
+        if (error) throw error;
+        insuranceId = data.id;
       }
-      toast({ title: 'Convênio atualizado!' });
-    } else {
-      const { error } = await supabase.from('health_insurances').insert(formData);
-      if (error) {
-        toast({ variant: 'destructive', title: 'Erro', description: error.message });
-        return;
+
+      if (insuranceId) {
+        await saveAdminLinks(insuranceId);
       }
-      toast({ title: 'Convênio cadastrado!' });
+
+      toast({ title: editingInsurance ? 'Convênio atualizado!' : 'Convênio cadastrado!' });
+      setDialogOpen(false);
+      setEditingInsurance(null);
+      setFormData(emptyInsurance);
+      setSelectedAdminIds(new Set());
+      setAdminValues({});
+      fetchInsurances();
+    } catch (err: any) {
+      toast({ variant: 'destructive', title: 'Erro', description: err.message });
     }
-
-    setDialogOpen(false);
-    setEditingInsurance(null);
-    setFormData(emptyInsurance);
-    fetchInsurances();
   };
 
   const handleDelete = async () => {
@@ -167,14 +194,24 @@ export default function HealthInsurances() {
       notes: insurance.notes || '',
       active: insurance.active,
     });
+    setSelectedAdminIds(new Set(insurance.administrator_links.map((l) => l.administrator_id)));
+    setAdminValues(
+      insurance.administrator_links.reduce<Record<string, number>>((acc, l) => {
+        acc[l.administrator_id] = Number(l.billing_rate || 0);
+        return acc;
+      }, {})
+    );
     setDialogOpen(true);
   };
 
   const openNew = () => {
     setEditingInsurance(null);
     setFormData(emptyInsurance);
+    setSelectedAdminIds(new Set());
+    setAdminValues({});
     setDialogOpen(true);
   };
+
 
   const openAdminDialog = (insurance: HealthInsurance) => {
     setSelectedInsurance(insurance);
@@ -326,10 +363,64 @@ export default function HealthInsurances() {
                   <Label>{formData.active ? 'Ativo' : 'Inativo'}</Label>
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Após salvar, use o botão <Link2 className="inline h-3 w-3" /> na lista para vincular administradoras.
-              </p>
+              <div className="space-y-2 border-t pt-4">
+                <div className="flex items-center justify-between">
+                  <Label className="text-base">Administradoras e Valores</Label>
+                  <span className="text-xs text-muted-foreground">
+                    {selectedAdminIds.size} selecionada(s)
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Marque as administradoras que aceitam este convênio e informe o valor de cada uma.
+                </p>
+                <div className="max-h-[280px] overflow-y-auto space-y-2 border rounded-lg p-3">
+                  {administrators.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-4 text-sm">
+                      Nenhuma administradora cadastrada
+                    </p>
+                  ) : (
+                    administrators.map((adm) => {
+                      const checked = selectedAdminIds.has(adm.id);
+                      return (
+                        <div
+                          key={adm.id}
+                          className={`p-3 rounded-lg border transition-colors ${
+                            checked ? 'bg-primary/5 border-primary/30' : 'hover:bg-muted/50'
+                          }`}
+                        >
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                            <div className="flex flex-1 items-center gap-3">
+                              <Checkbox
+                                id={`form-adm-${adm.id}`}
+                                checked={checked}
+                                onCheckedChange={() => toggleAdmin(adm.id)}
+                              />
+                              <label
+                                htmlFor={`form-adm-${adm.id}`}
+                                className="cursor-pointer flex-1 font-medium text-sm"
+                              >
+                                {adm.name}
+                              </label>
+                            </div>
+                            {checked && (
+                              <div className="flex items-center gap-2 sm:w-44">
+                                <span className="text-xs font-medium text-muted-foreground">Valor</span>
+                                <CurrencyInput
+                                  value={adminValues[adm.id] || 0}
+                                  onChange={(value) => updateAdminValue(adm.id, value)}
+                                  className="h-9"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
               <div className="flex justify-end gap-2">
+
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                   Cancelar
                 </Button>
