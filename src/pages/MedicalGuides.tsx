@@ -166,6 +166,7 @@ export default function MedicalGuides() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
   const [attachmentUrl, setAttachmentUrl] = useState<string>('');
+  const [insuranceRate, setInsuranceRate] = useState<number>(0);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -297,12 +298,23 @@ export default function MedicalGuides() {
     // 1) procedure_insurance_prices (preço específico por procedimento)
     const pip = procedureInsurancePrices.find(p => p.procedure_id === procedureId && p.health_insurance_id === insuranceId);
     if (pip) return Number(pip.price) || 0;
-    // 2) billing_rate da administradora selecionada
+    // 2) valor editável do convênio na guia
+    if (insuranceRate > 0) return insuranceRate;
+    // 3) billing_rate da administradora selecionada
     if (formData.administrator_id) {
       const m = insAdminMap.find(x => x.insurance_id === insuranceId && x.administrator_id === formData.administrator_id);
       if (m && m.billing_rate != null) return Number(m.billing_rate) || 0;
     }
     return null;
+  };
+
+  const applyInsuranceRate = (rate: number) => {
+    setInsuranceRate(rate);
+    setItems(prev => prev.map(it => ({
+      ...it,
+      unit_value: rate,
+      total_value: (it.quantity || 1) * rate,
+    })));
   };
 
   const updateItem = (index: number, field: keyof typeof emptyItem, value: any) => {
@@ -479,22 +491,27 @@ export default function MedicalGuides() {
     setFormData({ ...emptyForm, guide_number: generateGuideNumber() });
     setItems([{ ...emptyItem }]);
     setAttachmentUrl('');
+    setInsuranceRate(0);
     setDialogOpen(true);
   };
 
   const handleEdit = (g: MedicalGuide) => {
     setEditingId(g.id);
+    const adminId = (g as any).administrator_id || '';
+    const insId = g.health_insurance?.id || '';
     setFormData({
       guide_number: g.guide_number,
       patient_id: g.patient?.id || '',
-      administrator_id: (g as any).administrator_id || '',
-      health_insurance_id: g.health_insurance?.id || '',
+      administrator_id: adminId,
+      health_insurance_id: insId,
       professional_id: g.professional?.id || '',
       guide_date: g.guide_date,
       validity_date: g.validity_date || '',
       cid_10: g.cid_10 || '',
       clinical_indication: g.clinical_indication || '',
     });
+    const m = insAdminMap.find(x => x.administrator_id === adminId && x.insurance_id === insId);
+    setInsuranceRate(m?.billing_rate != null ? Number(m.billing_rate) : Number(g.unit_value) || 0);
     setItems([{ ...emptyItem }]);
     setAttachmentUrl(g.attachment_url || '');
     setDialogOpen(true);
@@ -829,7 +846,12 @@ export default function MedicalGuides() {
                 <Label>Convênio *</Label>
                 <Select
                   value={formData.health_insurance_id}
-                  onValueChange={(v) => setFormData({ ...formData, health_insurance_id: v })}
+                  onValueChange={(v) => {
+                    setFormData({ ...formData, health_insurance_id: v });
+                    const m = insAdminMap.find(x => x.administrator_id === formData.administrator_id && x.insurance_id === v);
+                    const rate = m?.billing_rate != null ? Number(m.billing_rate) : 0;
+                    applyInsuranceRate(rate);
+                  }}
                   disabled={!formData.administrator_id}
                 >
                   <SelectTrigger>
@@ -854,6 +876,18 @@ export default function MedicalGuides() {
                 )}
               </div>
 
+              {formData.health_insurance_id && (
+                <div className="space-y-2">
+                  <Label>Valor do Convênio (R$)</Label>
+                  <CurrencyInput
+                    value={insuranceRate}
+                    onChange={(v) => applyInsuranceRate(Number(v) || 0)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Esse valor será aplicado a cada atendimento adicionado. Você pode editar o valor individual de cada item abaixo.
+                  </p>
+                </div>
+              )}
 
               {/* Profissional Executante */}
               <div className="space-y-2">
