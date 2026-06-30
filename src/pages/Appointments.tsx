@@ -43,6 +43,7 @@ interface Appointment {
   professional: { id: string; full_name: string } | null;
   procedure: { id: string; name: string; private_price?: number } | null;
   health_insurance: { id: string; name: string } | null;
+  administrator: { id: string; name: string } | null;
 }
 
 interface Patient { id: string; full_name: string; }
