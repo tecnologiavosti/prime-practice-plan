@@ -363,10 +363,64 @@ export default function HealthInsurances() {
                   <Label>{formData.active ? 'Ativo' : 'Inativo'}</Label>
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Após salvar, use o botão <Link2 className="inline h-3 w-3" /> na lista para vincular administradoras.
-              </p>
+              <div className="space-y-2 border-t pt-4">
+                <div className="flex items-center justify-between">
+                  <Label className="text-base">Administradoras e Valores</Label>
+                  <span className="text-xs text-muted-foreground">
+                    {selectedAdminIds.size} selecionada(s)
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Marque as administradoras que aceitam este convênio e informe o valor de cada uma.
+                </p>
+                <div className="max-h-[280px] overflow-y-auto space-y-2 border rounded-lg p-3">
+                  {administrators.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-4 text-sm">
+                      Nenhuma administradora cadastrada
+                    </p>
+                  ) : (
+                    administrators.map((adm) => {
+                      const checked = selectedAdminIds.has(adm.id);
+                      return (
+                        <div
+                          key={adm.id}
+                          className={`p-3 rounded-lg border transition-colors ${
+                            checked ? 'bg-primary/5 border-primary/30' : 'hover:bg-muted/50'
+                          }`}
+                        >
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                            <div className="flex flex-1 items-center gap-3">
+                              <Checkbox
+                                id={`form-adm-${adm.id}`}
+                                checked={checked}
+                                onCheckedChange={() => toggleAdmin(adm.id)}
+                              />
+                              <label
+                                htmlFor={`form-adm-${adm.id}`}
+                                className="cursor-pointer flex-1 font-medium text-sm"
+                              >
+                                {adm.name}
+                              </label>
+                            </div>
+                            {checked && (
+                              <div className="flex items-center gap-2 sm:w-44">
+                                <span className="text-xs font-medium text-muted-foreground">Valor</span>
+                                <CurrencyInput
+                                  value={adminValues[adm.id] || 0}
+                                  onChange={(value) => updateAdminValue(adm.id, value)}
+                                  className="h-9"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
               <div className="flex justify-end gap-2">
+
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                   Cancelar
                 </Button>
