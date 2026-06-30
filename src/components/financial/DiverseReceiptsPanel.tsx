@@ -102,10 +102,13 @@ export function DiverseReceiptsPanel() {
     if (from && e.entry_date < from) return false;
     if (to && e.entry_date > to) return false;
     if (categoryFilter !== 'all' && e.category !== categoryFilter) return false;
+    if (typeFilter !== 'all' && e.entry_type !== typeFilter) return false;
     return true;
   });
 
-  const total = filtered.reduce((acc, e) => acc + Number(e.amount), 0);
+  const totalIn = filtered.filter((e) => e.entry_type === 'entrada').reduce((a, e) => a + Number(e.amount), 0);
+  const totalOut = filtered.filter((e) => e.entry_type === 'saida').reduce((a, e) => a + Number(e.amount), 0);
+  const total = totalIn - totalOut;
   const formatCurrency = (v: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
 
