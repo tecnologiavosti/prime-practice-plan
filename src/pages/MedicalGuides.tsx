@@ -808,22 +808,50 @@ export default function MedicalGuides() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Convênio *</Label>
+                  <Label>Administradora *</Label>
                   <Select
-                    value={formData.health_insurance_id}
-                    onValueChange={(v) => setFormData({ ...formData, health_insurance_id: v })}
+                    value={formData.administrator_id}
+                    onValueChange={(v) => setFormData({ ...formData, administrator_id: v, health_insurance_id: '' })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecione o convênio" />
+                      <SelectValue placeholder="Selecione a administradora" />
                     </SelectTrigger>
                     <SelectContent>
-                      {insurances.map((i) => (
-                        <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
+                      {administrators.map((a) => (
+                        <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
               </div>
+
+              <div className="space-y-2">
+                <Label>Convênio *</Label>
+                <Select
+                  value={formData.health_insurance_id}
+                  onValueChange={(v) => setFormData({ ...formData, health_insurance_id: v })}
+                  disabled={!formData.administrator_id}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={formData.administrator_id ? 'Selecione o convênio' : 'Selecione a administradora primeiro'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {insurances
+                      .filter((i) => insAdminMap.some(m => m.administrator_id === formData.administrator_id && m.insurance_id === i.id))
+                      .map((i) => {
+                        const m = insAdminMap.find(x => x.administrator_id === formData.administrator_id && x.insurance_id === i.id);
+                        const rate = m?.billing_rate;
+                        return (
+                          <SelectItem key={i.id} value={i.id}>
+                            {i.name}{rate != null ? ` — ${formatCurrency(Number(rate))}` : ''}
+                          </SelectItem>
+                        );
+                      })}
+                  </SelectContent>
+                </Select>
+                {formData.administrator_id && !insurances.some(i => insAdminMap.some(m => m.administrator_id === formData.administrator_id && m.insurance_id === i.id)) && (
+                  <p className="text-xs text-destructive">Esta administradora ainda não possui convênios cadastrados.</p>
+                )}
 
               {/* Profissional Executante */}
               <div className="space-y-2">
