@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import jsPDF from 'jspdf';
+import { PDFDocument } from 'pdf-lib';
 import { supabase } from '@/integrations/supabase/client';
 import { addClinicHeader } from '@/lib/pdfHeader';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
@@ -9,7 +10,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { FileText, Pill, FileSignature, Save, Download, Stethoscope, ClipboardList } from 'lucide-react';
+import {
+  FileText, Pill, FileSignature, Save, Download, Stethoscope,
+  ClipboardList, Upload, Paperclip, Trash2, ExternalLink,
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -24,6 +28,15 @@ interface Props {
   professionalCrm?: string | null;
 }
 
+type Attachment = {
+  id: string;
+  section: string;
+  file_name: string;
+  file_path: string;
+  file_type: string | null;
+  file_size: number | null;
+};
+
 const empty = {
   chief_complaint: '',
   current_illness_history: '',
@@ -36,6 +49,12 @@ const empty = {
   diagnosis: '',
   treatment_plan: '',
   notes: '',
+};
+
+const SECTION_LABELS: Record<string, string> = {
+  anamnese: 'Anamnese',
+  exame: 'Exame físico / Exames complementares',
+  conduta: 'Conduta / Documentos clínicos',
 };
 
 export function QuickRecord({
@@ -54,9 +73,47 @@ export function QuickRecord({
   const [attestReason, setAttestReason] = useState('');
   const [saving, setSaving] = useState(false);
   const [patientFull, setPatientFull] = useState<any>(null);
+  const [anamnesisId, setAnamnesisId] = useState<string | null>(null);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [uploadingSection, setUploadingSection] = useState<string | null>(null);
 
   const set = (k: keyof typeof empty) => (e: any) =>
     setForm((s) => ({ ...s, [k]: e.target.value }));
+
+  const ensureAnamnesis = useCallback(async (): Promise<string | null> => {
+    if (!patientId) return null;
+    let id: string | null = null;
+    if (appointmentId) {
+      const { data } = await supabase
+        .from('anamnesis').select('id').eq('appointment_id', appointmentId).maybeSingle();
+      id = data?.id || null;
+    }
+    if (!id) {
+      const { data, error } = await supabase
+        .from('anamnesis')
+        .insert({
+          patient_id: patientId,
+          appointment_id: appointmentId,
+          professional_id: professionalId,
+        })
+        .select('id').single();
+      if (error) {
+        toast({ title: 'Erro ao iniciar prontuário', description: error.message, variant: 'destructive' });
+        return null;
+      }
+      id = data.id;
+    }
+    return id;
+  }, [patientId, appointmentId, professionalId, toast]);
+
+  const loadAttachments = useCallback(async (id: string) => {
+    const { data } = await supabase
+      .from('anamnesis_attachments')
+      .select('id, section, file_name, file_path, file_type, file_size')
+      .eq('anamnesis_id', id)
+      .order('created_at', { ascending: false });
+    setAttachments((data as any) || []);
+  }, []);
 
   useEffect(() => {
     if (!open || !patientId) return;
@@ -68,8 +125,7 @@ export function QuickRecord({
         supabase
           .from('patients')
           .select('full_name, cpf, birth_date, phone, email, gender, address, city, state')
-          .eq('id', patientId)
-          .maybeSingle(),
+          .eq('id', patientId).maybeSingle(),
       ]);
       setPatientFull(pat);
       if (anam) {
@@ -86,11 +142,15 @@ export function QuickRecord({
           treatment_plan: anam.treatment_plan || '',
           notes: anam.notes || '',
         });
+        setAnamnesisId(anam.id);
+        loadAttachments(anam.id);
       } else {
         setForm({ ...empty });
+        setAnamnesisId(null);
+        setAttachments([]);
       }
     })();
-  }, [open, appointmentId, patientId]);
+  }, [open, appointmentId, patientId, loadAttachments]);
 
   const saveRecord = async () => {
     if (!patientId) return;
@@ -103,33 +163,70 @@ export function QuickRecord({
         Object.entries(form).map(([k, v]) => [k, (v as string).trim() || null]),
       ),
     };
-    const { data: existing } = appointmentId
-      ? await supabase.from('anamnesis').select('id').eq('appointment_id', appointmentId).maybeSingle()
-      : { data: null as any };
-    const { error } = existing
-      ? await supabase.from('anamnesis').update(payload).eq('id', existing.id)
-      : await supabase.from('anamnesis').insert(payload);
-    setSaving(false);
-    if (error) {
-      toast({ title: 'Erro ao salvar', description: error.message, variant: 'destructive' });
+    let id = anamnesisId;
+    if (id) {
+      const { error } = await supabase.from('anamnesis').update(payload).eq('id', id);
+      if (error) { setSaving(false); return toast({ title: 'Erro ao salvar', description: error.message, variant: 'destructive' }); }
     } else {
-      toast({ title: 'Prontuário salvo' });
+      const { data, error } = await supabase.from('anamnesis').insert(payload).select('id').single();
+      if (error) { setSaving(false); return toast({ title: 'Erro ao salvar', description: error.message, variant: 'destructive' }); }
+      id = data.id;
+      setAnamnesisId(id);
     }
+    setSaving(false);
+    toast({ title: 'Prontuário salvo' });
+  };
+
+  const handleUpload = async (section: string, file: File) => {
+    if (!file) return;
+    if (file.size > 20 * 1024 * 1024) {
+      return toast({ title: 'Arquivo muito grande (máx 20MB)', variant: 'destructive' });
+    }
+    setUploadingSection(section);
+    const id = anamnesisId || (await ensureAnamnesis());
+    if (!id) { setUploadingSection(null); return; }
+    if (!anamnesisId) setAnamnesisId(id);
+
+    const ext = file.name.split('.').pop() || 'bin';
+    const path = `anamnesis/${id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error: upErr } = await supabase.storage.from('documents').upload(path, file, {
+      contentType: file.type, upsert: false,
+    });
+    if (upErr) { setUploadingSection(null); return toast({ title: 'Falha no upload', description: upErr.message, variant: 'destructive' }); }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    const { error: insErr } = await supabase.from('anamnesis_attachments').insert({
+      anamnesis_id: id, section, file_name: file.name, file_path: path,
+      file_type: file.type, file_size: file.size, uploaded_by: user?.id || null,
+    });
+    setUploadingSection(null);
+    if (insErr) return toast({ title: 'Erro ao registrar anexo', description: insErr.message, variant: 'destructive' });
+    await loadAttachments(id);
+    toast({ title: 'Anexo enviado' });
+  };
+
+  const openAttachment = async (att: Attachment) => {
+    const { data } = await supabase.storage.from('documents').createSignedUrl(att.file_path, 60);
+    if (data?.signedUrl) window.open(data.signedUrl, '_blank');
+  };
+
+  const deleteAttachment = async (att: Attachment) => {
+    if (!confirm(`Remover ${att.file_name}?`)) return;
+    await supabase.storage.from('documents').remove([att.file_path]);
+    await supabase.from('anamnesis_attachments').delete().eq('id', att.id);
+    if (anamnesisId) loadAttachments(anamnesisId);
   };
 
   const writeSection = (doc: jsPDF, y: number, title: string, body: string) => {
     if (!body?.trim()) return y;
     if (y > 270) { doc.addPage(); y = 20; }
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
-    doc.text(title, 20, y);
-    y += 5;
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+    doc.text(title, 20, y); y += 5;
     doc.setFont('helvetica', 'normal');
     const lines = doc.splitTextToSize(body, 170);
     for (const line of lines) {
       if (y > 280) { doc.addPage(); y = 20; }
-      doc.text(line, 20, y);
-      y += 5;
+      doc.text(line, 20, y); y += 5;
     }
     return y + 4;
   };
@@ -137,27 +234,22 @@ export function QuickRecord({
   const downloadFullRecordPdf = async () => {
     const doc = new jsPDF();
     let y = await addClinicHeader(doc, 20);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(14);
-    doc.text('PRONTUÁRIO MÉDICO', 105, y, { align: 'center' });
-    y += 8;
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
+    doc.text('PRONTUÁRIO MÉDICO', 105, y, { align: 'center' }); y += 8;
+    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
     doc.text(`Emitido em ${format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}`, 105, y, { align: 'center' });
     y += 8;
 
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
     doc.text('Identificação do Paciente', 20, y); y += 5;
     doc.setFont('helvetica', 'normal');
     const p = patientFull || {};
-    const idLines = [
+    [
       `Nome: ${patientName}`,
       `CPF: ${p.cpf || '—'}   Nasc.: ${p.birth_date ? format(new Date(p.birth_date), 'dd/MM/yyyy') : '—'}   Sexo: ${p.gender || '—'}`,
       `Contato: ${p.phone || '—'}   E-mail: ${p.email || '—'}`,
       `Endereço: ${[p.address, p.city, p.state].filter(Boolean).join(', ') || '—'}`,
-    ];
-    idLines.forEach((l) => { doc.text(l, 20, y); y += 5; });
+    ].forEach((l) => { doc.text(l, 20, y); y += 5; });
     y += 4;
 
     y = writeSection(doc, y, '1. Queixa principal', form.chief_complaint);
@@ -172,21 +264,68 @@ export function QuickRecord({
     y = writeSection(doc, y, '10. Conduta / Plano terapêutico', form.treatment_plan);
     y = writeSection(doc, y, '11. Evolução e observações', form.notes);
 
-    if (y > 250) { doc.addPage(); y = 20; }
-    y += 20;
-    doc.line(60, y, 150, y); y += 5;
-    doc.setFontSize(9);
-    doc.text(professionalName, 105, y, { align: 'center' });
-    if (professionalCrm) { y += 4; doc.text(`CRM: ${professionalCrm}`, 105, y, { align: 'center' }); }
+    // Imagens anexadas — embutir no PDF
+    const imageAtts = attachments.filter((a) => (a.file_type || '').startsWith('image/'));
+    for (const att of imageAtts) {
+      try {
+        const { data } = await supabase.storage.from('documents').createSignedUrl(att.file_path, 120);
+        if (!data?.signedUrl) continue;
+        const resp = await fetch(data.signedUrl);
+        const blob = await resp.blob();
+        const dataUrl: string = await new Promise((res) => {
+          const r = new FileReader(); r.onload = () => res(r.result as string); r.readAsDataURL(blob);
+        });
+        doc.addPage();
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+        doc.text(`Anexo (${SECTION_LABELS[att.section] || att.section}): ${att.file_name}`, 20, 20);
+        const imgFmt = (att.file_type || '').includes('png') ? 'PNG' : 'JPEG';
+        doc.addImage(dataUrl, imgFmt as any, 20, 28, 170, 230, undefined, 'FAST');
+      } catch (e) { /* skip */ }
+    }
 
-    doc.save(`prontuario_${patientName.replace(/\s+/g, '_')}_${format(new Date(), 'yyyyMMdd')}.pdf`);
+    // Assinatura
+    doc.addPage(); let sy = 40;
+    doc.line(60, sy, 150, sy); sy += 5;
+    doc.setFontSize(9);
+    doc.text(professionalName, 105, sy, { align: 'center' });
+    if (professionalCrm) { sy += 4; doc.text(`CRM: ${professionalCrm}`, 105, sy, { align: 'center' }); }
+
+    const baseBytes = doc.output('arraybuffer');
+
+    // Mesclar PDFs anexados
+    const pdfAtts = attachments.filter((a) => (a.file_type || '').includes('pdf'));
+    let finalBytes: Uint8Array | ArrayBuffer = baseBytes;
+    if (pdfAtts.length > 0) {
+      try {
+        const merged = await PDFDocument.create();
+        const base = await PDFDocument.load(baseBytes);
+        const basePages = await merged.copyPages(base, base.getPageIndices());
+        basePages.forEach((pg) => merged.addPage(pg));
+        for (const att of pdfAtts) {
+          const { data } = await supabase.storage.from('documents').createSignedUrl(att.file_path, 120);
+          if (!data?.signedUrl) continue;
+          const buf = await (await fetch(data.signedUrl)).arrayBuffer();
+          try {
+            const ext = await PDFDocument.load(buf);
+            const extPages = await merged.copyPages(ext, ext.getPageIndices());
+            extPages.forEach((pg) => merged.addPage(pg));
+          } catch { /* skip invalid */ }
+        }
+        finalBytes = await merged.save();
+      } catch { /* fallback to baseBytes */ }
+    }
+
+    const blob = new Blob([finalBytes as ArrayBuffer], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `prontuario_${patientName.replace(/\s+/g, '_')}_${format(new Date(), 'yyyyMMdd')}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const generatePrescriptionPdf = async () => {
-    if (!form.treatment_plan.trim()) {
-      toast({ title: 'Preencha a conduta/prescrição antes', variant: 'destructive' });
-      return;
-    }
+    if (!form.treatment_plan.trim()) return toast({ title: 'Preencha a conduta antes', variant: 'destructive' });
     const doc = new jsPDF();
     let y = await addClinicHeader(doc, 20);
     doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
@@ -239,6 +378,57 @@ export function QuickRecord({
     </div>
   );
 
+  const AttachmentsBlock = ({ section }: { section: string }) => {
+    const inputRef = useRef<HTMLInputElement | null>(null);
+    const list = attachments.filter((a) => a.section === section);
+    return (
+      <div className="space-y-2 border rounded-md p-3 bg-muted/30">
+        <div className="flex items-center justify-between">
+          <Label className="text-sm font-medium flex items-center gap-1">
+            <Paperclip className="h-4 w-4" /> Anexos desta seção
+          </Label>
+          <input
+            ref={inputRef}
+            type="file"
+            accept="application/pdf,image/*,video/*"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) handleUpload(section, f);
+              if (inputRef.current) inputRef.current.value = '';
+            }}
+          />
+          <Button
+            type="button" size="sm" variant="outline"
+            disabled={uploadingSection === section}
+            onClick={() => inputRef.current?.click()}
+          >
+            <Upload className="h-4 w-4 mr-1" />
+            {uploadingSection === section ? 'Enviando...' : 'Adicionar arquivo'}
+          </Button>
+        </div>
+        {list.length === 0 ? (
+          <p className="text-xs text-muted-foreground">Nenhum anexo. PDF, imagem ou vídeo (máx 20MB).</p>
+        ) : (
+          <ul className="space-y-1">
+            {list.map((a) => (
+              <li key={a.id} className="flex items-center justify-between text-sm bg-background border rounded px-2 py-1">
+                <button onClick={() => openAttachment(a)} className="flex items-center gap-2 text-left flex-1 truncate hover:underline">
+                  <FileText className="h-4 w-4 text-muted-foreground" />
+                  <span className="truncate">{a.file_name}</span>
+                  <ExternalLink className="h-3 w-3 text-muted-foreground" />
+                </button>
+                <Button size="icon" variant="ghost" onClick={() => deleteAttachment(a)}>
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    );
+  };
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-3xl overflow-y-auto">
@@ -257,30 +447,32 @@ export function QuickRecord({
           </TabsList>
 
           <TabsContent value="anamnese" className="space-y-4 mt-4">
-            {field('chief_complaint', 'Queixa principal', 2, 'Motivo da consulta relatado pelo paciente')}
-            {field('current_illness_history', 'História da doença atual (HDA)', 5, 'Início, evolução, fatores de melhora/piora...')}
-            {field('past_medical_history', 'Antecedentes pessoais', 3, 'Doenças, cirurgias, internações prévias')}
+            {field('chief_complaint', 'Queixa principal', 2)}
+            {field('current_illness_history', 'História da doença atual (HDA)', 5)}
+            {field('past_medical_history', 'Antecedentes pessoais', 3)}
             {field('family_history', 'Antecedentes familiares', 2)}
-            {field('allergies', 'Alergias', 2, 'Medicamentos, alimentos, etc.')}
+            {field('allergies', 'Alergias', 2)}
             {field('current_medications', 'Medicações em uso', 3)}
-            {field('lifestyle_habits', 'Hábitos de vida', 2, 'Tabagismo, etilismo, atividade física, sono...')}
+            {field('lifestyle_habits', 'Hábitos de vida', 2)}
+            <AttachmentsBlock section="anamnese" />
           </TabsContent>
 
           <TabsContent value="exame" className="space-y-4 mt-4">
             {field('physical_examination', 'Exame físico e sinais vitais', 10,
-              'PA: __/__ mmHg | FC: __ bpm | FR: __ irpm | Sat O2: __% | T: __°C | Peso: __ kg | Altura: __ m\n\nDescreva achados ao exame...')}
+              'PA: __/__ mmHg | FC: __ bpm | FR: __ irpm | Sat O2: __% | T: __°C | Peso: __ kg | Altura: __ m')}
+            <AttachmentsBlock section="exame" />
           </TabsContent>
 
           <TabsContent value="conduta" className="space-y-4 mt-4">
             {field('diagnosis', 'Hipótese diagnóstica / CID-10', 3)}
-            {field('treatment_plan', 'Conduta / Plano terapêutico', 6, 'Exames solicitados, medicações, orientações, retorno...')}
+            {field('treatment_plan', 'Conduta / Plano terapêutico', 6)}
             {field('notes', 'Evolução e observações', 4)}
+            <AttachmentsBlock section="conduta" />
           </TabsContent>
 
           <TabsContent value="prescription" className="space-y-4 mt-4">
-            <p className="text-xs text-muted-foreground">A prescrição é gerada a partir do campo "Conduta / Plano terapêutico".</p>
-            {field('treatment_plan', 'Prescrição', 12,
-              '1. Dipirona 500mg — 1 cp VO 6/6h por 3 dias\n2. ...')}
+            <p className="text-xs text-muted-foreground">A receita é gerada a partir do campo "Conduta / Plano terapêutico".</p>
+            {field('treatment_plan', 'Prescrição', 12)}
             <Button onClick={generatePrescriptionPdf} className="gap-2">
               <Pill className="h-4 w-4" />Gerar PDF da Receita
             </Button>
