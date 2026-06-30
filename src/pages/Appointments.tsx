@@ -162,7 +162,8 @@ export default function Appointments() {
         patient:patients(id, full_name),
         professional:professionals(id, full_name),
         procedure:procedures(id, name, private_price),
-        health_insurance:health_insurances(id, name)
+        health_insurance:health_insurances(id, name),
+        administrator:administrators(id, name)
       `)
       .order('appointment_date')
       .order('start_time');
