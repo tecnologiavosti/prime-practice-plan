@@ -852,6 +852,8 @@ export default function MedicalGuides() {
                 {formData.administrator_id && !insurances.some(i => insAdminMap.some(m => m.administrator_id === formData.administrator_id && m.insurance_id === i.id)) && (
                   <p className="text-xs text-destructive">Esta administradora ainda não possui convênios cadastrados.</p>
                 )}
+              </div>
+
 
               {/* Profissional Executante */}
               <div className="space-y-2">
