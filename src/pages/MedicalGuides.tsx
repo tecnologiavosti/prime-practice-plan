@@ -166,6 +166,7 @@ export default function MedicalGuides() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
   const [attachmentUrl, setAttachmentUrl] = useState<string>('');
+  const [insuranceRate, setInsuranceRate] = useState<number>(0);
   const { toast } = useToast();
 
   useEffect(() => {
