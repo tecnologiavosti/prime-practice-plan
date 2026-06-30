@@ -1023,6 +1023,7 @@ export type Database = {
           package_id: string
           procedure_id: string
           quantity: number
+          section_id: string | null
         }
         Insert: {
           created_at?: string
@@ -1030,6 +1031,7 @@ export type Database = {
           package_id: string
           procedure_id: string
           quantity?: number
+          section_id?: string | null
         }
         Update: {
           created_at?: string
@@ -1037,6 +1039,7 @@ export type Database = {
           package_id?: string
           procedure_id?: string
           quantity?: number
+          section_id?: string | null
         }
         Relationships: [
           {
@@ -1051,6 +1054,51 @@ export type Database = {
             columns: ["procedure_id"]
             isOneToOne: false
             referencedRelation: "procedures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "package_procedures_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "package_sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      package_sections: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          package_id: string
+          section_value: number
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          package_id: string
+          section_value?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          package_id?: string
+          section_value?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "package_sections_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "private_packages"
             referencedColumns: ["id"]
           },
         ]
