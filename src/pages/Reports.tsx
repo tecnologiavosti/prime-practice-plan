@@ -49,6 +49,53 @@ function downloadCSV(name: string, csv: string) {
   URL.revokeObjectURL(url);
 }
 
+async function exportPDF(opts: {
+  title: string;
+  period: string;
+  fileName: string;
+  headers: string[];
+  rows: (string | number)[][];
+  summary?: { label: string; value: string }[];
+}) {
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+  let y = await addClinicHeader(doc, 14);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(13);
+  doc.text(opts.title, 14, y);
+  y += 5;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.text(`Período: ${opts.period}`, 14, y);
+  y += 5;
+
+  if (opts.summary?.length) {
+    const summaryRows = opts.summary.map((s) => [s.label, s.value]);
+    autoTable(doc, {
+      startY: y,
+      head: [['Indicador', 'Valor']],
+      body: summaryRows,
+      theme: 'grid',
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [16, 122, 109] },
+      margin: { left: 14, right: 14 },
+    });
+    y = (doc as any).lastAutoTable.finalY + 4;
+  }
+
+  autoTable(doc, {
+    startY: y,
+    head: [opts.headers],
+    body: opts.rows,
+    theme: 'striped',
+    styles: { fontSize: 8, cellPadding: 1.5 },
+    headStyles: { fillColor: [16, 122, 109] },
+    margin: { left: 14, right: 14 },
+  });
+
+  doc.save(`${opts.fileName}-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
+}
+
 export default function Reports() {
   const [preset, setPreset] = useState<Preset>('mes');
   const today = new Date();
