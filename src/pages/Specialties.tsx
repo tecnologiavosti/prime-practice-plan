@@ -21,7 +21,7 @@ import {
 interface Specialty { id: string; name: string; active: boolean }
 interface Insurance { id: string; name: string }
 interface Administrator { id: string; name: string }
-interface InsAdminLink { insurance_id: string; administrator_id: string }
+interface InsAdminLink { insurance_id: string; administrator_id: string; billing_rate: number | null }
 interface SpecialtyLink { specialty_id: string; health_insurance_id: string; administrator_id: string | null }
 
 // Key format: `${insuranceId}|${administratorId or ''}`
