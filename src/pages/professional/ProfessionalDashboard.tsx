@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, Wallet, CheckCircle2, Clock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Calendar, Wallet, CheckCircle2, Clock, FilePlus, Users } from 'lucide-react';
 import { format } from 'date-fns';
 
 export default function ProfessionalDashboard() {
@@ -50,9 +52,19 @@ export default function ProfessionalDashboard() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <p className="text-sm text-muted-foreground">Visão geral dos seus atendimentos e repasses</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">Dashboard</h1>
+          <p className="text-sm text-muted-foreground">Visão geral dos seus atendimentos e repasses</p>
+        </div>
+        <div className="flex gap-2">
+          <Button asChild variant="outline" className="gap-2">
+            <Link to="/professional/pacientes"><Users className="h-4 w-4" />Pacientes</Link>
+          </Button>
+          <Button asChild className="gap-2">
+            <Link to="/professional/pacientes"><FilePlus className="h-4 w-4" />Novo Prontuário</Link>
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
