@@ -81,7 +81,9 @@ const emptyForm = {
   start_time: '08:00',
   end_time: '08:30',
   consultation_type: 'particular' as 'particular' | 'convenio' | 'pacote',
+  administrator_id: '',
   health_insurance_id: '',
+  custom_amount: 0,
   notes: '',
   status: 'agendado' as 'agendado' | 'confirmado' | 'em_atendimento' | 'finalizado' | 'cancelado' | 'faltou',
 };
