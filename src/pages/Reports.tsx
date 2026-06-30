@@ -6,11 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Download, FileBarChart } from 'lucide-react';
+import { Download, FileBarChart, FileText } from 'lucide-react';
 import {
   startOfDay, endOfDay, startOfWeek, endOfWeek,
   startOfMonth, endOfMonth, startOfYear, endOfYear, format,
 } from 'date-fns';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { addClinicHeader } from '@/lib/pdfHeader';
 
 type Preset = 'dia' | 'semana' | 'mes' | 'ano' | 'personalizado';
 
@@ -44,6 +47,53 @@ function downloadCSV(name: string, csv: string) {
   a.download = `${name}-${format(new Date(), 'yyyy-MM-dd')}.csv`;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+async function exportPDF(opts: {
+  title: string;
+  period: string;
+  fileName: string;
+  headers: string[];
+  rows: (string | number)[][];
+  summary?: { label: string; value: string }[];
+}) {
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+  let y = await addClinicHeader(doc, 14);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(13);
+  doc.text(opts.title, 14, y);
+  y += 5;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.text(`Período: ${opts.period}`, 14, y);
+  y += 5;
+
+  if (opts.summary?.length) {
+    const summaryRows = opts.summary.map((s) => [s.label, s.value]);
+    autoTable(doc, {
+      startY: y,
+      head: [['Indicador', 'Valor']],
+      body: summaryRows,
+      theme: 'grid',
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [16, 122, 109] },
+      margin: { left: 14, right: 14 },
+    });
+    y = (doc as any).lastAutoTable.finalY + 4;
+  }
+
+  autoTable(doc, {
+    startY: y,
+    head: [opts.headers],
+    body: opts.rows,
+    theme: 'striped',
+    styles: { fontSize: 8, cellPadding: 1.5 },
+    headStyles: { fillColor: [16, 122, 109] },
+    margin: { left: 14, right: 14 },
+  });
+
+  doc.save(`${opts.fileName}-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
 }
 
 export default function Reports() {
@@ -267,6 +317,31 @@ export default function Reports() {
               ))}>
                 <Download className="h-4 w-4 mr-1" />CSV
               </Button>
+              <Button size="sm" variant="outline" className="ml-2" onClick={() => exportPDF({
+                title: 'Contas a Receber',
+                period: `${from} a ${to}`,
+                fileName: 'contas-a-receber',
+                headers: ['Descrição', 'Tipo', 'Status', 'Paciente', 'Convênio', 'Pagamento', 'Valor'],
+                rows: receivable.map((r) => [
+                  r.description || '',
+                  r.transaction_type,
+                  r.status,
+                  r.patient?.full_name || '—',
+                  r.health_insurance?.name || '—',
+                  fmtDate(r.payment_date || r.due_date),
+                  fmtBRL(Number(r.amount || 0)),
+                ]),
+                summary: [
+                  { label: 'Total', value: fmtBRL(recTotals.total) },
+                  { label: 'Pago', value: fmtBRL(recTotals.pago) },
+                  { label: 'Pendente', value: fmtBRL(recTotals.pendente) },
+                  { label: 'Cancelado', value: fmtBRL(recTotals.cancelado) },
+                  { label: 'Particular', value: fmtBRL(recTotals.particular) },
+                  { label: 'Convênio', value: fmtBRL(recTotals.convenio) },
+                ],
+              })}>
+                <FileText className="h-4 w-4 mr-1" />PDF
+              </Button>
             </CardHeader>
             <CardContent>
               <Table>
@@ -321,6 +396,22 @@ export default function Reports() {
                 ]
               ))}>
                 <Download className="h-4 w-4 mr-1" />CSV
+              </Button>
+              <Button size="sm" variant="outline" className="ml-2" onClick={() => exportPDF({
+                title: 'Fluxo de Caixa',
+                period: `${from} a ${to}`,
+                fileName: 'fluxo-caixa',
+                headers: ['Data', 'Tipo', 'Categoria', 'Descrição', 'Valor'],
+                rows: cashflow.map((c) => [
+                  fmtDate(c.entry_date), c.entry_type, c.category, c.description || '', fmtBRL(Number(c.amount)),
+                ]),
+                summary: [
+                  { label: 'Entradas', value: fmtBRL(cfTotals.inAmt) },
+                  { label: 'Saídas', value: fmtBRL(cfTotals.outAmt) },
+                  { label: 'Saldo', value: fmtBRL(cfTotals.saldo) },
+                ],
+              })}>
+                <FileText className="h-4 w-4 mr-1" />PDF
               </Button>
             </CardHeader>
             <CardContent>
@@ -392,6 +483,32 @@ export default function Reports() {
               ))}>
                 <Download className="h-4 w-4 mr-1" />CSV
               </Button>
+              <Button size="sm" variant="outline" className="ml-2" onClick={() => exportPDF({
+                title: 'Agendamentos',
+                period: `${from} a ${to}`,
+                fileName: 'agendamentos',
+                headers: ['Data', 'Paciente', 'Profissional', 'Tipo', 'Convênio', 'Adm.', 'Status', 'Valor'],
+                rows: appointments.map((a) => [
+                  `${fmtDate(a.appointment_date)} ${a.start_time?.slice(0, 5) || ''}`,
+                  a.patient?.full_name || '—',
+                  a.professional?.full_name || '—',
+                  a.consultation_type,
+                  a.health_insurance?.name || '—',
+                  a.administrator?.name || '—',
+                  a.status,
+                  fmtBRL(Number(a.custom_amount ?? a.procedure?.private_price ?? 0)),
+                ]),
+                summary: [
+                  { label: 'Total', value: String(apMetrics.total) },
+                  { label: 'Finalizados', value: String(apMetrics.finalizado || 0) },
+                  { label: 'Agendados', value: String(apMetrics.agendado || 0) },
+                  { label: 'Cancelados', value: String(apMetrics.cancelado || 0) },
+                  { label: 'Faltas', value: String(apMetrics.faltou || 0) },
+                  { label: 'Faturado', value: fmtBRL(apMetrics.valor) },
+                ],
+              })}>
+                <FileText className="h-4 w-4 mr-1" />PDF
+              </Button>
             </CardHeader>
             <CardContent>
               <Table>
@@ -441,6 +558,19 @@ export default function Reports() {
               }}>
                 <Download className="h-4 w-4 mr-1" />CSV
               </Button>
+              <Button size="sm" variant="outline" className="ml-2" onClick={() => {
+                const rows: (string | number)[][] = [];
+                adminInsSummary.forEach((a) => a.items.forEach((it) => rows.push([a.name, it.convenio, fmtBRL(it.valor)])));
+                exportPDF({
+                  title: 'Administradoras e Convênios',
+                  period: `${from} a ${to}`,
+                  fileName: 'administradoras-convenios',
+                  headers: ['Administradora', 'Convênio', 'Valor'],
+                  rows,
+                });
+              }}>
+                <FileText className="h-4 w-4 mr-1" />PDF
+              </Button>
             </CardHeader>
             <CardContent className="space-y-4">
               {adminInsSummary.map((a) => (
@@ -484,6 +614,19 @@ export default function Reports() {
                 ]));
               }}>
                 <Download className="h-4 w-4 mr-1" />CSV
+              </Button>
+              <Button size="sm" variant="outline" className="ml-2" onClick={() => {
+                const rows: (string | number)[][] = [];
+                specSummary.forEach((s) => s.items.forEach((it) => rows.push([s.name, it.convenio, it.administradora])));
+                exportPDF({
+                  title: 'Especialidades, Convênios e Administradoras',
+                  period: `${from} a ${to}`,
+                  fileName: 'especialidades',
+                  headers: ['Especialidade', 'Convênio', 'Administradora'],
+                  rows,
+                });
+              }}>
+                <FileText className="h-4 w-4 mr-1" />PDF
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
