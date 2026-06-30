@@ -501,11 +501,6 @@ export default function Administrators() {
               ) : (
                 healthInsurances.map(insurance => {
                   const settings = insuranceSettings.get(insurance.id);
-                  const otherAdminIds = insurance.administrator_ids.filter(id => id !== selectedAdmin?.id);
-                  const isLinkedToOther = otherAdminIds.length > 0;
-                  const otherAdminNames = otherAdminIds
-                    .map(id => administrators.find(a => a.id === id)?.name)
-                    .filter(Boolean) as string[];
 
                   return (
                     <div
@@ -514,7 +509,7 @@ export default function Administrators() {
                         settings?.selected
                           ? 'bg-primary/5 border-primary/30'
                           : 'hover:bg-muted/50'
-                      } ${isLinkedToOther ? 'opacity-60' : ''}`}
+                      }`}
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex items-start gap-3 flex-1">
@@ -525,7 +520,7 @@ export default function Administrators() {
                             className="mt-1"
                           />
                           <div className="flex-1">
-                            <label 
+                            <label
                               htmlFor={insurance.id}
                               className="cursor-pointer block"
                             >
@@ -538,28 +533,23 @@ export default function Administrators() {
                             </label>
                           </div>
                         </div>
-                        
-                        <div className="flex items-center gap-2">
-                          {isLinkedToOther && otherAdminNames.map(n => (
-                            <Badge key={n} variant="outline" className="text-xs">{n}</Badge>
-                          ))}
-                          
-                          {settings?.selected && (
-                            <div className="flex items-center gap-2">
-                              <DollarSign className="h-4 w-4 text-muted-foreground" />
-                              <CurrencyInput
-                                placeholder="Valor"
-                                value={settings.billing_rate || 0}
-                                onChange={(val) => updateBillingRate(insurance.id, val)}
-                                className="w-28 h-8"
-                              />
-                            </div>
-                          )}
-                        </div>
+
+                        {settings?.selected && (
+                          <div className="flex items-center gap-2">
+                            <DollarSign className="h-4 w-4 text-muted-foreground" />
+                            <CurrencyInput
+                              placeholder="Valor"
+                              value={settings.billing_rate || 0}
+                              onChange={(val) => updateBillingRate(insurance.id, val)}
+                              className="w-28 h-8"
+                            />
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
                 })
+
               )}
             </div>
             <div className="flex items-center justify-between pt-2">
