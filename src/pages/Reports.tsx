@@ -6,11 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Download, FileBarChart } from 'lucide-react';
+import { Download, FileBarChart, FileText } from 'lucide-react';
 import {
   startOfDay, endOfDay, startOfWeek, endOfWeek,
   startOfMonth, endOfMonth, startOfYear, endOfYear, format,
 } from 'date-fns';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { addClinicHeader } from '@/lib/pdfHeader';
 
 type Preset = 'dia' | 'semana' | 'mes' | 'ano' | 'personalizado';
 
