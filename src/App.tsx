@@ -131,6 +131,7 @@ const App = () => (
               <Route path="/admin/repasse-convenios" element={<InsuranceReimbursements />} />
               <Route path="/admin/lotes-faturamento" element={<BillingBatches />} />
               <Route path="/admin/relatorios-financeiros" element={<FinancialReports />} />
+              <Route path="/admin/relatorios" element={<Reports />} />
               <Route path="/admin/formas-pagamento" element={<PaymentMethods />} />
               
               <Route path="/admin/escalas" element={<ScheduleConfig />} />
