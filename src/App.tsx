@@ -35,6 +35,8 @@ import Convenios from "./pages/Convenios";
 import EspecialidadePage from "./pages/Especialidade";
 import BlogPost from "./pages/BlogPost";
 import SubleasedRooms from "./pages/SubleasedRooms";
+import Prontuarios from "./pages/Prontuarios";
+import ProntuarioDetail from "./pages/ProntuarioDetail";
 
 import ScheduleConfig from "./pages/ScheduleConfig";
 import ClinicProfile from "./pages/ClinicProfile";
@@ -116,6 +118,8 @@ const App = () => (
               <Route path="/admin" element={<Dashboard />} />
               <Route path="/admin/dashboard" element={<Dashboard />} />
               <Route path="/admin/pacientes" element={<Patients />} />
+              <Route path="/admin/prontuarios" element={<Prontuarios />} />
+              <Route path="/admin/prontuarios/:patientId" element={<ProntuarioDetail />} />
               <Route path="/admin/profissionais" element={<Professionals />} />
               <Route path="/admin/procedimentos" element={<Procedures />} />
               <Route path="/admin/convenios" element={<HealthInsurances />} />
