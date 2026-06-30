@@ -37,6 +37,7 @@ export function DiverseReceiptsPanel() {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [typeFilter, setTypeFilter] = useState<string>('all');
   const [form, setForm] = useState<{
     entry_type: 'entrada' | 'saida';
     category: string;
