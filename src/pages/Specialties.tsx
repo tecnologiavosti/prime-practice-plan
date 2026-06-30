@@ -18,35 +18,48 @@ import {
 } from '@/components/ui/alert-dialog';
 
 interface Specialty { id: string; name: string; active: boolean }
-interface Insurance { id: string; name: string; active: boolean }
+interface Insurance { id: string; name: string }
+interface Administrator { id: string; name: string }
+interface InsAdminLink { insurance_id: string; administrator_id: string }
+interface SpecialtyLink { specialty_id: string; health_insurance_id: string; administrator_id: string | null }
+
+// Key format: `${insuranceId}|${administratorId or ''}`
+const k = (ins: string, adm: string | null) => `${ins}|${adm || ''}`;
 
 export default function Specialties() {
   const [specialties, setSpecialties] = useState<Specialty[]>([]);
   const [insurances, setInsurances] = useState<Insurance[]>([]);
-  const [linkedMap, setLinkedMap] = useState<Record<string, string[]>>({}); // specialty_id -> insurance_ids
+  const [administrators, setAdministrators] = useState<Administrator[]>([]);
+  const [insAdminLinks, setInsAdminLinks] = useState<InsAdminLink[]>([]);
+  const [linkedMap, setLinkedMap] = useState<Record<string, Set<string>>>({}); // specialty_id -> Set of keys
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Specialty | null>(null);
   const [name, setName] = useState('');
-  const [selectedInsurances, setSelectedInsurances] = useState<string[]>([]);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => { fetchAll(); }, []);
 
   async function fetchAll() {
-    const [s, i, l] = await Promise.all([
+    const [s, i, a, m, l] = await Promise.all([
       supabase.from('specialties').select('*').order('name'),
-      supabase.from('health_insurances').select('id, name, active').eq('active', true).order('name'),
-      supabase.from('specialty_health_insurances').select('specialty_id, health_insurance_id'),
+      supabase.from('health_insurances').select('id, name').eq('active', true).order('name'),
+      supabase.from('administrators').select('id, name').eq('active', true).order('name'),
+      supabase.from('insurance_administrators_map').select('insurance_id, administrator_id'),
+      supabase.from('specialty_health_insurances').select('specialty_id, health_insurance_id, administrator_id'),
     ]);
     if (s.error) toast({ variant: 'destructive', title: 'Erro', description: s.error.message });
     setSpecialties(s.data || []);
     setInsurances(i.data || []);
-    const map: Record<string, string[]> = {};
+    setAdministrators(a.data || []);
+    setInsAdminLinks((m.data || []) as InsAdminLink[]);
+    const map: Record<string, Set<string>> = {};
     (l.data || []).forEach((r: any) => {
-      map[r.specialty_id] = [...(map[r.specialty_id] || []), r.health_insurance_id];
+      if (!map[r.specialty_id]) map[r.specialty_id] = new Set();
+      map[r.specialty_id].add(k(r.health_insurance_id, r.administrator_id));
     });
     setLinkedMap(map);
     setLoading(false);
@@ -55,30 +68,42 @@ export default function Specialties() {
   function openNew() {
     setEditing(null);
     setName('');
-    setSelectedInsurances([]);
+    setSelected(new Set());
     setDialogOpen(true);
   }
   function openEdit(s: Specialty) {
     setEditing(s);
     setName(s.name);
-    setSelectedInsurances(linkedMap[s.id] || []);
+    setSelected(new Set(linkedMap[s.id] || []));
     setDialogOpen(true);
   }
 
-  async function syncInsurances(specialtyId: string) {
-    const current = linkedMap[specialtyId] || [];
-    const toAdd = selectedInsurances.filter((id) => !current.includes(id));
-    const toRemove = current.filter((id) => !selectedInsurances.includes(id));
+  async function syncLinks(specialtyId: string) {
+    const current = linkedMap[specialtyId] || new Set<string>();
+    const target = selected;
+    const toAdd: SpecialtyLink[] = [];
+    const toRemove: SpecialtyLink[] = [];
+    target.forEach((key) => {
+      if (!current.has(key)) {
+        const [ins, adm] = key.split('|');
+        toAdd.push({ specialty_id: specialtyId, health_insurance_id: ins, administrator_id: adm || null });
+      }
+    });
+    current.forEach((key) => {
+      if (!target.has(key)) {
+        const [ins, adm] = key.split('|');
+        toRemove.push({ specialty_id: specialtyId, health_insurance_id: ins, administrator_id: adm || null });
+      }
+    });
     if (toAdd.length > 0) {
-      await supabase.from('specialty_health_insurances').insert(
-        toAdd.map((health_insurance_id) => ({ specialty_id: specialtyId, health_insurance_id }))
-      );
+      await supabase.from('specialty_health_insurances').insert(toAdd);
     }
-    if (toRemove.length > 0) {
-      await supabase.from('specialty_health_insurances')
-        .delete()
-        .eq('specialty_id', specialtyId)
-        .in('health_insurance_id', toRemove);
+    for (const r of toRemove) {
+      let q = supabase.from('specialty_health_insurances').delete()
+        .eq('specialty_id', r.specialty_id)
+        .eq('health_insurance_id', r.health_insurance_id);
+      q = r.administrator_id ? q.eq('administrator_id', r.administrator_id) : q.is('administrator_id', null);
+      await q;
     }
   }
 
@@ -98,7 +123,7 @@ export default function Specialties() {
       specialtyId = data.id;
     }
 
-    if (specialtyId) await syncInsurances(specialtyId);
+    if (specialtyId) await syncLinks(specialtyId);
     toast({ title: editing ? 'Especialidade atualizada!' : 'Especialidade cadastrada!' });
     setDialogOpen(false);
     fetchAll();
@@ -113,9 +138,18 @@ export default function Specialties() {
     fetchAll();
   }
 
-  function toggleInsurance(id: string) {
-    setSelectedInsurances((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+  function toggleKey(key: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
   }
+
+  const adminsForInsurance = (insId: string): Administrator[] => {
+    const adminIds = insAdminLinks.filter((l) => l.insurance_id === insId).map((l) => l.administrator_id);
+    return administrators.filter((a) => adminIds.includes(a.id));
+  };
 
   const filtered = specialties.filter((s) => s.name.toLowerCase().includes(search.toLowerCase()));
 
@@ -124,13 +158,13 @@ export default function Specialties() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Especialidades</h1>
-          <p className="text-muted-foreground">Gerencie especialidades e seus convênios vinculados</p>
+          <p className="text-muted-foreground">Gerencie especialidades e seus convênios/administradoras vinculados</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={openNew}><Plus className="mr-2 h-4 w-4" /> Nova Especialidade</Button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editing ? 'Editar Especialidade' : 'Nova Especialidade'}</DialogTitle>
             </DialogHeader>
@@ -140,20 +174,47 @@ export default function Specialties() {
                 <Input required value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex: Cardiologia" />
               </div>
               <div className="space-y-2">
-                <Label className="flex items-center gap-1.5"><Building2 className="h-4 w-4" /> Convênios atendidos</Label>
-                <p className="text-xs text-muted-foreground">Selecione os convênios que cobrem esta especialidade. Aparecerão na página pública de Convênios.</p>
-                <div className="border rounded-md p-3 max-h-60 overflow-y-auto space-y-2">
+                <Label className="flex items-center gap-1.5"><Building2 className="h-4 w-4" /> Convênios e Administradoras</Label>
+                <p className="text-xs text-muted-foreground">
+                  Marque o convênio e, dentro dele, as administradoras que cobrem esta especialidade.
+                </p>
+                <div className="border rounded-md p-3 max-h-[400px] overflow-y-auto space-y-3">
                   {insurances.length === 0 ? (
                     <p className="text-xs text-muted-foreground">Nenhum convênio ativo cadastrado.</p>
-                  ) : insurances.map((ins) => (
-                    <label key={ins.id} className="flex items-center gap-2 text-sm cursor-pointer">
-                      <Checkbox
-                        checked={selectedInsurances.includes(ins.id)}
-                        onCheckedChange={() => toggleInsurance(ins.id)}
-                      />
-                      {ins.name}
-                    </label>
-                  ))}
+                  ) : insurances.map((ins) => {
+                    const admins = adminsForInsurance(ins.id);
+                    const directKey = k(ins.id, null);
+                    return (
+                      <div key={ins.id} className="rounded-md border p-3 space-y-2">
+                        <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
+                          <Checkbox
+                            checked={selected.has(directKey)}
+                            onCheckedChange={() => toggleKey(directKey)}
+                          />
+                          {ins.name}
+                          <span className="ml-auto text-[11px] text-muted-foreground">
+                            {admins.length === 0 ? 'sem administradoras' : `${admins.length} administradora(s)`}
+                          </span>
+                        </label>
+                        {admins.length > 0 && (
+                          <div className="ml-6 grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                            {admins.map((adm) => {
+                              const key = k(ins.id, adm.id);
+                              return (
+                                <label key={adm.id} className="flex items-center gap-2 text-xs cursor-pointer text-muted-foreground">
+                                  <Checkbox
+                                    checked={selected.has(key)}
+                                    onCheckedChange={() => toggleKey(key)}
+                                  />
+                                  {adm.name}
+                                </label>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
               <div className="flex justify-end gap-2">
@@ -177,7 +238,7 @@ export default function Specialties() {
           <TableHeader>
             <TableRow>
               <TableHead>Nome</TableHead>
-              <TableHead>Convênios</TableHead>
+              <TableHead>Vínculos</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="w-[80px]">Ações</TableHead>
             </TableRow>
@@ -191,7 +252,7 @@ export default function Specialties() {
               <TableRow key={spec.id}>
                 <TableCell className="font-medium">{spec.name}</TableCell>
                 <TableCell className="text-sm text-muted-foreground">
-                  {(linkedMap[spec.id]?.length || 0)} convênio(s)
+                  {(linkedMap[spec.id]?.size || 0)} vínculo(s)
                 </TableCell>
                 <TableCell>
                   <span className={`rounded-full px-2 py-1 text-xs ${spec.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
