@@ -108,6 +108,7 @@ export default function FinancialTransactions() {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [procedures, setProcedures] = useState<Procedure[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<'geral' | 'particular' | 'convenio' | 'diversos'>('geral');
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | 'particular' | 'convenio'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pendente' | 'pago' | 'cancelado'>('all');
