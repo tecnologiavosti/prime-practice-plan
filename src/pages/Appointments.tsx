@@ -792,6 +792,38 @@ export default function Appointments() {
               {patients.map((p) => <SelectItem key={p.id} value={p.id}>{p.full_name}</SelectItem>)}
             </SelectContent>
           </Select>
+
+          <Select value={filterType || 'all'} onValueChange={(v) => setFilterType(v === 'all' ? '' : v)}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="Todos os tipos" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os tipos</SelectItem>
+              <SelectItem value="particular">Particular</SelectItem>
+              <SelectItem value="convenio">Convênio</SelectItem>
+              <SelectItem value="pacote">Pacote</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={filterAdministratorId || 'all'} onValueChange={(v) => setFilterAdministratorId(v === 'all' ? '' : v)}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Todas as administradoras" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas as administradoras</SelectItem>
+              {administrators.map((a) => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
+
+          <Select value={filterInsuranceId || 'all'} onValueChange={(v) => setFilterInsuranceId(v === 'all' ? '' : v)}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Todos os convênios" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os convênios</SelectItem>
+              {insurances.map((i) => <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
