@@ -170,16 +170,31 @@ export function DiverseReceiptsPanel() {
         </Dialog>
       </div>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-sm font-medium text-muted-foreground">Total no período</CardTitle>
-          <TrendingUp className="h-4 w-4 text-green-600" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{formatCurrency(total)}</div>
-          <p className="text-xs text-muted-foreground">{filtered.length} recebimentos</p>
-        </CardContent>
-      </Card>
+      <div className="grid gap-3 md:grid-cols-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Entradas</CardTitle>
+            <TrendingUp className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent><div className="text-2xl font-bold">{formatCurrency(totalIn)}</div></CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Saídas</CardTitle>
+            <TrendingUp className="h-4 w-4 text-red-600 rotate-180" />
+          </CardHeader>
+          <CardContent><div className="text-2xl font-bold">{formatCurrency(totalOut)}</div></CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Saldo</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatCurrency(total)}</div>
+            <p className="text-xs text-muted-foreground">{filtered.length} lançamentos</p>
+          </CardContent>
+        </Card>
+      </div>
 
       <div className="flex flex-wrap items-end gap-3">
         <div className="space-y-1">
@@ -189,6 +204,17 @@ export function DiverseReceiptsPanel() {
         <div className="space-y-1">
           <Label className="text-xs">Até</Label>
           <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+        </div>
+        <div className="space-y-1 min-w-[140px]">
+          <Label className="text-xs">Tipo</Label>
+          <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos</SelectItem>
+              <SelectItem value="entrada">Entrada</SelectItem>
+              <SelectItem value="saida">Saída</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div className="space-y-1 min-w-[180px]">
           <Label className="text-xs">Categoria</Label>
