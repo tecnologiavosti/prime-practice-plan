@@ -609,7 +609,7 @@ export default function Appointments() {
                   <Label>Tipo de Consulta *</Label>
                   <Select
                     value={formData.consultation_type}
-                    onValueChange={(v) => setFormData({ ...formData, consultation_type: v as any, health_insurance_id: '' })}
+                    onValueChange={(v) => setFormData({ ...formData, consultation_type: v as any, health_insurance_id: '', administrator_id: '', custom_amount: 0 })}
                   >
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -620,19 +620,49 @@ export default function Appointments() {
                   </Select>
                 </div>
                 {formData.consultation_type === 'convenio' && (
-                  <div className="space-y-2">
-                    <Label>Convênio *</Label>
-                    <Select value={formData.health_insurance_id} onValueChange={(v) => setFormData({ ...formData, health_insurance_id: v })}>
-                      <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                      <SelectContent>
-                        {insurances.length === 0 ? (
-                          <SelectItem value="none" disabled>Nenhum convênio ativo</SelectItem>
-                        ) : (
-                          insurances.map((i) => <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>)
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  <>
+                    <div className="space-y-2">
+                      <Label>Administradora *</Label>
+                      <Select
+                        value={formData.administrator_id}
+                        onValueChange={(v) => setFormData({ ...formData, administrator_id: v, health_insurance_id: '', custom_amount: 0 })}
+                      >
+                        <SelectTrigger><SelectValue placeholder="Selecione a administradora" /></SelectTrigger>
+                        <SelectContent>
+                          {administrators.length === 0 ? (
+                            <SelectItem value="none" disabled>Nenhuma administradora cadastrada</SelectItem>
+                          ) : (
+                            administrators.map((a) => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Convênio *</Label>
+                      <Select
+                        value={formData.health_insurance_id}
+                        onValueChange={(v) => {
+                          const rate = insAdminMap.find(m => m.administrator_id === formData.administrator_id && m.insurance_id === v)?.billing_rate;
+                          setFormData({ ...formData, health_insurance_id: v, custom_amount: Number(rate) || 0 });
+                        }}
+                        disabled={!formData.administrator_id}
+                      >
+                        <SelectTrigger><SelectValue placeholder={formData.administrator_id ? 'Selecione' : 'Escolha a administradora'} /></SelectTrigger>
+                        <SelectContent>
+                          {(() => {
+                            const ids = insAdminMap
+                              .filter(m => m.administrator_id === formData.administrator_id)
+                              .map(m => m.insurance_id);
+                            const filtered = insurances.filter(i => ids.includes(i.id));
+                            if (filtered.length === 0) {
+                              return <SelectItem value="none" disabled>Nenhum convênio nesta administradora</SelectItem>;
+                            }
+                            return filtered.map((i) => <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>);
+                          })()}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </>
                 )}
                 {formData.consultation_type === 'pacote' && (
                   <div className="space-y-2">
@@ -651,7 +681,16 @@ export default function Appointments() {
                     </Select>
                   </div>
                 )}
-                {formData.procedure_id && (formData.consultation_type === 'particular' || (formData.consultation_type === 'convenio' && formData.health_insurance_id)) && (
+                {formData.consultation_type === 'convenio' && formData.health_insurance_id && (
+                  <div className="space-y-2">
+                    <Label>Valor (R$) — editável</Label>
+                    <CurrencyInput
+                      value={formData.custom_amount}
+                      onChange={(v) => setFormData({ ...formData, custom_amount: v })}
+                    />
+                  </div>
+                )}
+                {formData.procedure_id && formData.consultation_type === 'particular' && (
                   <div className="space-y-2">
                     <Label>Valor do Procedimento</Label>
                     <div className="flex h-10 items-center rounded-md border bg-muted px-3 text-sm font-medium">
