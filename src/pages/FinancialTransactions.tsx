@@ -38,6 +38,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { DiverseReceiptsPanel } from '@/components/financial/DiverseReceiptsPanel';
 
 interface Transaction {
   id: string;
@@ -107,6 +108,7 @@ export default function FinancialTransactions() {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [procedures, setProcedures] = useState<Procedure[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<'geral' | 'particular' | 'convenio' | 'diversos'>('geral');
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | 'particular' | 'convenio'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pendente' | 'pago' | 'cancelado'>('all');
@@ -126,6 +128,12 @@ export default function FinancialTransactions() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (tab === 'particular') setTypeFilter('particular');
+    else if (tab === 'convenio') setTypeFilter('convenio');
+    else if (tab === 'geral') setTypeFilter('all');
+  }, [tab]);
 
   const [stats, setStats] = useState({
     totalPendente: 0,
@@ -496,7 +504,21 @@ export default function FinancialTransactions() {
         </Dialog>
       </div>
 
+      <Tabs value={tab} onValueChange={(v) => setTab(v as any)} className="mb-4">
+        <TabsList>
+          <TabsTrigger value="geral">Geral</TabsTrigger>
+          <TabsTrigger value="particular">A receber — Particular</TabsTrigger>
+          <TabsTrigger value="convenio">A receber — Convênios</TabsTrigger>
+          <TabsTrigger value="diversos">Recebidos diversos</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      {tab === 'diversos' ? (
+        <DiverseReceiptsPanel />
+      ) : (
+      <>
       {/* Stats Cards (refletem os filtros aplicados) */}
+
       {(() => {
         const pend = filtered.filter((t) => t.status === 'pendente');
         const pagos = filtered.filter((t) => t.status === 'pago');
@@ -701,6 +723,10 @@ export default function FinancialTransactions() {
           </TableBody>
         </Table>
       </div>
+      </>
+      )}
+
+
 
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>
