@@ -143,6 +143,8 @@ export default function Appointments() {
         fetchPackages(),
         fetchProcedureInsurancePrices(),
         fetchPaymentMethods(),
+        fetchAdministrators(),
+        fetchInsAdminMap(),
       ]);
     } catch (err) {
       toast({ variant: 'destructive', title: 'Erro', description: 'Erro ao carregar dados' });
@@ -155,6 +157,7 @@ export default function Appointments() {
       .from('appointments')
       .select(`
         id, appointment_date, start_time, end_time, status, consultation_type, notes,
+        administrator_id, custom_amount,
         patient:patients(id, full_name),
         professional:professionals(id, full_name),
         procedure:procedures(id, name, private_price),
