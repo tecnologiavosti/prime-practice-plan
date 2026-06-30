@@ -301,8 +301,9 @@ export default function Appointments() {
       const apt = appointments.find(a => a.id === appointmentId);
       if (apt) {
         setFinalizingAppointment(apt);
+        const custom = (apt as any).custom_amount;
         const price = (apt.procedure as any)?.private_price;
-        setFinalizeAmount(price ? Number(price) : 0);
+        setFinalizeAmount(custom ? Number(custom) : (price ? Number(price) : 0));
         setFinalizePaymentMethodId('');
         setFinalizeNotes('');
         setFinalizeDialogOpen(true);
