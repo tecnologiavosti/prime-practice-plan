@@ -133,6 +133,21 @@ export default function Specialties() {
     }
 
     if (specialtyId) await syncLinks(specialtyId);
+
+    // Persist price edits to insurance_administrators_map
+    const priceUpdates = insAdminLinks.filter((l) => {
+      const key = k(l.insurance_id, l.administrator_id);
+      const newVal = prices[key] ?? 0;
+      return Number(l.billing_rate || 0) !== newVal;
+    });
+    for (const l of priceUpdates) {
+      const key = k(l.insurance_id, l.administrator_id);
+      await supabase.from('insurance_administrators_map')
+        .update({ billing_rate: prices[key] ?? 0 })
+        .eq('insurance_id', l.insurance_id)
+        .eq('administrator_id', l.administrator_id);
+    }
+
     toast({ title: editing ? 'Especialidade atualizada!' : 'Especialidade cadastrada!' });
     setDialogOpen(false);
     fetchAll();
