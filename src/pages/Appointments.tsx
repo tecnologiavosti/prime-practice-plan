@@ -50,6 +50,8 @@ interface HealthInsurance { id: string; name: string; }
 interface PrivatePackage { id: string; name: string; total_price: number; }
 interface ProcedureInsurancePrice { procedure_id: string; health_insurance_id: string; price: number; }
 interface PaymentMethod { id: string; name: string; }
+interface Administrator { id: string; name: string; }
+interface InsAdminMap { insurance_id: string; administrator_id: string; billing_rate: number | null; }
 
 type ViewMode = 'daily' | 'monthly';
 
