@@ -723,6 +723,10 @@ export default function FinancialTransactions() {
           </TableBody>
         </Table>
       </div>
+      </>
+      )}
+
+
 
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>
