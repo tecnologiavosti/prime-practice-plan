@@ -432,7 +432,9 @@ export default function Appointments() {
       start_time: apt.start_time?.slice(0, 5) || '08:00',
       end_time: apt.end_time?.slice(0, 5) || '08:30',
       consultation_type: apt.consultation_type as any,
+      administrator_id: apt.administrator_id || '',
       health_insurance_id: apt.health_insurance?.id || '',
+      custom_amount: Number(apt.custom_amount) || 0,
       notes: apt.notes || '',
       status: apt.status as any,
     });
