@@ -899,6 +899,7 @@ export type Database = {
       }
       medical_guides: {
         Row: {
+          administrator_id: string | null
           appointment_id: string | null
           attachment_url: string | null
           cid_10: string | null
@@ -920,6 +921,7 @@ export type Database = {
           validity_date: string | null
         }
         Insert: {
+          administrator_id?: string | null
           appointment_id?: string | null
           attachment_url?: string | null
           cid_10?: string | null
@@ -941,6 +943,7 @@ export type Database = {
           validity_date?: string | null
         }
         Update: {
+          administrator_id?: string | null
           appointment_id?: string | null
           attachment_url?: string | null
           cid_10?: string | null
@@ -962,6 +965,13 @@ export type Database = {
           validity_date?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "medical_guides_administrator_id_fkey"
+            columns: ["administrator_id"]
+            isOneToOne: false
+            referencedRelation: "administrators"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "medical_guides_appointment_id_fkey"
             columns: ["appointment_id"]
