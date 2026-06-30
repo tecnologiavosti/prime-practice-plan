@@ -317,6 +317,31 @@ export default function Reports() {
               ))}>
                 <Download className="h-4 w-4 mr-1" />CSV
               </Button>
+              <Button size="sm" variant="outline" className="ml-2" onClick={() => exportPDF({
+                title: 'Contas a Receber',
+                period: `${from} a ${to}`,
+                fileName: 'contas-a-receber',
+                headers: ['Descrição', 'Tipo', 'Status', 'Paciente', 'Convênio', 'Pagamento', 'Valor'],
+                rows: receivable.map((r) => [
+                  r.description || '',
+                  r.transaction_type,
+                  r.status,
+                  r.patient?.full_name || '—',
+                  r.health_insurance?.name || '—',
+                  fmtDate(r.payment_date || r.due_date),
+                  fmtBRL(Number(r.amount || 0)),
+                ]),
+                summary: [
+                  { label: 'Total', value: fmtBRL(recTotals.total) },
+                  { label: 'Pago', value: fmtBRL(recTotals.pago) },
+                  { label: 'Pendente', value: fmtBRL(recTotals.pendente) },
+                  { label: 'Cancelado', value: fmtBRL(recTotals.cancelado) },
+                  { label: 'Particular', value: fmtBRL(recTotals.particular) },
+                  { label: 'Convênio', value: fmtBRL(recTotals.convenio) },
+                ],
+              })}>
+                <FileText className="h-4 w-4 mr-1" />PDF
+              </Button>
             </CardHeader>
             <CardContent>
               <Table>
