@@ -233,6 +233,7 @@ export function DiverseReceiptsPanel() {
           <TableHeader>
             <TableRow>
               <TableHead>Data</TableHead>
+              <TableHead>Tipo</TableHead>
               <TableHead>Categoria</TableHead>
               <TableHead>Descrição</TableHead>
               <TableHead>Valor</TableHead>
@@ -241,15 +242,22 @@ export function DiverseReceiptsPanel() {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={5} className="text-center">Carregando...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="text-center">Carregando...</TableCell></TableRow>
             ) : filtered.length === 0 ? (
-              <TableRow><TableCell colSpan={5} className="text-center">Nenhum recebimento encontrado</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="text-center">Nenhum lançamento encontrado</TableCell></TableRow>
             ) : filtered.map((e) => (
               <TableRow key={e.id}>
                 <TableCell>{format(new Date(e.entry_date + 'T00:00:00'), 'dd/MM/yyyy')}</TableCell>
+                <TableCell>
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${e.entry_type === 'entrada' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                    {e.entry_type === 'entrada' ? 'Entrada' : 'Saída'}
+                  </span>
+                </TableCell>
                 <TableCell>{e.category}</TableCell>
                 <TableCell>{e.description || '-'}</TableCell>
-                <TableCell className="font-medium">{formatCurrency(Number(e.amount))}</TableCell>
+                <TableCell className={`font-medium ${e.entry_type === 'saida' ? 'text-red-600' : ''}`}>
+                  {e.entry_type === 'saida' ? '- ' : ''}{formatCurrency(Number(e.amount))}
+                </TableCell>
                 <TableCell>
                   <Button size="icon" variant="ghost" onClick={() => handleDelete(e.id)}>
                     <Trash2 className="h-4 w-4 text-destructive" />
