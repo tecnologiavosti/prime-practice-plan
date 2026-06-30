@@ -521,38 +521,110 @@ export default function FinancialTransactions() {
       </div>
 
       {/* Filters */}
-      <div className="mb-4 flex flex-wrap gap-4">
-        <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Buscar..."
-            className="pl-10"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+      <div className="mb-4 space-y-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative flex-1 min-w-[220px] max-w-sm">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Buscar paciente, guia, descrição..."
+              className="pl-10"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <Select value={typeFilter} onValueChange={(v: any) => setTypeFilter(v)}>
+            <SelectTrigger className="w-[150px]"><SelectValue placeholder="Tipo" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os tipos</SelectItem>
+              <SelectItem value="particular">Particular</SelectItem>
+              <SelectItem value="convenio">Convênio</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
+            <SelectTrigger className="w-[150px]"><SelectValue placeholder="Status" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos status</SelectItem>
+              <SelectItem value="pendente">Pendente</SelectItem>
+              <SelectItem value="pago">Pago</SelectItem>
+              <SelectItem value="cancelado">Cancelado</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button variant="outline" size="sm" onClick={() => setShowFilters((s) => !s)}>
+            {showFilters ? 'Ocultar filtros' : 'Mais filtros'}
+          </Button>
+          <Button variant="ghost" size="sm" onClick={clearFilters}>Limpar</Button>
         </div>
-        <Select value={typeFilter} onValueChange={(v: any) => setTypeFilter(v)}>
-          <SelectTrigger className="w-[150px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="particular">Particular</SelectItem>
-            <SelectItem value="convenio">Convênio</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
-          <SelectTrigger className="w-[150px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="pendente">Pendente</SelectItem>
-            <SelectItem value="pago">Pago</SelectItem>
-            <SelectItem value="cancelado">Cancelado</SelectItem>
-          </SelectContent>
-        </Select>
+
+        {showFilters && (
+          <div className="grid gap-3 rounded-md border bg-muted/30 p-4 md:grid-cols-3 lg:grid-cols-4">
+            <div className="space-y-1">
+              <Label className="text-xs">Profissional</Label>
+              <Select value={professionalFilter} onValueChange={setProfessionalFilter}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  {professionals.map((p) => <SelectItem key={p.id} value={p.id}>{p.full_name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Convênio</Label>
+              <Select value={insuranceFilter} onValueChange={setInsuranceFilter}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  {insurances.map((i) => <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Procedimento</Label>
+              <Select value={procedureFilter} onValueChange={setProcedureFilter}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  {procedures.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Forma de pagamento</Label>
+              <Select value={paymentMethodFilter} onValueChange={setPaymentMethodFilter}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas</SelectItem>
+                  {paymentMethods.map((m) => <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Vencimento de</Label>
+              <Input type="date" value={dueFrom} onChange={(e) => setDueFrom(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Vencimento até</Label>
+              <Input type="date" value={dueTo} onChange={(e) => setDueTo(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Recebido de</Label>
+              <Input type="date" value={payFrom} onChange={(e) => setPayFrom(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Recebido até</Label>
+              <Input type="date" value={payTo} onChange={(e) => setPayTo(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Valor mínimo (R$)</Label>
+              <Input type="number" min="0" step="0.01" value={amountMin} onChange={(e) => setAmountMin(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Valor máximo (R$)</Label>
+              <Input type="number" min="0" step="0.01" value={amountMax} onChange={(e) => setAmountMax(e.target.value)} />
+            </div>
+          </div>
+        )}
       </div>
+
 
       <div className="rounded-md border">
         <Table>
