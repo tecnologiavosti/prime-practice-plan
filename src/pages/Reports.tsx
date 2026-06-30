@@ -615,6 +615,19 @@ export default function Reports() {
               }}>
                 <Download className="h-4 w-4 mr-1" />CSV
               </Button>
+              <Button size="sm" variant="outline" className="ml-2" onClick={() => {
+                const rows: (string | number)[][] = [];
+                specSummary.forEach((s) => s.items.forEach((it) => rows.push([s.name, it.convenio, it.administradora])));
+                exportPDF({
+                  title: 'Especialidades, Convênios e Administradoras',
+                  period: `${from} a ${to}`,
+                  fileName: 'especialidades',
+                  headers: ['Especialidade', 'Convênio', 'Administradora'],
+                  rows,
+                });
+              }}>
+                <FileText className="h-4 w-4 mr-1" />PDF
+              </Button>
             </CardHeader>
             <CardContent className="space-y-4">
               {specSummary.map((s) => (
