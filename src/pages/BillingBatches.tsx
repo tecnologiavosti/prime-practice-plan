@@ -193,7 +193,6 @@ export default function BillingBatches() {
       return;
     }
 
-    const selectedGuideData = pendingGuides.filter(g => selectedGuides.includes(g.id));
     const totalAmount = calculateSelectedTotal();
 
     const payload = {
