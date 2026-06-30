@@ -5,28 +5,20 @@ import { Input } from '@/components/ui/input';
 import { CurrencyInput } from '@/components/ui/currency-input';
 import { Label } from '@/components/ui/label';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search, Edit, Trash2 } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Textarea } from '@/components/ui/textarea';
+import { Card } from '@/components/ui/card';
 
 interface Package {
   id: string;
@@ -42,16 +34,16 @@ interface Procedure {
   code: string;
 }
 
-interface PackageProcedure {
-  procedure_id: string;
-  quantity: number;
+interface SectionDraft {
+  id: string; // local uuid OR db id
+  dbId?: string;
+  name: string;
+  section_value: number;
+  procedures: { procedure_id: string; quantity: number }[];
 }
 
-const emptyPackage = {
-  name: '',
-  description: '',
-  total_price: 0,
-};
+const emptyPackage = { name: '', description: '', total_price: 0 };
+const uid = () => Math.random().toString(36).slice(2);
 
 export default function Packages() {
   const [packages, setPackages] = useState<Package[]>([]);
@@ -61,21 +53,10 @@ export default function Packages() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPackage, setEditingPackage] = useState<Package | null>(null);
   const [formData, setFormData] = useState(emptyPackage);
-  const [selectedProcedures, setSelectedProcedures] = useState<PackageProcedure[]>([]);
+  const [sections, setSections] = useState<SectionDraft[]>([]);
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const { toast } = useToast();
-
-  const handleDeletePackage = async () => {
-    if (!deleteId) return;
-    const { error } = await supabase.from('private_packages').delete().eq('id', deleteId);
-    if (error) {
-      toast({ variant: 'destructive', title: 'Erro', description: error.message });
-    } else {
-      toast({ title: 'Pacote removido com sucesso!' });
-      fetchPackages();
-    }
-    setDeleteId(null);
-  };
 
   useEffect(() => {
     fetchPackages();
@@ -83,11 +64,7 @@ export default function Packages() {
   }, []);
 
   const fetchPackages = async () => {
-    const { data, error } = await supabase
-      .from('private_packages')
-      .select('*')
-      .order('name');
-
+    const { data, error } = await supabase.from('private_packages').select('*').order('name');
     if (error) {
       toast({ variant: 'destructive', title: 'Erro', description: error.message });
       return;
@@ -101,118 +78,174 @@ export default function Packages() {
     setProcedures(data || []);
   };
 
-  const fetchPackageProcedures = async (packageId: string) => {
-    const { data } = await supabase
+  const loadSections = async (packageId: string): Promise<SectionDraft[]> => {
+    const { data: secs } = await supabase
+      .from('package_sections')
+      .select('*')
+      .eq('package_id', packageId)
+      .order('sort_order');
+    const { data: procs } = await supabase
       .from('package_procedures')
-      .select('procedure_id, quantity')
+      .select('procedure_id, quantity, section_id')
       .eq('package_id', packageId);
-    return data || [];
+
+    const list: SectionDraft[] = (secs || []).map((s: any) => ({
+      id: s.id,
+      dbId: s.id,
+      name: s.name,
+      section_value: Number(s.section_value) || 0,
+      procedures: (procs || [])
+        .filter((p: any) => p.section_id === s.id)
+        .map((p: any) => ({ procedure_id: p.procedure_id, quantity: p.quantity })),
+    }));
+
+    const unassigned = (procs || []).filter((p: any) => !p.section_id);
+    if (unassigned.length > 0 || list.length === 0) {
+      list.unshift({
+        id: uid(),
+        name: list.length === 0 ? 'Seção 1' : 'Geral',
+        section_value: 0,
+        procedures: unassigned.map((p: any) => ({ procedure_id: p.procedure_id, quantity: p.quantity })),
+      });
+    }
+    return list;
   };
+
+  const recalcTotal = (secs: SectionDraft[]) =>
+    secs.reduce((sum, s) => sum + (Number(s.section_value) || 0), 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const total = recalcTotal(sections);
     const payload = {
       name: formData.name,
       description: formData.description || null,
-      total_price: parseFloat(formData.total_price.toString()),
+      total_price: total,
     };
 
+    let packageId: string;
     if (editingPackage) {
-      const { error } = await supabase
-        .from('private_packages')
-        .update(payload)
-        .eq('id', editingPackage.id);
-
-      if (error) {
-        toast({ variant: 'destructive', title: 'Erro', description: error.message });
-        return;
-      }
-
-      // Update procedures
-      await supabase.from('package_procedures').delete().eq('package_id', editingPackage.id);
-      if (selectedProcedures.length > 0) {
-        await supabase.from('package_procedures').insert(
-          selectedProcedures.map((p) => ({
-            package_id: editingPackage.id,
-            procedure_id: p.procedure_id,
-            quantity: p.quantity,
-          }))
-        );
-      }
-
-      toast({ title: 'Pacote atualizado com sucesso!' });
+      const { error } = await supabase.from('private_packages').update(payload).eq('id', editingPackage.id);
+      if (error) return toast({ variant: 'destructive', title: 'Erro', description: error.message });
+      packageId = editingPackage.id;
     } else {
       const { data, error } = await supabase.from('private_packages').insert(payload).select().single();
+      if (error || !data) return toast({ variant: 'destructive', title: 'Erro', description: error?.message });
+      packageId = data.id;
+    }
 
-      if (error) {
-        toast({ variant: 'destructive', title: 'Erro', description: error.message });
-        return;
+    // Wipe and re-insert sections + procedures
+    await supabase.from('package_procedures').delete().eq('package_id', packageId);
+    await supabase.from('package_sections').delete().eq('package_id', packageId);
+
+    for (let i = 0; i < sections.length; i++) {
+      const s = sections[i];
+      const { data: secRow, error: secErr } = await supabase
+        .from('package_sections')
+        .insert({
+          package_id: packageId,
+          name: s.name || `Seção ${i + 1}`,
+          section_value: Number(s.section_value) || 0,
+          sort_order: i,
+        })
+        .select()
+        .single();
+      if (secErr || !secRow) {
+        toast({ variant: 'destructive', title: 'Erro na seção', description: secErr?.message });
+        continue;
       }
-
-      if (selectedProcedures.length > 0 && data) {
+      if (s.procedures.length > 0) {
         await supabase.from('package_procedures').insert(
-          selectedProcedures.map((p) => ({
-            package_id: data.id,
+          s.procedures.map((p) => ({
+            package_id: packageId,
             procedure_id: p.procedure_id,
             quantity: p.quantity,
+            section_id: secRow.id,
           }))
         );
       }
-
-      toast({ title: 'Pacote cadastrado com sucesso!' });
     }
 
+    toast({ title: editingPackage ? 'Pacote atualizado!' : 'Pacote cadastrado!' });
     setDialogOpen(false);
     setEditingPackage(null);
     setFormData(emptyPackage);
-    setSelectedProcedures([]);
+    setSections([]);
     fetchPackages();
   };
 
   const openEdit = async (pkg: Package) => {
     setEditingPackage(pkg);
-    setFormData({
-      name: pkg.name,
-      description: pkg.description || '',
-      total_price: pkg.total_price,
-    });
-    const procs = await fetchPackageProcedures(pkg.id);
-    setSelectedProcedures(procs);
+    setFormData({ name: pkg.name, description: pkg.description || '', total_price: pkg.total_price });
+    const secs = await loadSections(pkg.id);
+    setSections(secs);
     setDialogOpen(true);
   };
 
   const openNew = () => {
     setEditingPackage(null);
     setFormData(emptyPackage);
-    setSelectedProcedures([]);
+    setSections([{ id: uid(), name: 'Seção 1', section_value: 0, procedures: [] }]);
     setDialogOpen(true);
   };
 
-  const toggleProcedure = (procedureId: string) => {
-    const exists = selectedProcedures.find((p) => p.procedure_id === procedureId);
-    if (exists) {
-      setSelectedProcedures(selectedProcedures.filter((p) => p.procedure_id !== procedureId));
-    } else {
-      setSelectedProcedures([...selectedProcedures, { procedure_id: procedureId, quantity: 1 }]);
-    }
+  const addSection = () => {
+    setSections((prev) => [
+      ...prev,
+      { id: uid(), name: `Seção ${prev.length + 1}`, section_value: 0, procedures: [] },
+    ]);
   };
 
-  const updateQuantity = (procedureId: string, quantity: number) => {
-    setSelectedProcedures(
-      selectedProcedures.map((p) =>
-        p.procedure_id === procedureId ? { ...p, quantity } : p
+  const removeSection = (id: string) => {
+    setSections((prev) => prev.filter((s) => s.id !== id));
+  };
+
+  const updateSection = (id: string, patch: Partial<SectionDraft>) => {
+    setSections((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)));
+  };
+
+  const toggleProcedure = (sectionId: string, procedureId: string) => {
+    setSections((prev) =>
+      prev.map((s) => {
+        if (s.id !== sectionId) return s;
+        const exists = s.procedures.find((p) => p.procedure_id === procedureId);
+        return {
+          ...s,
+          procedures: exists
+            ? s.procedures.filter((p) => p.procedure_id !== procedureId)
+            : [...s.procedures, { procedure_id: procedureId, quantity: 1 }],
+        };
+      })
+    );
+  };
+
+  const updateQuantity = (sectionId: string, procedureId: string, quantity: number) => {
+    setSections((prev) =>
+      prev.map((s) =>
+        s.id !== sectionId
+          ? s
+          : { ...s, procedures: s.procedures.map((p) => (p.procedure_id === procedureId ? { ...p, quantity } : p)) }
       )
     );
   };
 
-  const filtered = packages.filter((p) =>
-    p.name.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+  const handleDeletePackage = async () => {
+    if (!deleteId) return;
+    const { error } = await supabase.from('private_packages').delete().eq('id', deleteId);
+    if (error) toast({ variant: 'destructive', title: 'Erro', description: error.message });
+    else {
+      toast({ title: 'Pacote removido com sucesso!' });
+      fetchPackages();
+    }
+    setDeleteId(null);
   };
+
+  const filtered = packages.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()));
+  const formatCurrency = (v: number) =>
+    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
+
+  const totalDialog = recalcTotal(sections);
 
   return (
     <div className="p-6">
@@ -228,11 +261,9 @@ export default function Packages() {
               Novo Pacote
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>
-                {editingPackage ? 'Editar Pacote' : 'Novo Pacote'}
-              </DialogTitle>
+              <DialogTitle>{editingPackage ? 'Editar Pacote' : 'Novo Pacote'}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
@@ -245,12 +276,8 @@ export default function Packages() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Valor Total (R$) *</Label>
-                  <CurrencyInput
-                    required
-                    value={formData.total_price}
-                    onChange={(val) => setFormData({ ...formData, total_price: val })}
-                  />
+                  <Label>Valor Total (soma das seções)</Label>
+                  <Input readOnly value={formatCurrency(totalDialog)} />
                 </div>
                 <div className="space-y-2 md:col-span-2">
                   <Label>Descrição</Label>
@@ -261,34 +288,93 @@ export default function Packages() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label>Procedimentos Incluídos</Label>
-                <div className="max-h-48 overflow-y-auto rounded-md border p-3">
-                  {procedures.map((proc) => {
-                    const selected = selectedProcedures.find((p) => p.procedure_id === proc.id);
-                    return (
-                      <div key={proc.id} className="flex items-center gap-3 py-2">
-                        <Checkbox
-                          id={proc.id}
-                          checked={!!selected}
-                          onCheckedChange={() => toggleProcedure(proc.id)}
-                        />
-                        <label htmlFor={proc.id} className="flex-1 text-sm">
-                          {proc.code} - {proc.name}
-                        </label>
-                        {selected && (
+              <div className="flex items-center justify-between">
+                <Label className="text-base">Seções do Pacote</Label>
+                <Button type="button" variant="outline" size="sm" onClick={addSection}>
+                  <Plus className="mr-1 h-4 w-4" /> Adicionar Seção
+                </Button>
+              </div>
+
+              <div className="space-y-3">
+                {sections.map((section, idx) => {
+                  const isCollapsed = collapsed[section.id];
+                  return (
+                    <Card key={section.id} className="p-4 space-y-3">
+                      <div className="grid gap-3 md:grid-cols-[1fr,180px,auto,auto]">
+                        <div className="space-y-1">
+                          <Label className="text-xs">Nome da Seção</Label>
                           <Input
-                            type="number"
-                            min="1"
-                            className="w-20"
-                            value={selected.quantity}
-                            onChange={(e) => updateQuantity(proc.id, parseInt(e.target.value) || 1)}
+                            value={section.name}
+                            onChange={(e) => updateSection(section.id, { name: e.target.value })}
+                            placeholder={`Seção ${idx + 1}`}
                           />
-                        )}
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Valor da Seção (R$)</Label>
+                          <CurrencyInput
+                            value={section.section_value}
+                            onChange={(v) => updateSection(section.id, { section_value: v })}
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="self-end"
+                          onClick={() => setCollapsed((c) => ({ ...c, [section.id]: !c[section.id] }))}
+                          title={isCollapsed ? 'Expandir' : 'Recolher'}
+                        >
+                          {isCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="self-end text-destructive hover:text-destructive"
+                          onClick={() => removeSection(section.id)}
+                          disabled={sections.length === 1}
+                          title="Remover seção"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
-                    );
-                  })}
-                </div>
+
+                      {!isCollapsed && (
+                        <div className="space-y-1">
+                          <Label className="text-xs">Procedimentos da Seção</Label>
+                          <div className="max-h-44 overflow-y-auto rounded-md border p-2">
+                            {procedures.map((proc) => {
+                              const sel = section.procedures.find((p) => p.procedure_id === proc.id);
+                              return (
+                                <div key={proc.id} className="flex items-center gap-3 py-1">
+                                  <Checkbox
+                                    id={`${section.id}-${proc.id}`}
+                                    checked={!!sel}
+                                    onCheckedChange={() => toggleProcedure(section.id, proc.id)}
+                                  />
+                                  <label htmlFor={`${section.id}-${proc.id}`} className="flex-1 text-sm">
+                                    {proc.code} - {proc.name}
+                                  </label>
+                                  {sel && (
+                                    <Input
+                                      type="number"
+                                      min="1"
+                                      className="w-20"
+                                      value={sel.quantity}
+                                      onChange={(e) =>
+                                        updateQuantity(section.id, proc.id, parseInt(e.target.value) || 1)
+                                      }
+                                    />
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </Card>
+                  );
+                })}
               </div>
 
               <div className="flex justify-end gap-2">
