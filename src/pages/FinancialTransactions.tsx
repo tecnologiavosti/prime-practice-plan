@@ -306,11 +306,45 @@ export default function FinancialTransactions() {
     setDeleteId(null);
   };
 
-  const filtered = transactions.filter((t) =>
-    t.patient?.full_name.toLowerCase().includes(search.toLowerCase()) ||
-    t.medical_guide?.guide_number.includes(search) ||
-    t.description?.toLowerCase().includes(search.toLowerCase())
-  );
+  const clearFilters = () => {
+    setSearch('');
+    setTypeFilter('all');
+    setStatusFilter('all');
+    setProfessionalFilter('all');
+    setInsuranceFilter('all');
+    setProcedureFilter('all');
+    setPaymentMethodFilter('all');
+    setDueFrom(''); setDueTo('');
+    setPayFrom(''); setPayTo('');
+    setAmountMin(''); setAmountMax('');
+  };
+
+  const filtered = transactions.filter((t: any) => {
+    const term = search.trim().toLowerCase();
+    if (term) {
+      const haystack = [
+        t.patient?.full_name,
+        t.professional?.full_name,
+        t.medical_guide?.guide_number,
+        t.description,
+        t.procedure?.name,
+        t.health_insurance?.name,
+      ].filter(Boolean).join(' ').toLowerCase();
+      if (!haystack.includes(term)) return false;
+    }
+    if (professionalFilter !== 'all' && t.professional_id !== professionalFilter) return false;
+    if (insuranceFilter !== 'all' && t.health_insurance_id !== insuranceFilter) return false;
+    if (procedureFilter !== 'all' && t.procedure_id !== procedureFilter) return false;
+    if (paymentMethodFilter !== 'all' && t.payment_method_id !== paymentMethodFilter) return false;
+    if (dueFrom && (!t.due_date || t.due_date < dueFrom)) return false;
+    if (dueTo && (!t.due_date || t.due_date > dueTo)) return false;
+    if (payFrom && (!t.payment_date || t.payment_date < payFrom)) return false;
+    if (payTo && (!t.payment_date || t.payment_date > payTo)) return false;
+    const amt = Number(t.amount);
+    if (amountMin && amt < Number(amountMin)) return false;
+    if (amountMax && amt > Number(amountMax)) return false;
+    return true;
+  });
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
