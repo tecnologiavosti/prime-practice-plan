@@ -98,7 +98,7 @@ export default function Reports() {
           .order('entry_date', { ascending: false }),
         supabase
           .from('appointments')
-          .select('id, appointment_date, start_time, status, consultation_type, custom_amount, patient:patients(full_name), professional:professionals(full_name), procedure:procedures(name, default_private_price), health_insurance:health_insurances(name), administrator:administrators(name)')
+          .select('id, appointment_date, start_time, status, consultation_type, custom_amount, patient:patients(full_name), professional:professionals(full_name), procedure:procedures(name, private_price), health_insurance:health_insurances(name), administrator:administrators(name)')
           .gte('appointment_date', from)
           .lte('appointment_date', to)
           .order('appointment_date', { ascending: false }),
@@ -156,7 +156,7 @@ export default function Reports() {
     const m = { total: appointments.length, finalizado: 0, agendado: 0, cancelado: 0, faltou: 0, valor: 0 };
     appointments.forEach((a) => {
       m[a.status as keyof typeof m] = ((m[a.status as keyof typeof m] as number) || 0) + 1;
-      const val = Number(a.custom_amount ?? a.procedure?.default_private_price ?? 0);
+      const val = Number(a.custom_amount ?? a.procedure?.private_price ?? 0);
       if (a.status === 'finalizado') m.valor += val;
     });
     return m;
@@ -375,7 +375,7 @@ export default function Reports() {
                   convenio: a.health_insurance?.name || '',
                   administradora: a.administrator?.name || '',
                   status: a.status,
-                  valor: Number(a.custom_amount ?? a.procedure?.default_private_price ?? 0),
+                  valor: Number(a.custom_amount ?? a.procedure?.private_price ?? 0),
                 })),
                 [
                   { key: 'data', label: 'Data' },
@@ -415,7 +415,7 @@ export default function Reports() {
                       <TableCell className="capitalize">{a.consultation_type}</TableCell>
                       <TableCell>{a.health_insurance?.name || '—'}{a.administrator?.name ? ` / ${a.administrator.name}` : ''}</TableCell>
                       <TableCell className="capitalize">{a.status}</TableCell>
-                      <TableCell className="text-right">{fmtBRL(Number(a.custom_amount ?? a.procedure?.default_private_price ?? 0))}</TableCell>
+                      <TableCell className="text-right">{fmtBRL(Number(a.custom_amount ?? a.procedure?.private_price ?? 0))}</TableCell>
                     </TableRow>
                   ))}
                   {!appointments.length && <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-6">Sem dados</TableCell></TableRow>}
