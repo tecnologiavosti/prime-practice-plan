@@ -682,18 +682,21 @@ export type Database = {
       insurance_administrators_map: {
         Row: {
           administrator_id: string
+          billing_rate: number
           created_at: string
           id: string
           insurance_id: string
         }
         Insert: {
           administrator_id: string
+          billing_rate?: number
           created_at?: string
           id?: string
           insurance_id: string
         }
         Update: {
           administrator_id?: string
+          billing_rate?: number
           created_at?: string
           id?: string
           insurance_id?: string
