@@ -124,6 +124,7 @@ const statusLabels: Record<string, string> = {
 const emptyForm = {
   guide_number: '',
   patient_id: '',
+  administrator_id: '',
   health_insurance_id: '',
   professional_id: '',
   guide_date: format(new Date(), 'yyyy-MM-dd'),
@@ -131,6 +132,9 @@ const emptyForm = {
   cid_10: '',
   clinical_indication: '',
 };
+
+interface Administrator { id: string; name: string; }
+interface InsuranceAdminMap { insurance_id: string; administrator_id: string; billing_rate: number | null; }
 
 const emptyItem: Omit<GuideItem, 'id' | 'procedure' | 'professional'> = {
   procedure_id: '',
