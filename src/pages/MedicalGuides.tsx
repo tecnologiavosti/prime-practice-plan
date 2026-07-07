@@ -1231,34 +1231,45 @@ export default function MedicalGuides() {
       </div>
 
       <Dialog open={attachmentsDialog !== null} onOpenChange={(o) => !o && setAttachmentsDialog(null)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Anexos da guia</DialogTitle>
           </DialogHeader>
-          <div className="space-y-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[70vh] overflow-y-auto">
             {(attachmentsDialog || []).length === 0 ? (
               <p className="text-sm text-muted-foreground">Nenhum anexo.</p>
             ) : (
               (attachmentsDialog || []).map((p, idx) => {
                 const name = p.split('/').pop() || `Arquivo ${idx + 1}`;
+                const isImage = /\.(png|jpe?g|webp|gif|bmp|svg)$/i.test(name);
+                const isPdf = /\.pdf$/i.test(name);
+                const previewUrl = attachmentPreviews[p];
                 return (
-                  <div key={`${p}-${idx}`} className="flex items-center justify-between gap-2 rounded-md border p-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <Paperclip className="h-4 w-4 shrink-0 text-muted-foreground" />
-                      <span className="truncate text-sm" title={name}>{name}</span>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => void openAttachmentAt(idx, p)}
-                      disabled={openingAttachmentIdx === idx}
-                    >
-                      {openingAttachmentIdx === idx ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                  <div key={`${p}-${idx}`} className="flex flex-col rounded-md border overflow-hidden">
+                    <div className="h-40 bg-muted flex items-center justify-center overflow-hidden">
+                      {isImage && previewUrl ? (
+                        <img src={previewUrl} alt={name} className="h-full w-full object-contain" />
+                      ) : isPdf && previewUrl ? (
+                        <iframe src={`${previewUrl}#toolbar=0&navpanes=0`} title={name} className="h-full w-full" />
                       ) : (
-                        <FileDown className="h-4 w-4" />
+                        <Paperclip className="h-10 w-10 text-muted-foreground" />
                       )}
-                    </Button>
+                    </div>
+                    <div className="flex items-center justify-between gap-2 p-2 border-t">
+                      <span className="truncate text-xs" title={name}>{name}</span>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => void openAttachmentAt(idx, p)}
+                        disabled={openingAttachmentIdx === idx}
+                      >
+                        {openingAttachmentIdx === idx ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <FileDown className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 );
               })
