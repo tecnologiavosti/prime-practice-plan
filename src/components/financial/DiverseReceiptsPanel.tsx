@@ -15,7 +15,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, TrendingUp, Trash2, Paperclip, Eye } from 'lucide-react';
+import { Plus, TrendingUp, Trash2, Paperclip, Eye, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
 import { createDocumentSignedUrl, DOCUMENTS_BUCKET } from '@/lib/storageDocuments';
 
@@ -57,7 +57,32 @@ export function DiverseReceiptsPanel() {
   });
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [existingReceipt, setExistingReceipt] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const resetForm = () => {
+    setForm({ entry_type: 'entrada', category: 'Receita avulsa', description: '', amount: 0, entry_date: format(new Date(), 'yyyy-MM-dd'), notes: '' });
+    setReceiptFile(null);
+    setEditingId(null);
+    setExistingReceipt(null);
+  };
+
+  const openEdit = (e: Entry) => {
+    setEditingId(e.id);
+    setForm({
+      entry_type: e.entry_type,
+      category: e.category,
+      description: e.description ?? '',
+      amount: Number(e.amount),
+      entry_date: e.entry_date,
+      notes: e.notes ?? '',
+    });
+    setExistingReceipt(e.receipt_path);
+    setReceiptFile(null);
+    setOpen(true);
+  };
+
 
   const fetchEntries = async () => {
     setLoading(true);
@@ -75,7 +100,7 @@ export function DiverseReceiptsPanel() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setUploading(true);
-    let receipt_path: string | null = null;
+    let receipt_path: string | null = existingReceipt;
     if (receiptFile) {
       const ext = receiptFile.name.split('.').pop();
       const path = `cash-flow/${crypto.randomUUID()}.${ext}`;
@@ -89,7 +114,7 @@ export function DiverseReceiptsPanel() {
       }
       receipt_path = path;
     }
-    const { error } = await supabase.from('cash_flow_entries').insert([{
+    const payload = {
       entry_type: form.entry_type,
       category: form.category,
       description: form.description || null,
@@ -97,18 +122,21 @@ export function DiverseReceiptsPanel() {
       entry_date: form.entry_date,
       notes: form.notes || null,
       receipt_path,
-    } as any]);
+    };
+    const { error } = editingId
+      ? await supabase.from('cash_flow_entries').update(payload as any).eq('id', editingId)
+      : await supabase.from('cash_flow_entries').insert([payload as any]);
     setUploading(false);
     if (error) {
       toast({ variant: 'destructive', title: 'Erro', description: error.message });
       return;
     }
-    toast({ title: 'Lançamento registrado!' });
+    toast({ title: editingId ? 'Lançamento atualizado!' : 'Lançamento registrado!' });
     setOpen(false);
-    setReceiptFile(null);
-    setForm({ entry_type: 'entrada', category: 'Receita avulsa', description: '', amount: 0, entry_date: format(new Date(), 'yyyy-MM-dd'), notes: '' });
+    resetForm();
     fetchEntries();
   };
+
 
   const handleViewReceipt = async (path: string) => {
     const { url, error } = await createDocumentSignedUrl(path);
@@ -151,12 +179,12 @@ export function DiverseReceiptsPanel() {
           <h2 className="text-xl font-semibold">Recebidos Diversos</h2>
           <p className="text-sm text-muted-foreground">Entradas avulsas que não vieram de consultas ou guias.</p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) resetForm(); }}>
           <DialogTrigger asChild>
-            <Button><Plus className="mr-2 h-4 w-4" />Novo lançamento</Button>
+            <Button onClick={resetForm}><Plus className="mr-2 h-4 w-4" />Novo lançamento</Button>
           </DialogTrigger>
           <DialogContent className="max-w-md">
-            <DialogHeader><DialogTitle>Novo lançamento</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>{editingId ? 'Editar lançamento' : 'Novo lançamento'}</DialogTitle></DialogHeader>
             <form onSubmit={handleSave} className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
@@ -202,6 +230,14 @@ export function DiverseReceiptsPanel() {
                 />
                 {receiptFile && (
                   <p className="text-xs text-muted-foreground">{receiptFile.name}</p>
+                )}
+                {!receiptFile && existingReceipt && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Paperclip className="h-3 w-3" />
+                    <span>Comprovante anexado.</span>
+                    <button type="button" className="text-primary underline" onClick={() => handleViewReceipt(existingReceipt)}>Ver</button>
+                    <button type="button" className="text-destructive underline" onClick={() => setExistingReceipt(null)}>Remover</button>
+                  </div>
                 )}
               </div>
               <div className="flex justify-end gap-2">
@@ -308,6 +344,9 @@ export function DiverseReceiptsPanel() {
                         <Eye className="h-4 w-4" />
                       </Button>
                     )}
+                    <Button size="icon" variant="ghost" onClick={() => openEdit(e)} title="Editar">
+                      <Pencil className="h-4 w-4" />
+                    </Button>
                     <Button size="icon" variant="ghost" onClick={() => handleDelete(e.id)}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
