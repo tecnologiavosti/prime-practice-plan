@@ -20,8 +20,9 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Plus, TrendingUp, TrendingDown, Wallet, Pencil, Trash2 } from 'lucide-react';
+import { Plus, TrendingUp, TrendingDown, Wallet, Pencil, Trash2, Paperclip, Eye } from 'lucide-react';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
+import { createDocumentSignedUrl, DOCUMENTS_BUCKET } from '@/lib/storageDocuments';
 
 interface Entry {
   id: string;
@@ -32,6 +33,7 @@ interface Entry {
   entry_date: string;
   payment_method_id: string | null;
   notes: string | null;
+  receipt_path: string | null;
   payment_method?: { name: string } | null;
 }
 
