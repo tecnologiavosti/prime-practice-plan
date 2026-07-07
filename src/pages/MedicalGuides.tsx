@@ -44,7 +44,7 @@ import {
 import { format, addDays, isAfter, isBefore } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { createDocumentSignedUrl, DOCUMENTS_BUCKET } from '@/lib/storageDocuments';
-import { MultiFileUpload } from '@/components/ui/multi-file-upload';
+import { MultiFileUpload, splitPaths } from '@/components/ui/multi-file-upload';
 
 interface GuideItem {
   id?: string;
