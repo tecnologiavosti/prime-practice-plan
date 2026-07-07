@@ -516,10 +516,12 @@ export default function MedicalGuides() {
     if (existingItems.length > 0) {
       setItems(existingItems.map((it: any) => ({
         procedure_id: it.procedure_id,
+        professional_id: it.professional_id,
         service_date: it.service_date,
         quantity: Number(it.quantity) || 1,
         unit_value: Number(it.unit_value) || 0,
         total_value: Number(it.total_value) || 0,
+        status: it.status,
       })));
     } else {
       setItems([{ ...emptyItem }]);
