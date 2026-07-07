@@ -171,6 +171,23 @@ export default function MedicalGuides() {
     fetchData();
   }, [statusFilter]);
 
+  useEffect(() => {
+    if (!attachmentsDialog) {
+      setAttachmentPreviews({});
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const entries: Record<string, string> = {};
+      for (const p of attachmentsDialog) {
+        const { url } = await createDocumentSignedUrl(p);
+        if (url) entries[p] = url;
+      }
+      if (!cancelled) setAttachmentPreviews(entries);
+    })();
+    return () => { cancelled = true; };
+  }, [attachmentsDialog]);
+
   const fetchData = async () => {
     await Promise.all([
       fetchGuides(),
