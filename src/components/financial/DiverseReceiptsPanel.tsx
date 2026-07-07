@@ -302,9 +302,16 @@ export function DiverseReceiptsPanel() {
                   {e.entry_type === 'saida' ? '- ' : ''}{formatCurrency(Number(e.amount))}
                 </TableCell>
                 <TableCell>
-                  <Button size="icon" variant="ghost" onClick={() => handleDelete(e.id)}>
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+                  <div className="flex gap-1">
+                    {e.receipt_path && (
+                      <Button size="icon" variant="ghost" onClick={() => handleViewReceipt(e.receipt_path!)} title="Ver comprovante">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    )}
+                    <Button size="icon" variant="ghost" onClick={() => handleDelete(e.id)}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
