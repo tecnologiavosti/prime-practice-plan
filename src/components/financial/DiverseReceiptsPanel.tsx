@@ -15,8 +15,9 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, TrendingUp, Trash2 } from 'lucide-react';
+import { Plus, TrendingUp, Trash2, Paperclip, Eye } from 'lucide-react';
 import { format } from 'date-fns';
+import { createDocumentSignedUrl, DOCUMENTS_BUCKET } from '@/lib/storageDocuments';
 
 interface Entry {
   id: string;
@@ -26,6 +27,7 @@ interface Entry {
   amount: number;
   entry_date: string;
   notes: string | null;
+  receipt_path: string | null;
 }
 
 const CATEGORIES = ['Receita avulsa', 'Reembolso', 'Sala Sublocada', 'Doação', 'Outros'];
