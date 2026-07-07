@@ -55,13 +55,15 @@ export function DiverseReceiptsPanel() {
     entry_date: format(new Date(), 'yyyy-MM-dd'),
     notes: '',
   });
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
 
   const fetchEntries = async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('cash_flow_entries')
-      .select('id, entry_type, category, description, amount, entry_date, notes')
+      .select('id, entry_type, category, description, amount, entry_date, notes, receipt_path')
       .order('entry_date', { ascending: false });
     if (error) toast({ variant: 'destructive', title: 'Erro', description: error.message });
     setEntries((data as any) || []);
@@ -72,6 +74,21 @@ export function DiverseReceiptsPanel() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    setUploading(true);
+    let receipt_path: string | null = null;
+    if (receiptFile) {
+      const ext = receiptFile.name.split('.').pop();
+      const path = `cash-flow/${crypto.randomUUID()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from(DOCUMENTS_BUCKET)
+        .upload(path, receiptFile, { upsert: false });
+      if (upErr) {
+        setUploading(false);
+        toast({ variant: 'destructive', title: 'Erro no upload', description: upErr.message });
+        return;
+      }
+      receipt_path = path;
+    }
     const { error } = await supabase.from('cash_flow_entries').insert([{
       entry_type: form.entry_type,
       category: form.category,
@@ -79,16 +96,29 @@ export function DiverseReceiptsPanel() {
       amount: form.amount,
       entry_date: form.entry_date,
       notes: form.notes || null,
-    }]);
+      receipt_path,
+    } as any]);
+    setUploading(false);
     if (error) {
       toast({ variant: 'destructive', title: 'Erro', description: error.message });
       return;
     }
     toast({ title: 'Lançamento registrado!' });
     setOpen(false);
+    setReceiptFile(null);
     setForm({ entry_type: 'entrada', category: 'Receita avulsa', description: '', amount: 0, entry_date: format(new Date(), 'yyyy-MM-dd'), notes: '' });
     fetchEntries();
   };
+
+  const handleViewReceipt = async (path: string) => {
+    const { url, error } = await createDocumentSignedUrl(path);
+    if (error || !url) {
+      toast({ variant: 'destructive', title: 'Erro', description: error || 'Não foi possível abrir.' });
+      return;
+    }
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
 
   const handleDelete = async (id: string) => {
     if (!confirm('Remover este recebimento?')) return;
