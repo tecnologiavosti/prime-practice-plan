@@ -57,7 +57,32 @@ export function DiverseReceiptsPanel() {
   });
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [existingReceipt, setExistingReceipt] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const resetForm = () => {
+    setForm({ entry_type: 'entrada', category: 'Receita avulsa', description: '', amount: 0, entry_date: format(new Date(), 'yyyy-MM-dd'), notes: '' });
+    setReceiptFile(null);
+    setEditingId(null);
+    setExistingReceipt(null);
+  };
+
+  const openEdit = (e: Entry) => {
+    setEditingId(e.id);
+    setForm({
+      entry_type: e.entry_type,
+      category: e.category,
+      description: e.description ?? '',
+      amount: Number(e.amount),
+      entry_date: e.entry_date,
+      notes: e.notes ?? '',
+    });
+    setExistingReceipt(e.receipt_path);
+    setReceiptFile(null);
+    setOpen(true);
+  };
+
 
   const fetchEntries = async () => {
     setLoading(true);
