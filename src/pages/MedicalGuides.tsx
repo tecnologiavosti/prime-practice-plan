@@ -492,7 +492,7 @@ export default function MedicalGuides() {
     setDialogOpen(true);
   };
 
-  const handleEdit = (g: MedicalGuide) => {
+  const handleEdit = async (g: MedicalGuide) => {
     setEditingId(g.id);
     const adminId = (g as any).administrator_id || '';
     const insId = g.health_insurance?.id || '';
@@ -509,9 +509,21 @@ export default function MedicalGuides() {
     });
     const m = insAdminMap.find(x => x.administrator_id === adminId && x.insurance_id === insId);
     setInsuranceRate(m?.billing_rate != null ? Number(m.billing_rate) : Number(g.unit_value) || 0);
-    setItems([{ ...emptyItem }]);
     setAttachmentUrl(g.attachment_url || '');
     setDialogOpen(true);
+
+    const existingItems = await fetchGuideItems(g.id);
+    if (existingItems.length > 0) {
+      setItems(existingItems.map((it: any) => ({
+        procedure_id: it.procedure_id,
+        service_date: it.service_date,
+        quantity: Number(it.quantity) || 1,
+        unit_value: Number(it.unit_value) || 0,
+        total_value: Number(it.total_value) || 0,
+      })));
+    } else {
+      setItems([{ ...emptyItem }]);
+    }
   };
   const handleDownloadPDF = async (g: MedicalGuide) => {
     if (!g.professional) {
