@@ -37,10 +37,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Plus, Search, Trash2, FileText, Calendar, AlertTriangle, Pencil, FileDown, Paperclip, Loader2 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import { addClinicHeader } from '@/lib/pdfHeader';
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { format, addDays, isAfter, isBefore } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { createDocumentSignedUrl, DOCUMENTS_BUCKET } from '@/lib/storageDocuments';
@@ -163,7 +159,6 @@ export default function MedicalGuides() {
   const [items, setItems] = useState<Omit<GuideItem, 'id' | 'procedure' | 'professional'>[]>([{ ...emptyItem }]);
   const [expandedGuide, setExpandedGuide] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
   const [attachmentUrl, setAttachmentUrl] = useState<string>('');
   const [insuranceRate, setInsuranceRate] = useState<number>(0);
@@ -736,19 +731,6 @@ export default function MedicalGuides() {
     doc.save(`guia_${g.guide_number}.pdf`);
   };
 
-  const handleDelete = async () => {
-    if (!deleteId) return;
-    await supabase.from('medical_guide_items').delete().eq('medical_guide_id', deleteId);
-    const { error } = await supabase.from('medical_guides').delete().eq('id', deleteId);
-    if (error) {
-      toast({ variant: 'destructive', title: 'Erro', description: error.message });
-    } else {
-      toast({ title: 'Guia removida com sucesso!' });
-      fetchGuides();
-    }
-    setDeleteId(null);
-  };
-
   const filtered = guides.filter((g) =>
     g.guide_number.includes(search) ||
     g.patient?.full_name.toLowerCase().includes(search.toLowerCase())
@@ -1165,9 +1147,6 @@ export default function MedicalGuides() {
                         <Button variant="ghost" size="icon" onClick={() => handleEdit(g)} title="Editar">
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => setDeleteId(g.id)} title="Remover" className="text-destructive hover:text-destructive">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -1227,22 +1206,6 @@ export default function MedicalGuides() {
         </Table>
       </div>
 
-      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja remover esta guia? Esta ação não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Remover
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
