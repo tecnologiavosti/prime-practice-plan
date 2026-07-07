@@ -344,6 +344,9 @@ export function DiverseReceiptsPanel() {
                         <Eye className="h-4 w-4" />
                       </Button>
                     )}
+                    <Button size="icon" variant="ghost" onClick={() => openEdit(e)} title="Editar">
+                      <Pencil className="h-4 w-4" />
+                    </Button>
                     <Button size="icon" variant="ghost" onClick={() => handleDelete(e.id)}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
