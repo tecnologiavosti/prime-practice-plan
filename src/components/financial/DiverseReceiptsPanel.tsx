@@ -100,7 +100,7 @@ export function DiverseReceiptsPanel() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setUploading(true);
-    let receipt_path: string | null = null;
+    let receipt_path: string | null = existingReceipt;
     if (receiptFile) {
       const ext = receiptFile.name.split('.').pop();
       const path = `cash-flow/${crypto.randomUUID()}.${ext}`;
@@ -114,7 +114,7 @@ export function DiverseReceiptsPanel() {
       }
       receipt_path = path;
     }
-    const { error } = await supabase.from('cash_flow_entries').insert([{
+    const payload = {
       entry_type: form.entry_type,
       category: form.category,
       description: form.description || null,
@@ -122,18 +122,21 @@ export function DiverseReceiptsPanel() {
       entry_date: form.entry_date,
       notes: form.notes || null,
       receipt_path,
-    } as any]);
+    };
+    const { error } = editingId
+      ? await supabase.from('cash_flow_entries').update(payload as any).eq('id', editingId)
+      : await supabase.from('cash_flow_entries').insert([payload as any]);
     setUploading(false);
     if (error) {
       toast({ variant: 'destructive', title: 'Erro', description: error.message });
       return;
     }
-    toast({ title: 'Lançamento registrado!' });
+    toast({ title: editingId ? 'Lançamento atualizado!' : 'Lançamento registrado!' });
     setOpen(false);
-    setReceiptFile(null);
-    setForm({ entry_type: 'entrada', category: 'Receita avulsa', description: '', amount: 0, entry_date: format(new Date(), 'yyyy-MM-dd'), notes: '' });
+    resetForm();
     fetchEntries();
   };
+
 
   const handleViewReceipt = async (path: string) => {
     const { url, error } = await createDocumentSignedUrl(path);
