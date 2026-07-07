@@ -179,12 +179,12 @@ export function DiverseReceiptsPanel() {
           <h2 className="text-xl font-semibold">Recebidos Diversos</h2>
           <p className="text-sm text-muted-foreground">Entradas avulsas que não vieram de consultas ou guias.</p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) resetForm(); }}>
           <DialogTrigger asChild>
-            <Button><Plus className="mr-2 h-4 w-4" />Novo lançamento</Button>
+            <Button onClick={resetForm}><Plus className="mr-2 h-4 w-4" />Novo lançamento</Button>
           </DialogTrigger>
           <DialogContent className="max-w-md">
-            <DialogHeader><DialogTitle>Novo lançamento</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>{editingId ? 'Editar lançamento' : 'Novo lançamento'}</DialogTitle></DialogHeader>
             <form onSubmit={handleSave} className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
