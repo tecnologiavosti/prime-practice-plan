@@ -161,6 +161,8 @@ export default function MedicalGuides() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
   const [attachmentUrl, setAttachmentUrl] = useState<string>('');
+  const [attachmentsDialog, setAttachmentsDialog] = useState<string[] | null>(null);
+  const [openingAttachmentIdx, setOpeningAttachmentIdx] = useState<number | null>(null);
   const [insuranceRate, setInsuranceRate] = useState<number>(0);
   const { toast } = useToast();
 
@@ -462,20 +464,24 @@ export default function MedicalGuides() {
     fetchGuides();
   };
 
-  const handleOpenAttachment = async (storedValue: string) => {
+  const handleOpenAttachment = (storedValue: string) => {
     const paths = splitPaths(storedValue);
     if (paths.length === 0) {
       toast({ variant: 'destructive', title: 'Erro ao abrir anexo', description: 'Nenhum arquivo encontrado.' });
       return;
     }
-    for (const p of paths) {
-      const { url, error } = await createDocumentSignedUrl(p);
-      if (error || !url) {
-        toast({ variant: 'destructive', title: 'Erro ao abrir anexo', description: error || 'Não foi possível gerar o link do arquivo.' });
-        continue;
-      }
-      window.open(url, '_blank', 'noopener,noreferrer');
+    setAttachmentsDialog(paths);
+  };
+
+  const openAttachmentAt = async (idx: number, path: string) => {
+    setOpeningAttachmentIdx(idx);
+    const { url, error } = await createDocumentSignedUrl(path);
+    setOpeningAttachmentIdx(null);
+    if (error || !url) {
+      toast({ variant: 'destructive', title: 'Erro ao abrir anexo', description: error || 'Não foi possível gerar o link do arquivo.' });
+      return;
     }
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const openNew = () => {
@@ -1205,6 +1211,43 @@ export default function MedicalGuides() {
           </TableBody>
         </Table>
       </div>
+
+      <Dialog open={attachmentsDialog !== null} onOpenChange={(o) => !o && setAttachmentsDialog(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Anexos da guia</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            {(attachmentsDialog || []).length === 0 ? (
+              <p className="text-sm text-muted-foreground">Nenhum anexo.</p>
+            ) : (
+              (attachmentsDialog || []).map((p, idx) => {
+                const name = p.split('/').pop() || `Arquivo ${idx + 1}`;
+                return (
+                  <div key={`${p}-${idx}`} className="flex items-center justify-between gap-2 rounded-md border p-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Paperclip className="h-4 w-4 shrink-0 text-muted-foreground" />
+                      <span className="truncate text-sm" title={name}>{name}</span>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => void openAttachmentAt(idx, p)}
+                      disabled={openingAttachmentIdx === idx}
+                    >
+                      {openingAttachmentIdx === idx ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <FileDown className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
     </div>
   );
