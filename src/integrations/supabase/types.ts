@@ -1060,6 +1060,39 @@ export type Database = {
           },
         ]
       }
+      medical_guides_audit: {
+        Row: {
+          changed_by: string | null
+          changed_by_email: string | null
+          created_at: string
+          guide_id: string | null
+          id: string
+          new_data: Json | null
+          old_data: Json | null
+          operation: string
+        }
+        Insert: {
+          changed_by?: string | null
+          changed_by_email?: string | null
+          created_at?: string
+          guide_id?: string | null
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          operation: string
+        }
+        Update: {
+          changed_by?: string | null
+          changed_by_email?: string | null
+          created_at?: string
+          guide_id?: string | null
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          operation?: string
+        }
+        Relationships: []
+      }
       package_procedures: {
         Row: {
           created_at: string
