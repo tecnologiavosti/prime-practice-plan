@@ -1212,6 +1212,43 @@ export default function MedicalGuides() {
         </Table>
       </div>
 
+      <Dialog open={attachmentsDialog !== null} onOpenChange={(o) => !o && setAttachmentsDialog(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Anexos da guia</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            {(attachmentsDialog || []).length === 0 ? (
+              <p className="text-sm text-muted-foreground">Nenhum anexo.</p>
+            ) : (
+              (attachmentsDialog || []).map((p, idx) => {
+                const name = p.split('/').pop() || `Arquivo ${idx + 1}`;
+                return (
+                  <div key={`${p}-${idx}`} className="flex items-center justify-between gap-2 rounded-md border p-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Paperclip className="h-4 w-4 shrink-0 text-muted-foreground" />
+                      <span className="truncate text-sm" title={name}>{name}</span>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => void openAttachmentAt(idx, p)}
+                      disabled={openingAttachmentIdx === idx}
+                    >
+                      {openingAttachmentIdx === idx ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <FileDown className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }
