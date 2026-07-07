@@ -20,8 +20,9 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Plus, TrendingUp, TrendingDown, Wallet, Pencil, Trash2 } from 'lucide-react';
+import { Plus, TrendingUp, TrendingDown, Wallet, Pencil, Trash2, Paperclip, Eye } from 'lucide-react';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
+import { createDocumentSignedUrl, DOCUMENTS_BUCKET } from '@/lib/storageDocuments';
 
 interface Entry {
   id: string;
@@ -32,6 +33,7 @@ interface Entry {
   entry_date: string;
   payment_method_id: string | null;
   notes: string | null;
+  receipt_path: string | null;
   payment_method?: { name: string } | null;
 }
 
@@ -57,6 +59,9 @@ export default function CashFlow() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [formData, setFormData] = useState(emptyForm);
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [existingReceipt, setExistingReceipt] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -95,6 +100,8 @@ export default function CashFlow() {
   const openNew = (type: 'entrada' | 'saida') => {
     setEditingId(null);
     setFormData({ ...emptyForm, entry_type: type });
+    setReceiptFile(null);
+    setExistingReceipt(null);
     setDialogOpen(true);
   };
 
@@ -109,7 +116,18 @@ export default function CashFlow() {
       payment_method_id: e.payment_method_id || '',
       notes: e.notes || '',
     });
+    setReceiptFile(null);
+    setExistingReceipt(e.receipt_path || null);
     setDialogOpen(true);
+  };
+
+  const handleViewReceipt = async (path: string) => {
+    const { url, error } = await createDocumentSignedUrl(path);
+    if (error || !url) {
+      toast({ variant: 'destructive', title: 'Erro', description: error || 'Não foi possível abrir.' });
+      return;
+    }
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -117,6 +135,19 @@ export default function CashFlow() {
     if (!formData.category) {
       toast({ variant: 'destructive', title: 'Erro', description: 'Selecione uma categoria' });
       return;
+    }
+    setUploading(true);
+    let receipt_path: string | null = existingReceipt;
+    if (receiptFile) {
+      const ext = receiptFile.name.split('.').pop();
+      const path = `cash-flow/${crypto.randomUUID()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from(DOCUMENTS_BUCKET).upload(path, receiptFile, { upsert: false });
+      if (upErr) {
+        setUploading(false);
+        toast({ variant: 'destructive', title: 'Erro no upload', description: upErr.message });
+        return;
+      }
+      receipt_path = path;
     }
     const payload = {
       entry_type: formData.entry_type,
@@ -126,10 +157,12 @@ export default function CashFlow() {
       entry_date: formData.entry_date,
       payment_method_id: formData.payment_method_id || null,
       notes: formData.notes || null,
+      receipt_path,
     };
     const { error } = editingId
-      ? await supabase.from('cash_flow_entries').update(payload).eq('id', editingId)
-      : await supabase.from('cash_flow_entries').insert([payload]);
+      ? await supabase.from('cash_flow_entries').update(payload as any).eq('id', editingId)
+      : await supabase.from('cash_flow_entries').insert([payload as any]);
+    setUploading(false);
     if (error) {
       toast({ variant: 'destructive', title: 'Erro', description: error.message });
       return;
@@ -137,6 +170,8 @@ export default function CashFlow() {
     toast({ title: editingId ? 'Lançamento atualizado!' : 'Lançamento criado!' });
     setDialogOpen(false);
     setFormData(emptyForm);
+    setReceiptFile(null);
+    setExistingReceipt(null);
     fetchEntries();
   };
 
@@ -265,6 +300,11 @@ export default function CashFlow() {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1">
+                      {e.receipt_path && (
+                        <Button size="icon" variant="ghost" className="h-7 w-7" title="Ver comprovante" onClick={() => handleViewReceipt(e.receipt_path!)}>
+                          <Eye className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
                       <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEdit(e)}>
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>
@@ -339,9 +379,27 @@ export default function CashFlow() {
               <Textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} rows={2} />
             </div>
 
+            <div className="space-y-2">
+              <Label>Comprovante (opcional)</Label>
+              <Input
+                type="file"
+                accept="image/*,application/pdf"
+                onChange={(e) => setReceiptFile(e.target.files?.[0] ?? null)}
+              />
+              {receiptFile && <p className="text-xs text-muted-foreground">{receiptFile.name}</p>}
+              {!receiptFile && existingReceipt && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Paperclip className="h-3 w-3" />
+                  <span>Comprovante anexado.</span>
+                  <button type="button" className="text-primary underline" onClick={() => handleViewReceipt(existingReceipt)}>Ver</button>
+                  <button type="button" className="text-destructive underline" onClick={() => setExistingReceipt(null)}>Remover</button>
+                </div>
+              )}
+            </div>
+
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
-              <Button type="submit">Salvar</Button>
+              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)} disabled={uploading}>Cancelar</Button>
+              <Button type="submit" disabled={uploading}>{uploading ? 'Salvando...' : 'Salvar'}</Button>
             </div>
           </form>
         </DialogContent>
