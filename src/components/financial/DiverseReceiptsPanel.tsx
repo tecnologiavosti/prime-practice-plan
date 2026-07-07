@@ -193,9 +193,20 @@ export function DiverseReceiptsPanel() {
                 <Label>Descrição</Label>
                 <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
               </div>
+              <div className="space-y-1">
+                <Label>Comprovante (opcional)</Label>
+                <Input
+                  type="file"
+                  accept="image/*,application/pdf"
+                  onChange={(e) => setReceiptFile(e.target.files?.[0] ?? null)}
+                />
+                {receiptFile && (
+                  <p className="text-xs text-muted-foreground">{receiptFile.name}</p>
+                )}
+              </div>
               <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-                <Button type="submit">Salvar</Button>
+                <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={uploading}>Cancelar</Button>
+                <Button type="submit" disabled={uploading}>{uploading ? 'Salvando...' : 'Salvar'}</Button>
               </div>
             </form>
           </DialogContent>
