@@ -1,0 +1,1 @@
+ALTER TABLE public.cash_flow_entries ADD COLUMN IF NOT EXISTS receipt_path text;
