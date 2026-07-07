@@ -59,6 +59,9 @@ export default function CashFlow() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [formData, setFormData] = useState(emptyForm);
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [existingReceipt, setExistingReceipt] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
