@@ -468,22 +468,19 @@ export default function MedicalGuides() {
   };
 
   const handleOpenAttachment = async (storedValue: string) => {
-    const { path, url, error } = await createDocumentSignedUrl(storedValue);
-
-    console.info('[documents] Medical guide attachment URL generated', {
-      bucket: DOCUMENTS_BUCKET,
-      storedValue,
-      path,
-      url,
-    });
-
-    if (error || !url) {
-      toast({ variant: 'destructive', title: 'Erro ao abrir anexo', description: error || 'Não foi possível gerar o link do arquivo.' });
+    const paths = splitPaths(storedValue);
+    if (paths.length === 0) {
+      toast({ variant: 'destructive', title: 'Erro ao abrir anexo', description: 'Nenhum arquivo encontrado.' });
       return;
     }
-
-    toast({ title: 'Link gerado', description: 'A URL do anexo foi registrada no console.' });
-    window.open(url, '_blank', 'noopener,noreferrer');
+    for (const p of paths) {
+      const { url, error } = await createDocumentSignedUrl(p);
+      if (error || !url) {
+        toast({ variant: 'destructive', title: 'Erro ao abrir anexo', description: error || 'Não foi possível gerar o link do arquivo.' });
+        continue;
+      }
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
   };
 
   const openNew = () => {
