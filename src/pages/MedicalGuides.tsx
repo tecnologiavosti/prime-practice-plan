@@ -162,6 +162,7 @@ export default function MedicalGuides() {
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
   const [attachmentUrl, setAttachmentUrl] = useState<string>('');
   const [attachmentsDialog, setAttachmentsDialog] = useState<string[] | null>(null);
+  const [attachmentPreviews, setAttachmentPreviews] = useState<Record<string, string>>({});
   const [openingAttachmentIdx, setOpeningAttachmentIdx] = useState<number | null>(null);
   const [insuranceRate, setInsuranceRate] = useState<number>(0);
   const { toast } = useToast();
