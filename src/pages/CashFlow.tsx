@@ -379,9 +379,27 @@ export default function CashFlow() {
               <Textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} rows={2} />
             </div>
 
+            <div className="space-y-2">
+              <Label>Comprovante (opcional)</Label>
+              <Input
+                type="file"
+                accept="image/*,application/pdf"
+                onChange={(e) => setReceiptFile(e.target.files?.[0] ?? null)}
+              />
+              {receiptFile && <p className="text-xs text-muted-foreground">{receiptFile.name}</p>}
+              {!receiptFile && existingReceipt && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Paperclip className="h-3 w-3" />
+                  <span>Comprovante anexado.</span>
+                  <button type="button" className="text-primary underline" onClick={() => handleViewReceipt(existingReceipt)}>Ver</button>
+                  <button type="button" className="text-destructive underline" onClick={() => setExistingReceipt(null)}>Remover</button>
+                </div>
+              )}
+            </div>
+
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
-              <Button type="submit">Salvar</Button>
+              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)} disabled={uploading}>Cancelar</Button>
+              <Button type="submit" disabled={uploading}>{uploading ? 'Salvando...' : 'Salvar'}</Button>
             </div>
           </form>
         </DialogContent>
