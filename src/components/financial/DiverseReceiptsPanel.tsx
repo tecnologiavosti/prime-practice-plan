@@ -15,7 +15,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, TrendingUp, Trash2, Paperclip, Eye } from 'lucide-react';
+import { Plus, TrendingUp, Trash2, Paperclip, Eye, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
 import { createDocumentSignedUrl, DOCUMENTS_BUCKET } from '@/lib/storageDocuments';
 
