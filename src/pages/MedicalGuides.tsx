@@ -44,7 +44,7 @@ import {
 import { format, addDays, isAfter, isBefore } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { createDocumentSignedUrl, DOCUMENTS_BUCKET } from '@/lib/storageDocuments';
-import { MultiFileUpload } from '@/components/ui/multi-file-upload';
+import { MultiFileUpload, splitPaths } from '@/components/ui/multi-file-upload';
 
 interface GuideItem {
   id?: string;
@@ -468,22 +468,19 @@ export default function MedicalGuides() {
   };
 
   const handleOpenAttachment = async (storedValue: string) => {
-    const { path, url, error } = await createDocumentSignedUrl(storedValue);
-
-    console.info('[documents] Medical guide attachment URL generated', {
-      bucket: DOCUMENTS_BUCKET,
-      storedValue,
-      path,
-      url,
-    });
-
-    if (error || !url) {
-      toast({ variant: 'destructive', title: 'Erro ao abrir anexo', description: error || 'Não foi possível gerar o link do arquivo.' });
+    const paths = splitPaths(storedValue);
+    if (paths.length === 0) {
+      toast({ variant: 'destructive', title: 'Erro ao abrir anexo', description: 'Nenhum arquivo encontrado.' });
       return;
     }
-
-    toast({ title: 'Link gerado', description: 'A URL do anexo foi registrada no console.' });
-    window.open(url, '_blank', 'noopener,noreferrer');
+    for (const p of paths) {
+      const { url, error } = await createDocumentSignedUrl(p);
+      if (error || !url) {
+        toast({ variant: 'destructive', title: 'Erro ao abrir anexo', description: error || 'Não foi possível gerar o link do arquivo.' });
+        continue;
+      }
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
   };
 
   const openNew = () => {
@@ -495,7 +492,7 @@ export default function MedicalGuides() {
     setDialogOpen(true);
   };
 
-  const handleEdit = (g: MedicalGuide) => {
+  const handleEdit = async (g: MedicalGuide) => {
     setEditingId(g.id);
     const adminId = (g as any).administrator_id || '';
     const insId = g.health_insurance?.id || '';
@@ -512,9 +509,23 @@ export default function MedicalGuides() {
     });
     const m = insAdminMap.find(x => x.administrator_id === adminId && x.insurance_id === insId);
     setInsuranceRate(m?.billing_rate != null ? Number(m.billing_rate) : Number(g.unit_value) || 0);
-    setItems([{ ...emptyItem }]);
     setAttachmentUrl(g.attachment_url || '');
     setDialogOpen(true);
+
+    const existingItems = await fetchGuideItems(g.id);
+    if (existingItems.length > 0) {
+      setItems(existingItems.map((it: any) => ({
+        procedure_id: it.procedure_id,
+        professional_id: it.professional_id,
+        service_date: it.service_date,
+        quantity: Number(it.quantity) || 1,
+        unit_value: Number(it.unit_value) || 0,
+        total_value: Number(it.total_value) || 0,
+        status: it.status,
+      })));
+    } else {
+      setItems([{ ...emptyItem }]);
+    }
   };
   const handleDownloadPDF = async (g: MedicalGuide) => {
     if (!g.professional) {
