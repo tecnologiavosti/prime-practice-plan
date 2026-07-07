@@ -464,20 +464,24 @@ export default function MedicalGuides() {
     fetchGuides();
   };
 
-  const handleOpenAttachment = async (storedValue: string) => {
+  const handleOpenAttachment = (storedValue: string) => {
     const paths = splitPaths(storedValue);
     if (paths.length === 0) {
       toast({ variant: 'destructive', title: 'Erro ao abrir anexo', description: 'Nenhum arquivo encontrado.' });
       return;
     }
-    for (const p of paths) {
-      const { url, error } = await createDocumentSignedUrl(p);
-      if (error || !url) {
-        toast({ variant: 'destructive', title: 'Erro ao abrir anexo', description: error || 'Não foi possível gerar o link do arquivo.' });
-        continue;
-      }
-      window.open(url, '_blank', 'noopener,noreferrer');
+    setAttachmentsDialog(paths);
+  };
+
+  const openAttachmentAt = async (idx: number, path: string) => {
+    setOpeningAttachmentIdx(idx);
+    const { url, error } = await createDocumentSignedUrl(path);
+    setOpeningAttachmentIdx(null);
+    if (error || !url) {
+      toast({ variant: 'destructive', title: 'Erro ao abrir anexo', description: error || 'Não foi possível gerar o link do arquivo.' });
+      return;
     }
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const openNew = () => {
