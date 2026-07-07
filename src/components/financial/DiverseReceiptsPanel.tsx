@@ -15,8 +15,9 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, TrendingUp, Trash2 } from 'lucide-react';
+import { Plus, TrendingUp, Trash2, Paperclip, Eye } from 'lucide-react';
 import { format } from 'date-fns';
+import { createDocumentSignedUrl, DOCUMENTS_BUCKET } from '@/lib/storageDocuments';
 
 interface Entry {
   id: string;
@@ -26,6 +27,7 @@ interface Entry {
   amount: number;
   entry_date: string;
   notes: string | null;
+  receipt_path: string | null;
 }
 
 const CATEGORIES = ['Receita avulsa', 'Reembolso', 'Sala Sublocada', 'Doação', 'Outros'];
@@ -53,13 +55,15 @@ export function DiverseReceiptsPanel() {
     entry_date: format(new Date(), 'yyyy-MM-dd'),
     notes: '',
   });
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
 
   const fetchEntries = async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('cash_flow_entries')
-      .select('id, entry_type, category, description, amount, entry_date, notes')
+      .select('id, entry_type, category, description, amount, entry_date, notes, receipt_path')
       .order('entry_date', { ascending: false });
     if (error) toast({ variant: 'destructive', title: 'Erro', description: error.message });
     setEntries((data as any) || []);
@@ -70,6 +74,21 @@ export function DiverseReceiptsPanel() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    setUploading(true);
+    let receipt_path: string | null = null;
+    if (receiptFile) {
+      const ext = receiptFile.name.split('.').pop();
+      const path = `cash-flow/${crypto.randomUUID()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from(DOCUMENTS_BUCKET)
+        .upload(path, receiptFile, { upsert: false });
+      if (upErr) {
+        setUploading(false);
+        toast({ variant: 'destructive', title: 'Erro no upload', description: upErr.message });
+        return;
+      }
+      receipt_path = path;
+    }
     const { error } = await supabase.from('cash_flow_entries').insert([{
       entry_type: form.entry_type,
       category: form.category,
@@ -77,16 +96,29 @@ export function DiverseReceiptsPanel() {
       amount: form.amount,
       entry_date: form.entry_date,
       notes: form.notes || null,
-    }]);
+      receipt_path,
+    } as any]);
+    setUploading(false);
     if (error) {
       toast({ variant: 'destructive', title: 'Erro', description: error.message });
       return;
     }
     toast({ title: 'Lançamento registrado!' });
     setOpen(false);
+    setReceiptFile(null);
     setForm({ entry_type: 'entrada', category: 'Receita avulsa', description: '', amount: 0, entry_date: format(new Date(), 'yyyy-MM-dd'), notes: '' });
     fetchEntries();
   };
+
+  const handleViewReceipt = async (path: string) => {
+    const { url, error } = await createDocumentSignedUrl(path);
+    if (error || !url) {
+      toast({ variant: 'destructive', title: 'Erro', description: error || 'Não foi possível abrir.' });
+      return;
+    }
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
 
   const handleDelete = async (id: string) => {
     if (!confirm('Remover este recebimento?')) return;
@@ -161,9 +193,20 @@ export function DiverseReceiptsPanel() {
                 <Label>Descrição</Label>
                 <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
               </div>
+              <div className="space-y-1">
+                <Label>Comprovante (opcional)</Label>
+                <Input
+                  type="file"
+                  accept="image/*,application/pdf"
+                  onChange={(e) => setReceiptFile(e.target.files?.[0] ?? null)}
+                />
+                {receiptFile && (
+                  <p className="text-xs text-muted-foreground">{receiptFile.name}</p>
+                )}
+              </div>
               <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-                <Button type="submit">Salvar</Button>
+                <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={uploading}>Cancelar</Button>
+                <Button type="submit" disabled={uploading}>{uploading ? 'Salvando...' : 'Salvar'}</Button>
               </div>
             </form>
           </DialogContent>
@@ -259,9 +302,16 @@ export function DiverseReceiptsPanel() {
                   {e.entry_type === 'saida' ? '- ' : ''}{formatCurrency(Number(e.amount))}
                 </TableCell>
                 <TableCell>
-                  <Button size="icon" variant="ghost" onClick={() => handleDelete(e.id)}>
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+                  <div className="flex gap-1">
+                    {e.receipt_path && (
+                      <Button size="icon" variant="ghost" onClick={() => handleViewReceipt(e.receipt_path!)} title="Ver comprovante">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    )}
+                    <Button size="icon" variant="ghost" onClick={() => handleDelete(e.id)}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
