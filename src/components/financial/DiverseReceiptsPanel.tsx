@@ -231,6 +231,14 @@ export function DiverseReceiptsPanel() {
                 {receiptFile && (
                   <p className="text-xs text-muted-foreground">{receiptFile.name}</p>
                 )}
+                {!receiptFile && existingReceipt && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Paperclip className="h-3 w-3" />
+                    <span>Comprovante anexado.</span>
+                    <button type="button" className="text-primary underline" onClick={() => handleViewReceipt(existingReceipt)}>Ver</button>
+                    <button type="button" className="text-destructive underline" onClick={() => setExistingReceipt(null)}>Remover</button>
+                  </div>
+                )}
               </div>
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={uploading}>Cancelar</Button>
