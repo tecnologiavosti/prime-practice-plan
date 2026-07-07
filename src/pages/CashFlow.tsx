@@ -300,6 +300,11 @@ export default function CashFlow() {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1">
+                      {e.receipt_path && (
+                        <Button size="icon" variant="ghost" className="h-7 w-7" title="Ver comprovante" onClick={() => handleViewReceipt(e.receipt_path!)}>
+                          <Eye className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
                       <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEdit(e)}>
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>
