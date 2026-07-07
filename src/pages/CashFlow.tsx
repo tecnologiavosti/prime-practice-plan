@@ -100,6 +100,8 @@ export default function CashFlow() {
   const openNew = (type: 'entrada' | 'saida') => {
     setEditingId(null);
     setFormData({ ...emptyForm, entry_type: type });
+    setReceiptFile(null);
+    setExistingReceipt(null);
     setDialogOpen(true);
   };
 
@@ -114,7 +116,18 @@ export default function CashFlow() {
       payment_method_id: e.payment_method_id || '',
       notes: e.notes || '',
     });
+    setReceiptFile(null);
+    setExistingReceipt(e.receipt_path || null);
     setDialogOpen(true);
+  };
+
+  const handleViewReceipt = async (path: string) => {
+    const { url, error } = await createDocumentSignedUrl(path);
+    if (error || !url) {
+      toast({ variant: 'destructive', title: 'Erro', description: error || 'Não foi possível abrir.' });
+      return;
+    }
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -122,6 +135,19 @@ export default function CashFlow() {
     if (!formData.category) {
       toast({ variant: 'destructive', title: 'Erro', description: 'Selecione uma categoria' });
       return;
+    }
+    setUploading(true);
+    let receipt_path: string | null = existingReceipt;
+    if (receiptFile) {
+      const ext = receiptFile.name.split('.').pop();
+      const path = `cash-flow/${crypto.randomUUID()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from(DOCUMENTS_BUCKET).upload(path, receiptFile, { upsert: false });
+      if (upErr) {
+        setUploading(false);
+        toast({ variant: 'destructive', title: 'Erro no upload', description: upErr.message });
+        return;
+      }
+      receipt_path = path;
     }
     const payload = {
       entry_type: formData.entry_type,
@@ -131,10 +157,12 @@ export default function CashFlow() {
       entry_date: formData.entry_date,
       payment_method_id: formData.payment_method_id || null,
       notes: formData.notes || null,
+      receipt_path,
     };
     const { error } = editingId
-      ? await supabase.from('cash_flow_entries').update(payload).eq('id', editingId)
-      : await supabase.from('cash_flow_entries').insert([payload]);
+      ? await supabase.from('cash_flow_entries').update(payload as any).eq('id', editingId)
+      : await supabase.from('cash_flow_entries').insert([payload as any]);
+    setUploading(false);
     if (error) {
       toast({ variant: 'destructive', title: 'Erro', description: error.message });
       return;
@@ -142,6 +170,8 @@ export default function CashFlow() {
     toast({ title: editingId ? 'Lançamento atualizado!' : 'Lançamento criado!' });
     setDialogOpen(false);
     setFormData(emptyForm);
+    setReceiptFile(null);
+    setExistingReceipt(null);
     fetchEntries();
   };
 
