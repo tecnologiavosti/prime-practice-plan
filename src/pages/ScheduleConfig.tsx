@@ -51,6 +51,8 @@ export default function ScheduleConfig() {
   const { toast } = useToast();
   const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [selectedProfessional, setSelectedProfessional] = useState<string>('');
+  const [isProfessionalUser, setIsProfessionalUser] = useState(false);
+  const [noProfessionalRecord, setNoProfessionalRecord] = useState(false);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
