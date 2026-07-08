@@ -221,35 +221,58 @@ export default function ScheduleConfig() {
     return 'Ambos';
   };
 
+  if (noProfessionalRecord) {
+    return (
+      <div className="p-6 md:p-8 space-y-4">
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Minhas Escalas</h1>
+        <Card>
+          <CardContent className="p-6">
+            <p className="text-muted-foreground">
+              Seu usuário ainda não está vinculado a um cadastro de profissional. Solicite ao administrador que vincule sua conta.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 md:p-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Configurar Escalas</h1>
-          <p className="text-muted-foreground">Defina os dias e horários de atendimento de cada profissional.</p>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+            {isProfessionalUser ? 'Minhas Escalas' : 'Configurar Escalas'}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {isProfessionalUser
+              ? 'Defina seus dias e horários de atendimento.'
+              : 'Defina os dias e horários de atendimento de cada profissional.'}
+          </p>
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5" />
-            Selecione o Profissional
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Select value={selectedProfessional} onValueChange={setSelectedProfessional}>
-            <SelectTrigger className="w-full max-w-md">
-              <SelectValue placeholder="Selecione um profissional..." />
-            </SelectTrigger>
-            <SelectContent>
-              {professionals.map((p) => (
-                <SelectItem key={p.id} value={p.id}>{p.full_name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </CardContent>
-      </Card>
+      {!isProfessionalUser && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Selecione o Profissional
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Select value={selectedProfessional} onValueChange={setSelectedProfessional}>
+              <SelectTrigger className="w-full max-w-md">
+                <SelectValue placeholder="Selecione um profissional..." />
+              </SelectTrigger>
+              <SelectContent>
+                {professionals.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>{p.full_name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </CardContent>
+        </Card>
+      )}
 
       {selectedProfessional && (
         <Card>
