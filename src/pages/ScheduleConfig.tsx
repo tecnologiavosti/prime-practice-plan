@@ -76,12 +76,35 @@ export default function ScheduleConfig() {
   }, [selectedProfessional]);
 
   const fetchProfessionals = async () => {
+    const { data: userData } = await supabase.auth.getUser();
+    const uid = userData.user?.id;
+
+    // Check if current user is a linked professional
+    if (uid) {
+      const { data: mine } = await supabase
+        .from('professionals')
+        .select('id, full_name')
+        .eq('user_id', uid)
+        .maybeSingle();
+
+      if (mine) {
+        setIsProfessionalUser(true);
+        setProfessionals([mine]);
+        setSelectedProfessional(mine.id);
+        return;
+      }
+    }
+
     const { data } = await supabase
       .from('professionals')
       .select('id, full_name')
       .eq('active', true)
       .order('full_name');
-    if (data) setProfessionals(data);
+    if (data && data.length > 0) {
+      setProfessionals(data);
+    } else if (window.location.pathname.includes('/professional/')) {
+      setNoProfessionalRecord(true);
+    }
   };
 
   const fetchSchedules = async () => {
