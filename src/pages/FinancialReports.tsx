@@ -356,10 +356,14 @@ export default function FinancialReports() {
                 onChange={(e) => setEndDate(e.target.value)}
               />
             </div>
-            <div className="flex items-end">
+            <div className="flex items-end gap-2">
               <Button variant="outline" onClick={exportCSV}>
                 <Download className="mr-2 h-4 w-4" />
-                Exportar CSV
+                CSV
+              </Button>
+              <Button variant="outline" onClick={exportPDF}>
+                <FileDown className="mr-2 h-4 w-4" />
+                PDF
               </Button>
             </div>
           </div>
