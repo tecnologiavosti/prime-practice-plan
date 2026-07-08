@@ -233,6 +233,88 @@ export default function FinancialReports() {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
   };
 
+  const exportPDF = async () => {
+    const doc = new jsPDF();
+    let y = await addClinicHeader(doc, 14);
+
+    const titleMap: Record<ReportType, string> = {
+      geral: 'Relatório Financeiro Geral',
+      convenio: 'Relatório Financeiro por Convênio',
+      profissional: 'Relatório Financeiro por Profissional',
+      procedimento: 'Relatório Financeiro por Procedimento',
+    };
+
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'bold');
+    doc.text(titleMap[reportType], 14, y);
+    y += 6;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(
+      `Período: ${format(new Date(startDate), 'dd/MM/yyyy')} a ${format(new Date(endDate), 'dd/MM/yyyy')}`,
+      14,
+      y,
+    );
+    y += 5;
+    doc.text(`Total: ${formatCurrency(data.total)}  |  Lançamentos: ${data.count}`, 14, y);
+    y += 4;
+
+    let head: string[][] = [];
+    let body: (string | number)[][] = [];
+    let foot: (string | number)[][] = [];
+
+    if (reportType === 'convenio') {
+      head = [['Convênio', 'Qtd', 'Recebido', 'Pendente', 'Total']];
+      body = data.items.map((i) => [
+        i.label,
+        i.count,
+        formatCurrency(i.pago || 0),
+        formatCurrency(i.pendente || 0),
+        formatCurrency(i.total),
+      ]);
+      foot = [[
+        'Total',
+        data.count,
+        formatCurrency(data.items.reduce((a, i) => a + (i.pago || 0), 0)),
+        formatCurrency(data.items.reduce((a, i) => a + (i.pendente || 0), 0)),
+        formatCurrency(data.total),
+      ]];
+    } else if (reportType === 'profissional') {
+      head = [['Profissional', 'Qtd', 'Particular', 'Convênio', 'Total']];
+      body = data.items.map((i) => [
+        i.label,
+        i.count,
+        formatCurrency(i.particular || 0),
+        formatCurrency(i.convenio || 0),
+        formatCurrency(i.total),
+      ]);
+      foot = [[
+        'Total',
+        data.count,
+        formatCurrency(data.items.reduce((a, i) => a + (i.particular || 0), 0)),
+        formatCurrency(data.items.reduce((a, i) => a + (i.convenio || 0), 0)),
+        formatCurrency(data.total),
+      ]];
+    } else {
+      head = [[reportType === 'geral' ? 'Categoria' : 'Procedimento', 'Qtd', 'Total']];
+      body = data.items.map((i) => [i.label, i.count, formatCurrency(i.total)]);
+      foot = [['Total', data.count, formatCurrency(data.total)]];
+    }
+
+    autoTable(doc, {
+      startY: y + 2,
+      head,
+      body,
+      foot,
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [30, 148, 152] },
+      footStyles: { fillColor: [240, 240, 240], textColor: 20, fontStyle: 'bold' },
+      margin: { left: 14, right: 14 },
+    });
+
+    doc.save(`relatorio_${reportType}_${startDate}_${endDate}.pdf`);
+  };
+
   return (
     <div className="p-6">
       <div className="mb-6">
