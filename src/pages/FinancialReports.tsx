@@ -20,9 +20,12 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { FileText, Download, DollarSign, Users, Stethoscope } from 'lucide-react';
+import { FileText, Download, DollarSign, Users, Stethoscope, FileDown } from 'lucide-react';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { addClinicHeader } from '@/lib/pdfHeader';
 
 interface ReportData {
   total: number;
