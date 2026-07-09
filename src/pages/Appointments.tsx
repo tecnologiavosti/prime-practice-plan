@@ -228,6 +228,11 @@ export default function Appointments() {
     const { data } = await supabase.from('insurance_administrators_map').select('insurance_id, administrator_id, billing_rate');
     setInsAdminMap((data || []) as InsAdminMap[]);
   };
+  const fetchRooms = async () => {
+    const { data } = await (supabase as any).from('rooms').select('id, name, active').eq('active', true).order('name');
+    setRooms((data || []) as Room[]);
+  };
+
 
   const getProcedurePrice = (): number | null => {
     if (!formData.procedure_id) return null;
