@@ -96,7 +96,7 @@ export default function Administrators() {
   useEffect(() => {
     fetchData();
   }, []);
-  useRealtime(['administrators','insurance_administrators_map','health_insurances'], fetchData);
+  useRealtime(['administrators','insurance_administrators_map','health_insurances'], () => fetchData());
 
   const fetchData = async () => {
     await Promise.all([fetchAdministrators(), fetchHealthInsurances()]);

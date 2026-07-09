@@ -157,7 +157,7 @@ export default function TeamUsers() {
   if (loading) return <div className="p-6">Carregando...</div>;
   if (!isAdmin) return <div className="p-6 text-muted-foreground">Acesso restrito a administradores.</div>;
 
-  useRealtime(['user_roles','professionals'], fetchData);
+  useRealtime(['user_roles','professionals'], () => fetchData());
 
   return (
     <div className="p-6 space-y-4">

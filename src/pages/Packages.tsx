@@ -63,7 +63,7 @@ export default function Packages() {
     fetchPackages();
     fetchProcedures();
   }, []);
-  useRealtime(['package_sections','package_procedures','private_packages','patient_packages'], fetchPackages);
+  useRealtime(['package_sections','package_procedures','private_packages','patient_packages'], () => fetchPackages());
 
   const fetchPackages = async () => {
     const { data, error } = await supabase.from('private_packages').select('*').order('name');

@@ -171,7 +171,7 @@ export default function MedicalGuides() {
   useEffect(() => {
     fetchData();
   }, [statusFilter]);
-  useRealtime(['medical_guides','medical_guide_items','medical_guide_documents'], fetchData);
+  useRealtime(['medical_guides','medical_guide_items','medical_guide_documents'], () => fetchData());
 
   useEffect(() => {
     if (!attachmentsDialog) {

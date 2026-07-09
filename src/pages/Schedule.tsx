@@ -55,7 +55,7 @@ export default function Schedule() {
   useEffect(() => {
     fetchProfessionals();
   }, []);
-  useRealtime(['appointments','professional_schedules','schedule_blocks','professional_special_periods'], fetchProfessionals);
+  useRealtime(['appointments','professional_schedules','schedule_blocks','professional_special_periods'], () => fetchProfessionals());
 
   useEffect(() => {
     if (selectedProfessional) {

@@ -113,7 +113,7 @@ export default function Procedures() {
     fetchInsurances();
     fetchAllProcedurePrices();
   }, []);
-  useRealtime(['procedures','procedure_insurance_prices'], fetchProcedures);
+  useRealtime(['procedures','procedure_insurance_prices'], () => fetchProcedures());
 
   const fetchProcedures = async () => {
     const { data, error } = await supabase

@@ -56,7 +56,7 @@ export default function PaymentMethods() {
   useEffect(() => {
     fetchMethods();
   }, []);
-  useRealtime(['payment_methods'], fetchMethods);
+  useRealtime(['payment_methods'], () => fetchMethods());
 
   const fetchMethods = async () => {
     const { data, error } = await supabase

@@ -127,7 +127,7 @@ export default function Professionals() {
     fetchSpecialties();
     fetchInsurances();
   }, []);
-  useRealtime(['professionals','professional_insurances','professional_fees'], fetchProfessionals);
+  useRealtime(['professionals','professional_insurances','professional_fees'], () => fetchProfessionals());
 
   const fetchProfessionals = async () => {
     const { data, error } = await supabase

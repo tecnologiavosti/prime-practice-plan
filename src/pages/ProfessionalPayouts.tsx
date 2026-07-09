@@ -113,7 +113,7 @@ export default function ProfessionalPayouts() {
   useEffect(() => {
     fetchData();
   }, [statusFilter]);
-  useRealtime(['professional_payouts'], fetchData);
+  useRealtime(['professional_payouts'], () => fetchData());
 
   const fetchData = async () => {
     await Promise.all([

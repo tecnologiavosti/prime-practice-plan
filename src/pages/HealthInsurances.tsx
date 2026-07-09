@@ -73,7 +73,7 @@ export default function HealthInsurances() {
     fetchInsurances();
     fetchAdministrators();
   }, []);
-  useRealtime(['health_insurances','insurance_administrators_map'], fetchInsurances);
+  useRealtime(['health_insurances','insurance_administrators_map'], () => fetchInsurances());
 
   const fetchInsurances = async () => {
     const { data, error } = await supabase
