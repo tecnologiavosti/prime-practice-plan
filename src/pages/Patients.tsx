@@ -195,6 +195,13 @@ export default function Patients() {
       notes: patient.notes || '',
       gender: patient.gender || '',
       document_url: patient.document_url || '',
+      has_guardian: (patient as any).has_guardian ?? false,
+      guardian_name: (patient as any).guardian_name || '',
+      guardian_cpf: (patient as any).guardian_cpf || '',
+      guardian_rg: (patient as any).guardian_rg || '',
+      guardian_relationship: (patient as any).guardian_relationship || '',
+      guardian_phone: (patient as any).guardian_phone || '',
+      guardian_email: (patient as any).guardian_email || '',
     });
     setDialogOpen(true);
   };
