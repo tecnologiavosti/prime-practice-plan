@@ -460,6 +460,7 @@ export default function Appointments() {
       health_insurance_id: apt.health_insurance?.id || '',
       custom_amount: Number(apt.custom_amount) || 0,
       notes: apt.notes || '',
+      room_id: apt.room?.id || '',
       status: apt.status as any,
     });
     setDialogOpen(true);
