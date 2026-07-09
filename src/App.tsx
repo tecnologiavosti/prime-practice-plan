@@ -70,6 +70,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <GlobalRealtimeBridge />
       <ErrorBoundary>
         <BrowserRouter>
           <Routes>
