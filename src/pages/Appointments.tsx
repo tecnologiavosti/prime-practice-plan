@@ -56,6 +56,7 @@ interface ProcedureInsurancePrice { procedure_id: string; health_insurance_id: s
 interface PaymentMethod { id: string; name: string; }
 interface Administrator { id: string; name: string; }
 interface InsAdminMap { insurance_id: string; administrator_id: string; billing_rate: number | null; }
+interface Room { id: string; name: string; active: boolean; }
 
 type ViewMode = 'daily' | 'monthly';
 
