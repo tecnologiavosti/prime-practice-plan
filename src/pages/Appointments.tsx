@@ -753,6 +753,41 @@ export default function Appointments() {
                   <Input type="time" required value={formData.end_time} onChange={(e) => setFormData({ ...formData, end_time: e.target.value })} />
                 </div>
                 <div className="space-y-2 md:col-span-2">
+                  <Label>Sala</Label>
+                  <Select value={formData.room_id || 'none'} onValueChange={(v) => setFormData({ ...formData, room_id: v === 'none' ? '' : v })}>
+                    <SelectTrigger><SelectValue placeholder="Selecione a sala" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Sem sala</SelectItem>
+                      {(() => {
+                        const busyRoomIds = new Set(
+                          appointments
+                            .filter(a =>
+                              a.id !== editingId &&
+                              a.appointment_date === formData.appointment_date &&
+                              !['cancelado', 'faltou'].includes(a.status) &&
+                              (a as any).room_id &&
+                              formData.start_time < (a.end_time?.slice(0, 5) || '') &&
+                              formData.end_time > (a.start_time?.slice(0, 5) || '')
+                            )
+                            .map(a => (a as any).room_id as string)
+                        );
+                        if (rooms.length === 0) {
+                          return <SelectItem value="no-rooms" disabled>Nenhuma sala cadastrada</SelectItem>;
+                        }
+                        return rooms.map((r) => {
+                          const busy = busyRoomIds.has(r.id);
+                          return (
+                            <SelectItem key={r.id} value={r.id} disabled={busy}>
+                              {r.name}{busy ? ' — Ocupada' : ''}
+                            </SelectItem>
+                          );
+                        });
+                      })()}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">Salas ocupadas no dia/horário selecionado aparecem desabilitadas.</p>
+                </div>
+                <div className="space-y-2 md:col-span-2">
                   <Label>Observações</Label>
                   <Textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
                 </div>
