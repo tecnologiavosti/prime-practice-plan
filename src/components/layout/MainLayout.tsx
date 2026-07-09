@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Sidebar } from './Sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { NotificationBell } from './NotificationBell';
+import { LiveClock } from './LiveClock';
 
 const ADMIN_STAFF_ROLES: string[] = ['administrador', 'recepcao', 'financeiro'];
 
