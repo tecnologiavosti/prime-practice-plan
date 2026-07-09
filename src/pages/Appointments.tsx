@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search, Pencil, Trash2, CalendarDays, CalendarRange, Receipt } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2, CalendarDays, CalendarRange, Receipt, X } from 'lucide-react';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -120,6 +120,7 @@ export default function Appointments() {
   const [formData, setFormData] = useState(emptyForm);
   const [submitting, setSubmitting] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [extraSessions, setExtraSessions] = useState<{ id?: string; session_date: string; start_time: string; end_time: string }[]>([]);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -284,10 +285,13 @@ export default function Appointments() {
       };
 
       let error;
+      let apptId = editingId;
       if (editingId) {
         ({ error } = await supabase.from('appointments').update(payload).eq('id', editingId));
       } else {
-        ({ error } = await supabase.from('appointments').insert({ ...payload, created_by: user?.id }));
+        const ins = await supabase.from('appointments').insert({ ...payload, created_by: user?.id }).select('id').single();
+        error = ins.error;
+        apptId = ins.data?.id ?? null;
       }
 
       if (error) {
@@ -304,10 +308,33 @@ export default function Appointments() {
         return;
       }
 
+      // Persist extra sessions (replace-all strategy)
+      if (apptId) {
+        await (supabase as any).from('appointment_sessions').delete().eq('appointment_id', apptId);
+        const valid = extraSessions.filter(s => s.session_date && s.start_time && s.end_time);
+        if (valid.length > 0) {
+          const { error: sErr } = await (supabase as any).from('appointment_sessions').insert(
+            valid.map(s => ({ appointment_id: apptId, session_date: s.session_date, start_time: s.start_time, end_time: s.end_time }))
+          );
+          if (sErr) {
+            const m = sErr.message || '';
+            if (m.includes('CONFLICT_PROFESSIONAL')) {
+              toast({ variant: 'destructive', title: 'Sessão em conflito', description: 'Uma das sessões conflita com a agenda do profissional.' });
+            } else if (m.includes('CONFLICT_PATIENT')) {
+              toast({ variant: 'destructive', title: 'Sessão em conflito', description: 'Uma das sessões conflita com a agenda do paciente.' });
+            } else {
+              toast({ variant: 'destructive', title: 'Erro nas sessões', description: m });
+            }
+            return;
+          }
+        }
+      }
+
       toast({ title: editingId ? 'Agendamento atualizado!' : 'Agendamento criado com sucesso!' });
       setDialogOpen(false);
       setFormData(emptyForm);
       setEditingId(null);
+      setExtraSessions([]);
       fetchAppointments();
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Erro inesperado', description: err?.message || 'Tente novamente' });
@@ -453,11 +480,12 @@ export default function Appointments() {
 
   const openNew = () => {
     setEditingId(null);
+    setExtraSessions([]);
     setFormData({ ...emptyForm, appointment_date: viewMode === 'daily' ? dateFilter : format(new Date(), 'yyyy-MM-dd') });
     setDialogOpen(true);
   };
 
-  const handleEditAppointment = (apt: Appointment) => {
+  const handleEditAppointment = async (apt: Appointment) => {
     setEditingId(apt.id);
     setFormData({
       patient_id: apt.patient?.id || '',
@@ -474,6 +502,17 @@ export default function Appointments() {
       room_id: apt.room?.id || '',
       status: apt.status as any,
     });
+    const { data } = await (supabase as any)
+      .from('appointment_sessions')
+      .select('id, session_date, start_time, end_time')
+      .eq('appointment_id', apt.id)
+      .order('session_date').order('start_time');
+    setExtraSessions((data || []).map((s: any) => ({
+      id: s.id,
+      session_date: s.session_date,
+      start_time: s.start_time?.slice(0, 5) || '',
+      end_time: s.end_time?.slice(0, 5) || '',
+    })));
     setDialogOpen(true);
   };
 
@@ -787,6 +826,42 @@ export default function Appointments() {
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-muted-foreground">Salas ocupadas no dia/horário selecionado aparecem desabilitadas.</p>
+                </div>
+                <div className="space-y-2 md:col-span-2 border-t pt-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Sessões adicionais</Label>
+                      <p className="text-xs text-muted-foreground">Adicione outras datas/horários para o mesmo agendamento.</p>
+                    </div>
+                    <Button type="button" size="sm" variant="outline" onClick={() => setExtraSessions([...extraSessions, { session_date: formData.appointment_date, start_time: formData.start_time, end_time: formData.end_time }])}>
+                      <Plus className="h-4 w-4 mr-1" /> Adicionar sessão
+                    </Button>
+                  </div>
+                  {extraSessions.map((s, idx) => (
+                    <div key={idx} className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_auto] gap-2 items-end">
+                      <div>
+                        <Label className="text-xs">Data</Label>
+                        <Input type="date" value={s.session_date} onChange={(e) => {
+                          const next = [...extraSessions]; next[idx] = { ...s, session_date: e.target.value }; setExtraSessions(next);
+                        }} />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Início</Label>
+                        <Input type="time" value={s.start_time} onChange={(e) => {
+                          const next = [...extraSessions]; next[idx] = { ...s, start_time: e.target.value }; setExtraSessions(next);
+                        }} />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Fim</Label>
+                        <Input type="time" value={s.end_time} onChange={(e) => {
+                          const next = [...extraSessions]; next[idx] = { ...s, end_time: e.target.value }; setExtraSessions(next);
+                        }} />
+                      </div>
+                      <Button type="button" size="icon" variant="ghost" onClick={() => setExtraSessions(extraSessions.filter((_, i) => i !== idx))}>
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
                 </div>
                 <div className="space-y-2 md:col-span-2">
                   <Label>Observações</Label>

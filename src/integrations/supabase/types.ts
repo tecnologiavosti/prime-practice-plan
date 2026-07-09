@@ -183,6 +183,50 @@ export type Database = {
           },
         ]
       }
+      appointment_sessions: {
+        Row: {
+          appointment_id: string
+          created_at: string
+          end_time: string
+          id: string
+          notes: string | null
+          session_date: string
+          start_time: string
+          status: Database["public"]["Enums"]["appointment_status"]
+          updated_at: string
+        }
+        Insert: {
+          appointment_id: string
+          created_at?: string
+          end_time: string
+          id?: string
+          notes?: string | null
+          session_date: string
+          start_time: string
+          status?: Database["public"]["Enums"]["appointment_status"]
+          updated_at?: string
+        }
+        Update: {
+          appointment_id?: string
+          created_at?: string
+          end_time?: string
+          id?: string
+          notes?: string | null
+          session_date?: string
+          start_time?: string
+          status?: Database["public"]["Enums"]["appointment_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_sessions_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointments: {
         Row: {
           administrator_id: string | null
