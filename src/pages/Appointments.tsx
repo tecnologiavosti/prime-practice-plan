@@ -1139,6 +1139,52 @@ export default function Appointments() {
         </div>
       )}
 
+
+      <Dialog open={viewOpen} onOpenChange={setViewOpen}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Detalhes do Agendamento</DialogTitle>
+          </DialogHeader>
+          {viewAppointment && (
+            <div className="space-y-3 text-sm">
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label className="text-xs text-muted-foreground">Paciente</Label><div className="font-medium">{viewAppointment.patient?.full_name || '-'}</div></div>
+                <div><Label className="text-xs text-muted-foreground">Profissional</Label><div className="font-medium">{viewAppointment.professional?.full_name || '-'}</div></div>
+                <div><Label className="text-xs text-muted-foreground">Procedimento</Label><div>{viewAppointment.procedure?.name || '-'}</div></div>
+                <div><Label className="text-xs text-muted-foreground">Tipo</Label><div className="capitalize">{viewAppointment.consultation_type}</div></div>
+                <div><Label className="text-xs text-muted-foreground">Administradora</Label><div>{viewAppointment.administrator?.name || '-'}</div></div>
+                <div><Label className="text-xs text-muted-foreground">Convênio</Label><div>{viewAppointment.health_insurance?.name || '-'}</div></div>
+                <div><Label className="text-xs text-muted-foreground">Sala</Label><div>{viewAppointment.room?.name || '-'}</div></div>
+                <div><Label className="text-xs text-muted-foreground">Valor</Label><div className="font-mono">{viewAppointment.custom_amount != null ? formatCurrency(Number(viewAppointment.custom_amount)) : (viewAppointment.procedure?.private_price ? formatCurrency(Number(viewAppointment.procedure.private_price)) : '-')}</div></div>
+                <div><Label className="text-xs text-muted-foreground">Status</Label><div><span className={cn('px-2 py-0.5 rounded text-xs', statusColors[viewAppointment.status])}>{statusOptions.find(s => s.value === viewAppointment.status)?.label}</span></div></div>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Data / Horário principal</Label>
+                <div className="font-mono">{format(parseISO(viewAppointment.appointment_date), "dd/MM/yyyy (EEE)", { locale: ptBR })} • {viewAppointment.start_time?.slice(0,5)} - {viewAppointment.end_time?.slice(0,5)}</div>
+              </div>
+              {viewSessions.length > 0 && (
+                <div>
+                  <Label className="text-xs text-muted-foreground">Sessões adicionais ({viewSessions.length})</Label>
+                  <div className="mt-1 space-y-1">
+                    {viewSessions.map((s, i) => (
+                      <div key={i} className="font-mono text-xs bg-muted/40 rounded px-2 py-1">
+                        {format(parseISO(s.session_date), "dd/MM/yyyy (EEE)", { locale: ptBR })} • {s.start_time?.slice(0,5)} - {s.end_time?.slice(0,5)}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {viewAppointment.notes && (
+                <div>
+                  <Label className="text-xs text-muted-foreground">Observações</Label>
+                  <div className="whitespace-pre-wrap bg-muted/40 rounded p-2 text-xs">{viewAppointment.notes}</div>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
