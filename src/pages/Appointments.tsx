@@ -153,6 +153,7 @@ export default function Appointments() {
         fetchPaymentMethods(),
         fetchAdministrators(),
         fetchInsAdminMap(),
+        fetchRooms(),
       ]);
     } catch (err) {
       toast({ variant: 'destructive', title: 'Erro', description: 'Erro ao carregar dados' });
