@@ -536,6 +536,9 @@ export default function Patients() {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" onClick={() => setViewingPatient(patient)} title="Visualizar">
+                        <Eye className="h-4 w-4" />
+                      </Button>
                       <Button variant="ghost" size="icon" onClick={() => openEdit(patient)} title="Editar">
                         <Edit className="h-4 w-4" />
                       </Button>
