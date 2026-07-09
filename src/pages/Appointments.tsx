@@ -90,6 +90,7 @@ const emptyForm = {
   health_insurance_id: '',
   custom_amount: 0,
   notes: '',
+  room_id: '',
   status: 'agendado' as 'agendado' | 'confirmado' | 'em_atendimento' | 'finalizado' | 'cancelado' | 'faltou',
 };
 
