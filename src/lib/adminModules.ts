@@ -11,6 +11,7 @@ export const ADMIN_MODULES: AdminModule[] = [
   { key: 'dashboard', label: 'Dashboard', to: '/admin', roles: ['administrador', 'recepcao', 'financeiro'] },
   { key: 'agenda', label: 'Agenda', to: '/admin/agenda', roles: ['administrador', 'recepcao'] },
   { key: 'agendamentos', label: 'Agendamentos', to: '/admin/agendamentos', roles: ['administrador', 'recepcao'] },
+  { key: 'salas', label: 'Salas', to: '/admin/salas', roles: ['administrador', 'recepcao'] },
   { key: 'pacientes', label: 'Pacientes', to: '/admin/pacientes', roles: ['administrador', 'recepcao'] },
   { key: 'prontuarios', label: 'Prontuários', to: '/admin/prontuarios', roles: ['administrador', 'profissional'] },
   { key: 'profissionais', label: 'Profissionais', to: '/admin/profissionais', roles: ['administrador'] },
