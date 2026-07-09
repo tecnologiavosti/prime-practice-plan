@@ -67,7 +67,7 @@ export default function CashFlow() {
   const { toast } = useToast();
 
   useEffect(() => { fetchAll(); }, [typeFilter, monthFilter]);
-  useRealtime(['cash_flow_entries','financial_transactions'], fetchAll);
+  useRealtime(['cash_flow_entries','financial_transactions'], () => fetchAll());
 
   const fetchAll = async () => {
     setLoading(true);
