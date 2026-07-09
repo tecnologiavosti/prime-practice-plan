@@ -1075,7 +1075,10 @@ export default function Appointments() {
                         {format(parseISO(date), "dd/MM (EEE)", { locale: ptBR })}
                       </TableCell>
                     ) : null}
-                    <TableCell className="font-mono">{apt.start_time?.slice(0, 5)} - {apt.end_time?.slice(0, 5)}</TableCell>
+                    <TableCell className="font-mono">
+                      {apt.start_time?.slice(0, 5)} - {apt.end_time?.slice(0, 5)}
+                      {apt.is_session && <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary">Sessão</span>}
+                    </TableCell>
                     <TableCell className="font-medium">{apt.patient?.full_name || '-'}</TableCell>
                     <TableCell>{apt.professional?.full_name || '-'}</TableCell>
                     <TableCell>{apt.procedure?.name || '-'}</TableCell>
@@ -1089,7 +1092,7 @@ export default function Appointments() {
                       {apt.custom_amount != null ? formatCurrency(Number(apt.custom_amount)) : (apt.procedure?.private_price ? formatCurrency(Number(apt.procedure.private_price)) : '-')}
                     </TableCell>
                     <TableCell>
-                      <Select value={apt.status} onValueChange={(v) => handleStatusChange(apt.id, v)}>
+                      <Select value={apt.status} onValueChange={(v) => handleStatusChange(apt.is_session ? apt.parent_id! : apt.id, v)} disabled={apt.is_session}>
                         <SelectTrigger className={cn('w-[140px]', statusColors[apt.status])}>
                           <SelectValue />
                         </SelectTrigger>
@@ -1102,17 +1105,24 @@ export default function Appointments() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        {apt.status === 'finalizado' && (
+                        <Button variant="ghost" size="icon" onClick={() => openView(apt)} title="Ver detalhes">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        {!apt.is_session && apt.status === 'finalizado' && (
                           <Button variant="ghost" size="icon" onClick={() => handleViewReceipt(apt)} title="Ver recibo">
                             <Receipt className="h-4 w-4 text-primary" />
                           </Button>
                         )}
-                        <Button variant="ghost" size="icon" onClick={() => handleEditAppointment(apt)} title="Editar">
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => setDeleteId(apt.id)} title="Remover" className="text-destructive hover:text-destructive">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        {!apt.is_session && (
+                          <>
+                            <Button variant="ghost" size="icon" onClick={() => handleEditAppointment(apt)} title="Editar">
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => setDeleteId(apt.id)} title="Remover" className="text-destructive hover:text-destructive">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
