@@ -285,10 +285,13 @@ export default function Appointments() {
       };
 
       let error;
+      let apptId = editingId;
       if (editingId) {
         ({ error } = await supabase.from('appointments').update(payload).eq('id', editingId));
       } else {
-        ({ error } = await supabase.from('appointments').insert({ ...payload, created_by: user?.id }));
+        const ins = await supabase.from('appointments').insert({ ...payload, created_by: user?.id }).select('id').single();
+        error = ins.error;
+        apptId = ins.data?.id ?? null;
       }
 
       if (error) {
@@ -305,10 +308,33 @@ export default function Appointments() {
         return;
       }
 
+      // Persist extra sessions (replace-all strategy)
+      if (apptId) {
+        await (supabase as any).from('appointment_sessions').delete().eq('appointment_id', apptId);
+        const valid = extraSessions.filter(s => s.session_date && s.start_time && s.end_time);
+        if (valid.length > 0) {
+          const { error: sErr } = await (supabase as any).from('appointment_sessions').insert(
+            valid.map(s => ({ appointment_id: apptId, session_date: s.session_date, start_time: s.start_time, end_time: s.end_time }))
+          );
+          if (sErr) {
+            const m = sErr.message || '';
+            if (m.includes('CONFLICT_PROFESSIONAL')) {
+              toast({ variant: 'destructive', title: 'Sessão em conflito', description: 'Uma das sessões conflita com a agenda do profissional.' });
+            } else if (m.includes('CONFLICT_PATIENT')) {
+              toast({ variant: 'destructive', title: 'Sessão em conflito', description: 'Uma das sessões conflita com a agenda do paciente.' });
+            } else {
+              toast({ variant: 'destructive', title: 'Erro nas sessões', description: m });
+            }
+            return;
+          }
+        }
+      }
+
       toast({ title: editingId ? 'Agendamento atualizado!' : 'Agendamento criado com sucesso!' });
       setDialogOpen(false);
       setFormData(emptyForm);
       setEditingId(null);
+      setExtraSessions([]);
       fetchAppointments();
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Erro inesperado', description: err?.message || 'Tente novamente' });
