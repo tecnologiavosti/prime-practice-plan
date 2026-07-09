@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search, Pencil, Trash2, CalendarDays, CalendarRange, Receipt, X } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2, CalendarDays, CalendarRange, Receipt, X, Eye } from 'lucide-react';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -45,6 +45,8 @@ interface Appointment {
   health_insurance: { id: string; name: string } | null;
   administrator: { id: string; name: string } | null;
   room: { id: string; name: string } | null;
+  is_session?: boolean;
+  parent_id?: string;
 }
 
 interface Patient { id: string; full_name: string; }
@@ -137,6 +139,11 @@ export default function Appointments() {
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [receiptData, setReceiptData] = useState<any>(null);
 
+  // View details state
+  const [viewOpen, setViewOpen] = useState(false);
+  const [viewAppointment, setViewAppointment] = useState<Appointment | null>(null);
+  const [viewSessions, setViewSessions] = useState<{ session_date: string; start_time: string; end_time: string }[]>([]);
+
   useEffect(() => {
     fetchData();
   }, [dateFilter, monthFilter, viewMode]);
@@ -190,7 +197,57 @@ export default function Appointments() {
 
     const { data, error } = await query;
     if (error) { toast({ variant: 'destructive', title: 'Erro', description: error.message }); return; }
-    setAppointments((data as any) || []);
+    const base = (data as any[]) || [];
+
+    // Fetch extra sessions in the same range and merge as virtual rows
+    let sessQuery = (supabase as any)
+      .from('appointment_sessions')
+      .select(`
+        id, appointment_id, session_date, start_time, end_time, status,
+        appointment:appointments!inner(
+          id, consultation_type, notes, administrator_id, custom_amount,
+          patient:patients(id, full_name),
+          professional:professionals(id, full_name),
+          procedure:procedures(id, name, private_price),
+          health_insurance:health_insurances(id, name),
+          administrator:administrators(id, name),
+          room:rooms(id, name), room_id
+        )
+      `);
+    if (viewMode === 'daily') {
+      sessQuery = sessQuery.eq('session_date', dateFilter);
+    } else {
+      const monthDate = parseISO(monthFilter + '-01');
+      const start = format(startOfMonth(monthDate), 'yyyy-MM-dd');
+      const end = format(endOfMonth(monthDate), 'yyyy-MM-dd');
+      sessQuery = sessQuery.gte('session_date', start).lte('session_date', end);
+    }
+    const { data: sessData } = await sessQuery;
+    const sessionsAsRows = ((sessData as any[]) || []).map((s: any) => ({
+      id: `sess-${s.id}`,
+      parent_id: s.appointment_id,
+      is_session: true,
+      appointment_date: s.session_date,
+      start_time: s.start_time,
+      end_time: s.end_time,
+      status: s.status ?? s.appointment?.status ?? 'agendado',
+      consultation_type: s.appointment?.consultation_type,
+      notes: s.appointment?.notes,
+      administrator_id: s.appointment?.administrator_id,
+      custom_amount: s.appointment?.custom_amount,
+      patient: s.appointment?.patient,
+      professional: s.appointment?.professional,
+      procedure: s.appointment?.procedure,
+      health_insurance: s.appointment?.health_insurance,
+      administrator: s.appointment?.administrator,
+      room: s.appointment?.room,
+    }));
+
+    const merged = [...base, ...sessionsAsRows].sort((a, b) => {
+      if (a.appointment_date === b.appointment_date) return (a.start_time || '').localeCompare(b.start_time || '');
+      return a.appointment_date.localeCompare(b.appointment_date);
+    });
+    setAppointments(merged as any);
   };
 
   const fetchPatients = async () => {
@@ -579,14 +636,32 @@ export default function Appointments() {
 
   const sortedDates = Object.keys(groupedByDate).sort();
 
-  const renderAppointmentRow = (apt: Appointment, showDate = false) => (
-    <TableRow key={apt.id}>
+  const openView = async (apt: Appointment) => {
+    const parentId = apt.is_session ? apt.parent_id! : apt.id;
+    const parent = apt.is_session ? (appointments.find(a => a.id === parentId) || apt) : apt;
+    setViewAppointment(parent);
+    const { data } = await (supabase as any)
+      .from('appointment_sessions')
+      .select('session_date, start_time, end_time')
+      .eq('appointment_id', parentId)
+      .order('session_date');
+    setViewSessions((data as any[]) || []);
+    setViewOpen(true);
+  };
+
+  const renderAppointmentRow = (apt: Appointment, showDate = false) => {
+    const targetId = apt.is_session ? apt.parent_id! : apt.id;
+    return (
+    <TableRow key={apt.id} className={apt.is_session ? 'bg-muted/30' : ''}>
       {showDate && (
         <TableCell className="font-medium whitespace-nowrap">
           {format(parseISO(apt.appointment_date), "dd/MM/yyyy (EEE)", { locale: ptBR })}
         </TableCell>
       )}
-      <TableCell className="font-mono">{apt.start_time?.slice(0, 5)} - {apt.end_time?.slice(0, 5)}</TableCell>
+      <TableCell className="font-mono">
+        {apt.start_time?.slice(0, 5)} - {apt.end_time?.slice(0, 5)}
+        {apt.is_session && <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary">Sessão</span>}
+      </TableCell>
       <TableCell className="font-medium">{apt.patient?.full_name || '-'}</TableCell>
       <TableCell>{apt.professional?.full_name || '-'}</TableCell>
       <TableCell>{apt.procedure?.name || '-'}</TableCell>
@@ -600,7 +675,7 @@ export default function Appointments() {
         {apt.custom_amount != null ? formatCurrency(Number(apt.custom_amount)) : (apt.procedure?.private_price ? formatCurrency(Number(apt.procedure.private_price)) : '-')}
       </TableCell>
       <TableCell>
-        <Select value={apt.status} onValueChange={(v) => handleStatusChange(apt.id, v)}>
+        <Select value={apt.status} onValueChange={(v) => handleStatusChange(targetId, v)} disabled={apt.is_session}>
           <SelectTrigger className={cn('w-[140px]', statusColors[apt.status])}>
             <SelectValue />
           </SelectTrigger>
@@ -613,21 +688,29 @@ export default function Appointments() {
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-1">
-          {apt.status === 'finalizado' && (
+          <Button variant="ghost" size="icon" onClick={() => openView(apt)} title="Ver detalhes">
+            <Eye className="h-4 w-4" />
+          </Button>
+          {!apt.is_session && apt.status === 'finalizado' && (
             <Button variant="ghost" size="icon" onClick={() => handleViewReceipt(apt)} title="Ver recibo">
               <Receipt className="h-4 w-4 text-primary" />
             </Button>
           )}
-          <Button variant="ghost" size="icon" onClick={() => handleEditAppointment(apt)} title="Editar">
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="icon" onClick={() => setDeleteId(apt.id)} title="Remover" className="text-destructive hover:text-destructive">
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          {!apt.is_session && (
+            <>
+              <Button variant="ghost" size="icon" onClick={() => handleEditAppointment(apt)} title="Editar">
+                <Pencil className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={() => setDeleteId(apt.id)} title="Remover" className="text-destructive hover:text-destructive">
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </>
+          )}
         </div>
       </TableCell>
     </TableRow>
   );
+  };
 
   const colCount = viewMode === 'monthly' ? 11 : 10;
 
@@ -992,7 +1075,10 @@ export default function Appointments() {
                         {format(parseISO(date), "dd/MM (EEE)", { locale: ptBR })}
                       </TableCell>
                     ) : null}
-                    <TableCell className="font-mono">{apt.start_time?.slice(0, 5)} - {apt.end_time?.slice(0, 5)}</TableCell>
+                    <TableCell className="font-mono">
+                      {apt.start_time?.slice(0, 5)} - {apt.end_time?.slice(0, 5)}
+                      {apt.is_session && <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary">Sessão</span>}
+                    </TableCell>
                     <TableCell className="font-medium">{apt.patient?.full_name || '-'}</TableCell>
                     <TableCell>{apt.professional?.full_name || '-'}</TableCell>
                     <TableCell>{apt.procedure?.name || '-'}</TableCell>
@@ -1006,7 +1092,7 @@ export default function Appointments() {
                       {apt.custom_amount != null ? formatCurrency(Number(apt.custom_amount)) : (apt.procedure?.private_price ? formatCurrency(Number(apt.procedure.private_price)) : '-')}
                     </TableCell>
                     <TableCell>
-                      <Select value={apt.status} onValueChange={(v) => handleStatusChange(apt.id, v)}>
+                      <Select value={apt.status} onValueChange={(v) => handleStatusChange(apt.is_session ? apt.parent_id! : apt.id, v)} disabled={apt.is_session}>
                         <SelectTrigger className={cn('w-[140px]', statusColors[apt.status])}>
                           <SelectValue />
                         </SelectTrigger>
@@ -1019,17 +1105,24 @@ export default function Appointments() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        {apt.status === 'finalizado' && (
+                        <Button variant="ghost" size="icon" onClick={() => openView(apt)} title="Ver detalhes">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        {!apt.is_session && apt.status === 'finalizado' && (
                           <Button variant="ghost" size="icon" onClick={() => handleViewReceipt(apt)} title="Ver recibo">
                             <Receipt className="h-4 w-4 text-primary" />
                           </Button>
                         )}
-                        <Button variant="ghost" size="icon" onClick={() => handleEditAppointment(apt)} title="Editar">
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => setDeleteId(apt.id)} title="Remover" className="text-destructive hover:text-destructive">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        {!apt.is_session && (
+                          <>
+                            <Button variant="ghost" size="icon" onClick={() => handleEditAppointment(apt)} title="Editar">
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => setDeleteId(apt.id)} title="Remover" className="text-destructive hover:text-destructive">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -1045,6 +1138,52 @@ export default function Appointments() {
           Total: {filtered.length} agendamento(s) em {sortedDates.length} dia(s)
         </div>
       )}
+
+
+      <Dialog open={viewOpen} onOpenChange={setViewOpen}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Detalhes do Agendamento</DialogTitle>
+          </DialogHeader>
+          {viewAppointment && (
+            <div className="space-y-3 text-sm">
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label className="text-xs text-muted-foreground">Paciente</Label><div className="font-medium">{viewAppointment.patient?.full_name || '-'}</div></div>
+                <div><Label className="text-xs text-muted-foreground">Profissional</Label><div className="font-medium">{viewAppointment.professional?.full_name || '-'}</div></div>
+                <div><Label className="text-xs text-muted-foreground">Procedimento</Label><div>{viewAppointment.procedure?.name || '-'}</div></div>
+                <div><Label className="text-xs text-muted-foreground">Tipo</Label><div className="capitalize">{viewAppointment.consultation_type}</div></div>
+                <div><Label className="text-xs text-muted-foreground">Administradora</Label><div>{viewAppointment.administrator?.name || '-'}</div></div>
+                <div><Label className="text-xs text-muted-foreground">Convênio</Label><div>{viewAppointment.health_insurance?.name || '-'}</div></div>
+                <div><Label className="text-xs text-muted-foreground">Sala</Label><div>{viewAppointment.room?.name || '-'}</div></div>
+                <div><Label className="text-xs text-muted-foreground">Valor</Label><div className="font-mono">{viewAppointment.custom_amount != null ? formatCurrency(Number(viewAppointment.custom_amount)) : (viewAppointment.procedure?.private_price ? formatCurrency(Number(viewAppointment.procedure.private_price)) : '-')}</div></div>
+                <div><Label className="text-xs text-muted-foreground">Status</Label><div><span className={cn('px-2 py-0.5 rounded text-xs', statusColors[viewAppointment.status])}>{statusOptions.find(s => s.value === viewAppointment.status)?.label}</span></div></div>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Data / Horário principal</Label>
+                <div className="font-mono">{format(parseISO(viewAppointment.appointment_date), "dd/MM/yyyy (EEE)", { locale: ptBR })} • {viewAppointment.start_time?.slice(0,5)} - {viewAppointment.end_time?.slice(0,5)}</div>
+              </div>
+              {viewSessions.length > 0 && (
+                <div>
+                  <Label className="text-xs text-muted-foreground">Sessões adicionais ({viewSessions.length})</Label>
+                  <div className="mt-1 space-y-1">
+                    {viewSessions.map((s, i) => (
+                      <div key={i} className="font-mono text-xs bg-muted/40 rounded px-2 py-1">
+                        {format(parseISO(s.session_date), "dd/MM/yyyy (EEE)", { locale: ptBR })} • {s.start_time?.slice(0,5)} - {s.end_time?.slice(0,5)}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {viewAppointment.notes && (
+                <div>
+                  <Label className="text-xs text-muted-foreground">Observações</Label>
+                  <div className="whitespace-pre-wrap bg-muted/40 rounded p-2 text-xs">{viewAppointment.notes}</div>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>
