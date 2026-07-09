@@ -74,8 +74,10 @@ export default function Rooms() {
   };
 
   const fetchOccupancy = async () => {
-    const today = format(new Date(), 'yyyy-MM-dd');
-    const currentTime = format(new Date(), 'HH:mm:ss');
+    // Usa horário de Brasília independente do fuso do navegador/servidor
+    const brNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+    const today = format(brNow, 'yyyy-MM-dd');
+    const currentTime = format(brNow, 'HH:mm:ss');
 
     // Main appointments occupying rooms right now
     const { data: appts } = await (supabase as any)
