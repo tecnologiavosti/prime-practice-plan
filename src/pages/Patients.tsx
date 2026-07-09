@@ -26,7 +26,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search, Edit, Trash2, Upload, ExternalLink, Loader2 } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Upload, ExternalLink, Loader2, Eye } from 'lucide-react';
 import { MultiFileUpload } from '@/components/ui/multi-file-upload';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
