@@ -192,7 +192,57 @@ export default function Appointments() {
 
     const { data, error } = await query;
     if (error) { toast({ variant: 'destructive', title: 'Erro', description: error.message }); return; }
-    setAppointments((data as any) || []);
+    const base = (data as any[]) || [];
+
+    // Fetch extra sessions in the same range and merge as virtual rows
+    let sessQuery = (supabase as any)
+      .from('appointment_sessions')
+      .select(`
+        id, appointment_id, session_date, start_time, end_time, status,
+        appointment:appointments!inner(
+          id, consultation_type, notes, administrator_id, custom_amount,
+          patient:patients(id, full_name),
+          professional:professionals(id, full_name),
+          procedure:procedures(id, name, private_price),
+          health_insurance:health_insurances(id, name),
+          administrator:administrators(id, name),
+          room:rooms(id, name), room_id
+        )
+      `);
+    if (viewMode === 'daily') {
+      sessQuery = sessQuery.eq('session_date', dateFilter);
+    } else {
+      const monthDate = parseISO(monthFilter + '-01');
+      const start = format(startOfMonth(monthDate), 'yyyy-MM-dd');
+      const end = format(endOfMonth(monthDate), 'yyyy-MM-dd');
+      sessQuery = sessQuery.gte('session_date', start).lte('session_date', end);
+    }
+    const { data: sessData } = await sessQuery;
+    const sessionsAsRows = ((sessData as any[]) || []).map((s: any) => ({
+      id: `sess-${s.id}`,
+      parent_id: s.appointment_id,
+      is_session: true,
+      appointment_date: s.session_date,
+      start_time: s.start_time,
+      end_time: s.end_time,
+      status: s.status ?? s.appointment?.status ?? 'agendado',
+      consultation_type: s.appointment?.consultation_type,
+      notes: s.appointment?.notes,
+      administrator_id: s.appointment?.administrator_id,
+      custom_amount: s.appointment?.custom_amount,
+      patient: s.appointment?.patient,
+      professional: s.appointment?.professional,
+      procedure: s.appointment?.procedure,
+      health_insurance: s.appointment?.health_insurance,
+      administrator: s.appointment?.administrator,
+      room: s.appointment?.room,
+    }));
+
+    const merged = [...base, ...sessionsAsRows].sort((a, b) => {
+      if (a.appointment_date === b.appointment_date) return (a.start_time || '').localeCompare(b.start_time || '');
+      return a.appointment_date.localeCompare(b.appointment_date);
+    });
+    setAppointments(merged as any);
   };
 
   const fetchPatients = async () => {
