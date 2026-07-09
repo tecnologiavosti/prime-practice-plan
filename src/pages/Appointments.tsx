@@ -296,6 +296,8 @@ export default function Appointments() {
           toast({ variant: 'destructive', title: 'Conflito de Agenda', description: 'Este profissional já possui um atendimento neste horário.' });
         } else if (msg.includes('CONFLICT_PATIENT')) {
           toast({ variant: 'destructive', title: 'Conflito de Agenda', description: 'Este paciente já possui um atendimento neste horário.' });
+        } else if (msg.includes('CONFLICT_ROOM')) {
+          toast({ variant: 'destructive', title: 'Sala ocupada', description: 'Esta sala já está ocupada neste horário.' });
         } else {
           toast({ variant: 'destructive', title: 'Erro', description: msg });
         }
