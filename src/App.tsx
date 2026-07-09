@@ -9,6 +9,7 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { ProfessionalLayout } from "@/components/layout/ProfessionalLayout";
 import { PatientLayout } from "@/components/patient/PatientLayout";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { GlobalRealtimeBridge } from "@/hooks/useRealtime";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Patients from "./pages/Patients";
