@@ -480,11 +480,12 @@ export default function Appointments() {
 
   const openNew = () => {
     setEditingId(null);
+    setExtraSessions([]);
     setFormData({ ...emptyForm, appointment_date: viewMode === 'daily' ? dateFilter : format(new Date(), 'yyyy-MM-dd') });
     setDialogOpen(true);
   };
 
-  const handleEditAppointment = (apt: Appointment) => {
+  const handleEditAppointment = async (apt: Appointment) => {
     setEditingId(apt.id);
     setFormData({
       patient_id: apt.patient?.id || '',
@@ -501,6 +502,17 @@ export default function Appointments() {
       room_id: apt.room?.id || '',
       status: apt.status as any,
     });
+    const { data } = await (supabase as any)
+      .from('appointment_sessions')
+      .select('id, session_date, start_time, end_time')
+      .eq('appointment_id', apt.id)
+      .order('session_date').order('start_time');
+    setExtraSessions((data || []).map((s: any) => ({
+      id: s.id,
+      session_date: s.session_date,
+      start_time: s.start_time?.slice(0, 5) || '',
+      end_time: s.end_time?.slice(0, 5) || '',
+    })));
     setDialogOpen(true);
   };
 
