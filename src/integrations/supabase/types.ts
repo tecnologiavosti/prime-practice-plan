@@ -1289,6 +1289,13 @@ export type Database = {
           emergency_contact_phone: string | null
           full_name: string
           gender: string | null
+          guardian_cpf: string | null
+          guardian_email: string | null
+          guardian_name: string | null
+          guardian_phone: string | null
+          guardian_relationship: string | null
+          guardian_rg: string | null
+          has_guardian: boolean
           health_insurance_id: string | null
           id: string
           insurance_card_number: string | null
@@ -1321,6 +1328,13 @@ export type Database = {
           emergency_contact_phone?: string | null
           full_name: string
           gender?: string | null
+          guardian_cpf?: string | null
+          guardian_email?: string | null
+          guardian_name?: string | null
+          guardian_phone?: string | null
+          guardian_relationship?: string | null
+          guardian_rg?: string | null
+          has_guardian?: boolean
           health_insurance_id?: string | null
           id?: string
           insurance_card_number?: string | null
@@ -1353,6 +1367,13 @@ export type Database = {
           emergency_contact_phone?: string | null
           full_name?: string
           gender?: string | null
+          guardian_cpf?: string | null
+          guardian_email?: string | null
+          guardian_name?: string | null
+          guardian_phone?: string | null
+          guardian_relationship?: string | null
+          guardian_rg?: string | null
+          has_guardian?: boolean
           health_insurance_id?: string | null
           id?: string
           insurance_card_number?: string | null
