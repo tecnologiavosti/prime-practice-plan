@@ -120,6 +120,7 @@ export default function Appointments() {
   const [formData, setFormData] = useState(emptyForm);
   const [submitting, setSubmitting] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [extraSessions, setExtraSessions] = useState<{ id?: string; session_date: string; start_time: string; end_time: string }[]>([]);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
