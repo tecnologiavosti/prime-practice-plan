@@ -57,7 +57,7 @@ export default function Rooms() {
     const interval = setInterval(() => {
       setNow(new Date());
       fetchOccupancy();
-    }, 30000);
+    }, 15000);
     const channel = supabase
       .channel('rooms-occupancy')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' }, () => fetchOccupancy())
