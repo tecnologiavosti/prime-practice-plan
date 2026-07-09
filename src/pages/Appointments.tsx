@@ -279,6 +279,7 @@ export default function Appointments() {
         custom_amount: formData.custom_amount > 0 ? formData.custom_amount : null,
         patient_package_id: null,
         notes: formData.notes || null,
+        room_id: formData.room_id || null,
         status: formData.status,
       };
 
