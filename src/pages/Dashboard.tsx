@@ -43,7 +43,7 @@ export default function Dashboard() {
   const monthEnd = format(endOfMonth(new Date()), 'yyyy-MM-dd');
 
   useEffect(() => { fetchAllData(); }, []);
-  useRealtime(['appointments','patients','financial_transactions'], fetchAllData);
+  useRealtime(['appointments','patients','financial_transactions'], () => fetchAllData());
 
   const fetchAllData = async () => {
     await Promise.all([fetchBasicStats(), fetchGuideStats(), fetchBillingStats(), fetchPayoutStats(), fetchCashFlowStats(), fetchRecentActivity()]);

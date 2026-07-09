@@ -117,7 +117,7 @@ export default function Patients() {
     fetchPatients();
     fetchInsurances();
   }, []);
-  useRealtime(['patients','patient_documents'], fetchPatients);
+  useRealtime(['patients','patient_documents'], () => fetchPatients());
 
   const fetchPatients = async () => {
     const { data, error } = await supabase
