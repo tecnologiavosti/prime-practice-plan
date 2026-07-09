@@ -139,6 +139,11 @@ export default function Appointments() {
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [receiptData, setReceiptData] = useState<any>(null);
 
+  // View details state
+  const [viewOpen, setViewOpen] = useState(false);
+  const [viewAppointment, setViewAppointment] = useState<Appointment | null>(null);
+  const [viewSessions, setViewSessions] = useState<{ session_date: string; start_time: string; end_time: string }[]>([]);
+
   useEffect(() => {
     fetchData();
   }, [dateFilter, monthFilter, viewMode]);
