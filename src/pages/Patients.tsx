@@ -96,6 +96,7 @@ export default function Patients() {
   const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
   const [formData, setFormData] = useState(emptyPatient);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [viewingPatient, setViewingPatient] = useState<Patient | null>(null);
   const [uploadingDoc, setUploadingDoc] = useState(false);
   const { toast } = useToast();
 
