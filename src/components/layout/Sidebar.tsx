@@ -56,6 +56,7 @@ const ICONS: Record<string, any> = {
   seo: Search,
   blog: Newspaper,
   'salas-sublocadas': Home,
+  'salas': Home,
 };
 
 export function Sidebar() {
