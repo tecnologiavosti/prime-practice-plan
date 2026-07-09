@@ -827,6 +827,42 @@ export default function Appointments() {
                   </Select>
                   <p className="text-xs text-muted-foreground">Salas ocupadas no dia/horário selecionado aparecem desabilitadas.</p>
                 </div>
+                <div className="space-y-2 md:col-span-2 border-t pt-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Sessões adicionais</Label>
+                      <p className="text-xs text-muted-foreground">Adicione outras datas/horários para o mesmo agendamento.</p>
+                    </div>
+                    <Button type="button" size="sm" variant="outline" onClick={() => setExtraSessions([...extraSessions, { session_date: formData.appointment_date, start_time: formData.start_time, end_time: formData.end_time }])}>
+                      <Plus className="h-4 w-4 mr-1" /> Adicionar sessão
+                    </Button>
+                  </div>
+                  {extraSessions.map((s, idx) => (
+                    <div key={idx} className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_auto] gap-2 items-end">
+                      <div>
+                        <Label className="text-xs">Data</Label>
+                        <Input type="date" value={s.session_date} onChange={(e) => {
+                          const next = [...extraSessions]; next[idx] = { ...s, session_date: e.target.value }; setExtraSessions(next);
+                        }} />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Início</Label>
+                        <Input type="time" value={s.start_time} onChange={(e) => {
+                          const next = [...extraSessions]; next[idx] = { ...s, start_time: e.target.value }; setExtraSessions(next);
+                        }} />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Fim</Label>
+                        <Input type="time" value={s.end_time} onChange={(e) => {
+                          const next = [...extraSessions]; next[idx] = { ...s, end_time: e.target.value }; setExtraSessions(next);
+                        }} />
+                      </div>
+                      <Button type="button" size="icon" variant="ghost" onClick={() => setExtraSessions(extraSessions.filter((_, i) => i !== idx))}>
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
                 <div className="space-y-2 md:col-span-2">
                   <Label>Observações</Label>
                   <Textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
