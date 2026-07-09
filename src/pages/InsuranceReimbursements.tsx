@@ -80,7 +80,7 @@ export default function InsuranceReimbursements() {
   useEffect(() => {
     fetchData();
   }, []);
-  useRealtime(['insurance_reimbursements'], fetchData);
+  useRealtime(['insurance_reimbursements'], () => fetchData());
 
   const fetchData = async () => {
     await Promise.all([fetchReimbursements(), fetchInsurances()]);

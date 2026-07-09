@@ -104,7 +104,7 @@ export default function BillingBatches() {
   useEffect(() => {
     fetchData();
   }, []);
-  useRealtime(['billing_batches','billing_batch_guides'], fetchData);
+  useRealtime(['billing_batches','billing_batch_guides'], () => fetchData());
 
   useEffect(() => {
     if (selectedInsurance) {

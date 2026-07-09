@@ -148,7 +148,7 @@ export default function Appointments() {
   useEffect(() => {
     fetchData();
   }, [dateFilter, monthFilter, viewMode]);
-  useRealtime(['appointments','appointment_sessions'], fetchData);
+  useRealtime(['appointments','appointment_sessions'], () => fetchData());
 
   const fetchData = async () => {
     try {

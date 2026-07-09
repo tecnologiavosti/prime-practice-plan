@@ -146,7 +146,7 @@ export default function FinancialTransactions() {
   useEffect(() => {
     fetchData();
   }, [typeFilter, statusFilter]);
-  useRealtime(['financial_transactions'], fetchData);
+  useRealtime(['financial_transactions'], () => fetchData());
 
   const fetchData = async () => {
     await Promise.all([
