@@ -25,6 +25,9 @@ export function ProfessionalLayout() {
     <div className="flex h-screen overflow-hidden bg-background">
       <ProfessionalSidebar />
       <main className="flex-1 overflow-y-auto">
+        <div className="sticky top-0 z-30 flex justify-end items-center gap-2 px-4 py-2 bg-background/80 backdrop-blur border-b">
+          <NotificationBell />
+        </div>
         <Outlet />
       </main>
     </div>
