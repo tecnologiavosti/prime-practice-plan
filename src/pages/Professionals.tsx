@@ -545,6 +545,9 @@ export default function Professionals() {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" onClick={async () => { const ids = await fetchProfessionalInsurances(prof.id); setViewingInsurances(ids); setViewingProf(prof); }} title="Visualizar">
+                        <Eye className="h-4 w-4" />
+                      </Button>
                       <Button variant="ghost" size="icon" onClick={() => openEdit(prof)} title="Editar">
                         <Edit className="h-4 w-4" />
                       </Button>
