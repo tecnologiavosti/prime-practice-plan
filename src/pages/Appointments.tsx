@@ -45,6 +45,8 @@ interface Appointment {
   health_insurance: { id: string; name: string } | null;
   administrator: { id: string; name: string } | null;
   room: { id: string; name: string } | null;
+  is_session?: boolean;
+  parent_id?: string;
 }
 
 interface Patient { id: string; full_name: string; }
