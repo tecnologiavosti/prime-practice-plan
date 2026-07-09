@@ -1150,6 +1150,39 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          link: string | null
+          message: string | null
+          read: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message?: string | null
+          read?: boolean
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message?: string | null
+          read?: boolean
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       package_procedures: {
         Row: {
           created_at: string
@@ -2283,6 +2316,7 @@ export type Database = {
       }
     }
     Functions: {
+      create_daily_appointment_reminders: { Args: never; Returns: undefined }
       current_professional_id: { Args: never; Returns: string }
       get_landing_professional: {
         Args: { _id: string }
@@ -2342,6 +2376,16 @@ export type Database = {
       }
       is_authorized_admin_email: { Args: { _email: string }; Returns: boolean }
       is_own_patient: { Args: { _patient_id: string }; Returns: boolean }
+      notify_staff: {
+        Args: {
+          _extra_user?: string
+          _link: string
+          _message: string
+          _title: string
+          _type?: string
+        }
+        Returns: undefined
+      }
       professional_treats_patient: {
         Args: { _patient_id: string }
         Returns: boolean
