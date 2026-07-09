@@ -41,6 +41,7 @@ import { format, addDays, isAfter, isBefore } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { createDocumentSignedUrl, DOCUMENTS_BUCKET } from '@/lib/storageDocuments';
 import { MultiFileUpload, splitPaths } from '@/components/ui/multi-file-upload';
+import { useRealtime } from '@/hooks/useRealtime';
 
 interface GuideItem {
   id?: string;
@@ -170,6 +171,7 @@ export default function MedicalGuides() {
   useEffect(() => {
     fetchData();
   }, [statusFilter]);
+  useRealtime(['medical_guides','medical_guide_items','medical_guide_documents'], fetchData);
 
   useEffect(() => {
     if (!attachmentsDialog) {

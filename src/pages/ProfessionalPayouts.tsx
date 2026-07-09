@@ -35,6 +35,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { useRealtime } from '@/hooks/useRealtime';
 
 interface Payout {
   id: string;
@@ -112,6 +113,7 @@ export default function ProfessionalPayouts() {
   useEffect(() => {
     fetchData();
   }, [statusFilter]);
+  useRealtime(['professional_payouts'], fetchData);
 
   const fetchData = async () => {
     await Promise.all([

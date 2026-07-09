@@ -35,6 +35,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { useRealtime } from '@/hooks/useRealtime';
 
 interface BillingBatch {
   id: string;
@@ -103,6 +104,7 @@ export default function BillingBatches() {
   useEffect(() => {
     fetchData();
   }, []);
+  useRealtime(['billing_batches','billing_batch_guides'], fetchData);
 
   useEffect(() => {
     if (selectedInsurance) {

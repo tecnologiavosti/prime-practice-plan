@@ -36,6 +36,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { ProfessionalFinancePanel } from '@/components/professionals/ProfessionalFinancePanel';
+import { useRealtime } from '@/hooks/useRealtime';
 
 
 interface Professional {
@@ -126,6 +127,7 @@ export default function Professionals() {
     fetchSpecialties();
     fetchInsurances();
   }, []);
+  useRealtime(['professionals','professional_insurances','professional_fees'], fetchProfessionals);
 
   const fetchProfessionals = async () => {
     const { data, error } = await supabase

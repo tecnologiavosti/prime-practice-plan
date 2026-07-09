@@ -39,6 +39,7 @@ import {
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { DiverseReceiptsPanel } from '@/components/financial/DiverseReceiptsPanel';
+import { useRealtime } from '@/hooks/useRealtime';
 
 interface Transaction {
   id: string;
@@ -145,6 +146,7 @@ export default function FinancialTransactions() {
   useEffect(() => {
     fetchData();
   }, [typeFilter, statusFilter]);
+  useRealtime(['financial_transactions'], fetchData);
 
   const fetchData = async () => {
     await Promise.all([

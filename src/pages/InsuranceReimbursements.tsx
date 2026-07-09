@@ -23,6 +23,7 @@ import { Plus, ArrowUpDown, Pencil, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { MultiFileUpload } from '@/components/ui/multi-file-upload';
+import { useRealtime } from '@/hooks/useRealtime';
 
 interface HealthInsurance {
   id: string;
@@ -79,6 +80,7 @@ export default function InsuranceReimbursements() {
   useEffect(() => {
     fetchData();
   }, []);
+  useRealtime(['insurance_reimbursements'], fetchData);
 
   const fetchData = async () => {
     await Promise.all([fetchReimbursements(), fetchInsurances()]);

@@ -21,6 +21,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import {
+import { useRealtime } from '@/hooks/useRealtime';
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
@@ -55,6 +56,7 @@ export default function PaymentMethods() {
   useEffect(() => {
     fetchMethods();
   }, []);
+  useRealtime(['payment_methods'], fetchMethods);
 
   const fetchMethods = async () => {
     const { data, error } = await supabase

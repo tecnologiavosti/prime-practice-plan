@@ -17,6 +17,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ADMIN_MODULES } from '@/lib/adminModules';
 import { z } from 'zod';
+import { useRealtime } from '@/hooks/useRealtime';
 
 const createSchema = z.object({
   full_name: z.string().trim().min(3, 'Nome deve ter no mínimo 3 caracteres').max(100),
@@ -155,6 +156,8 @@ export default function TeamUsers() {
 
   if (loading) return <div className="p-6">Carregando...</div>;
   if (!isAdmin) return <div className="p-6 text-muted-foreground">Acesso restrito a administradores.</div>;
+
+  useRealtime(['user_roles','professionals'], fetchData);
 
   return (
     <div className="p-6 space-y-4">

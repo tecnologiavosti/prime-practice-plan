@@ -35,6 +35,7 @@ import {
 import { format } from 'date-fns';
 import { Textarea } from '@/components/ui/textarea';
 import { createDocumentSignedUrl, DOCUMENTS_BUCKET } from '@/lib/storageDocuments';
+import { useRealtime } from '@/hooks/useRealtime';
 
 interface Patient {
   id: string;
@@ -116,6 +117,7 @@ export default function Patients() {
     fetchPatients();
     fetchInsurances();
   }, []);
+  useRealtime(['patients','patient_documents'], fetchPatients);
 
   const fetchPatients = async () => {
     const { data, error } = await supabase
