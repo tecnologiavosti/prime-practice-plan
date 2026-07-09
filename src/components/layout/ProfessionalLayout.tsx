@@ -2,6 +2,7 @@ import { Outlet, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProfessionalSidebar } from './ProfessionalSidebar';
 import { Skeleton } from '@/components/ui/skeleton';
+import { NotificationBell } from './NotificationBell';
 
 export function ProfessionalLayout() {
   const { user, loading, roles } = useAuth();
