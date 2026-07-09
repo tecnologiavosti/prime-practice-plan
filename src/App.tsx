@@ -145,6 +145,7 @@ const App = () => (
               <Route path="/admin/seo" element={<SeoSettings />} />
               <Route path="/admin/blog" element={<Blog />} />
               <Route path="/admin/salas-sublocadas" element={<SubleasedRooms />} />
+              <Route path="/admin/salas" element={<Rooms />} />
               
             </Route>
             
