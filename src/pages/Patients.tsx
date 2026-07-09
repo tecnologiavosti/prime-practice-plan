@@ -78,6 +78,13 @@ const emptyPatient = {
   notes: '',
   gender: '',
   document_url: '',
+  has_guardian: false,
+  guardian_name: '',
+  guardian_cpf: '',
+  guardian_rg: '',
+  guardian_relationship: '',
+  guardian_phone: '',
+  guardian_email: '',
 };
 
 export default function Patients() {
