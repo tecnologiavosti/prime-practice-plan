@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { useRealtime } from '@/hooks/useRealtime';
 
 interface HealthInsurance {
   id: string;
@@ -72,6 +73,7 @@ export default function HealthInsurances() {
     fetchInsurances();
     fetchAdministrators();
   }, []);
+  useRealtime(['health_insurances','insurance_administrators_map'], fetchInsurances);
 
   const fetchInsurances = async () => {
     const { data, error } = await supabase

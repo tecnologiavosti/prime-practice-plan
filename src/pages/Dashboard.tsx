@@ -21,6 +21,7 @@ import {
 import { Link } from 'react-router-dom';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useRealtime } from '@/hooks/useRealtime';
 
 interface Stats { totalPatients: number; totalProfessionals: number; todayAppointments: number; pendingAppointments: number; }
 interface GuideStats { total: number; pending: number; authorized: number; billed: number; totalRequested: number; totalAuthorized: number; }
@@ -42,6 +43,7 @@ export default function Dashboard() {
   const monthEnd = format(endOfMonth(new Date()), 'yyyy-MM-dd');
 
   useEffect(() => { fetchAllData(); }, []);
+  useRealtime(['appointments','patients','financial_transactions'], fetchAllData);
 
   const fetchAllData = async () => {
     await Promise.all([fetchBasicStats(), fetchGuideStats(), fetchBillingStats(), fetchPayoutStats(), fetchCashFlowStats(), fetchRecentActivity()]);

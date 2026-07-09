@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
+import { useRealtime } from '@/hooks/useRealtime';
 
 interface Package {
   id: string;
@@ -62,6 +63,7 @@ export default function Packages() {
     fetchPackages();
     fetchProcedures();
   }, []);
+  useRealtime(['package_sections','package_procedures','private_packages','patient_packages'], fetchPackages);
 
   const fetchPackages = async () => {
     const { data, error } = await supabase.from('private_packages').select('*').order('name');

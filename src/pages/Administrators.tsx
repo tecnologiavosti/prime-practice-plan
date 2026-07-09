@@ -24,6 +24,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Search, Edit, Building2, Link2, DollarSign, Trash2 } from 'lucide-react';
 import {
+import { useRealtime } from '@/hooks/useRealtime';
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
@@ -95,6 +96,7 @@ export default function Administrators() {
   useEffect(() => {
     fetchData();
   }, []);
+  useRealtime(['administrators','insurance_administrators_map','health_insurances'], fetchData);
 
   const fetchData = async () => {
     await Promise.all([fetchAdministrators(), fetchHealthInsurances()]);

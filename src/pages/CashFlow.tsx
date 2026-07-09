@@ -23,6 +23,7 @@ import {
 import { Plus, TrendingUp, TrendingDown, Wallet, Pencil, Trash2, Paperclip, Eye } from 'lucide-react';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { createDocumentSignedUrl, DOCUMENTS_BUCKET } from '@/lib/storageDocuments';
+import { useRealtime } from '@/hooks/useRealtime';
 
 interface Entry {
   id: string;
@@ -66,6 +67,7 @@ export default function CashFlow() {
   const { toast } = useToast();
 
   useEffect(() => { fetchAll(); }, [typeFilter, monthFilter]);
+  useRealtime(['cash_flow_entries','financial_transactions'], fetchAll);
 
   const fetchAll = async () => {
     setLoading(true);

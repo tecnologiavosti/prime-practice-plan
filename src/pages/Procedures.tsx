@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useRealtime } from '@/hooks/useRealtime';
 
 interface Procedure {
   id: string;
@@ -112,6 +113,7 @@ export default function Procedures() {
     fetchInsurances();
     fetchAllProcedurePrices();
   }, []);
+  useRealtime(['procedures','procedure_insurance_prices'], fetchProcedures);
 
   const fetchProcedures = async () => {
     const { data, error } = await supabase

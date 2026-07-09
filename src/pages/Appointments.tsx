@@ -28,6 +28,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ReceiptDialog } from '@/components/patient/ReceiptDialog';
 import { PatientCombobox } from '@/components/patient/PatientCombobox';
 import { ProfessionalCombobox } from '@/components/professional/ProfessionalCombobox';
+import { useRealtime } from '@/hooks/useRealtime';
 
 interface Appointment {
   id: string;
@@ -147,6 +148,7 @@ export default function Appointments() {
   useEffect(() => {
     fetchData();
   }, [dateFilter, monthFilter, viewMode]);
+  useRealtime(['appointments','appointment_sessions'], fetchData);
 
   const fetchData = async () => {
     try {

@@ -14,6 +14,7 @@ import { format, addDays, startOfWeek, addWeeks, subWeeks, startOfMonth, endOfMo
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { useRealtime } from '@/hooks/useRealtime';
 
 type ViewType = 'day' | 'week' | 'month';
 
@@ -54,6 +55,7 @@ export default function Schedule() {
   useEffect(() => {
     fetchProfessionals();
   }, []);
+  useRealtime(['appointments','professional_schedules','schedule_blocks','professional_special_periods'], fetchProfessionals);
 
   useEffect(() => {
     if (selectedProfessional) {
