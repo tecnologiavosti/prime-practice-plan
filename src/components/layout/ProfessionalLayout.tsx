@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ProfessionalSidebar } from './ProfessionalSidebar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { NotificationBell } from './NotificationBell';
+import { LiveClock } from './LiveClock';
 
 export function ProfessionalLayout() {
   const { user, loading, roles } = useAuth();
