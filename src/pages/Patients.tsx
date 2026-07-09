@@ -388,7 +388,83 @@ export default function Patients() {
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   />
                 </div>
-                <div className="space-y-2 md:col-span-2">
+                <div className="space-y-2 md:col-span-2 border-t pt-4">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="has_guardian"
+                      checked={formData.has_guardian}
+                      onChange={(e) => setFormData({ ...formData, has_guardian: e.target.checked })}
+                      className="h-4 w-4"
+                    />
+                    <Label htmlFor="has_guardian" className="cursor-pointer font-semibold">
+                      Paciente possui responsável
+                    </Label>
+                  </div>
+                </div>
+                {formData.has_guardian && (
+                  <>
+                    <div className="space-y-2 md:col-span-2">
+                      <Label>Nome do Responsável *</Label>
+                      <Input
+                        required={formData.has_guardian}
+                        value={formData.guardian_name}
+                        onChange={(e) => setFormData({ ...formData, guardian_name: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>CPF do Responsável</Label>
+                      <Input
+                        value={formData.guardian_cpf}
+                        onChange={(e) => setFormData({ ...formData, guardian_cpf: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>RG do Responsável</Label>
+                      <Input
+                        value={formData.guardian_rg}
+                        onChange={(e) => setFormData({ ...formData, guardian_rg: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Parentesco</Label>
+                      <Select
+                        value={formData.guardian_relationship}
+                        onValueChange={(v) => setFormData({ ...formData, guardian_relationship: v })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pai">Pai</SelectItem>
+                          <SelectItem value="mae">Mãe</SelectItem>
+                          <SelectItem value="avo">Avô/Avó</SelectItem>
+                          <SelectItem value="tutor">Tutor Legal</SelectItem>
+                          <SelectItem value="conjuge">Cônjuge</SelectItem>
+                          <SelectItem value="filho">Filho(a)</SelectItem>
+                          <SelectItem value="irmao">Irmão(ã)</SelectItem>
+                          <SelectItem value="outro">Outro</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Telefone do Responsável</Label>
+                      <Input
+                        value={formData.guardian_phone}
+                        onChange={(e) => setFormData({ ...formData, guardian_phone: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2 md:col-span-2">
+                      <Label>Email do Responsável</Label>
+                      <Input
+                        type="email"
+                        value={formData.guardian_email}
+                        onChange={(e) => setFormData({ ...formData, guardian_email: e.target.value })}
+                      />
+                    </div>
+                  </>
+                )}
+                <div className="space-y-2 md:col-span-2 border-t pt-4">
                   <Label>Documentos (PDF/Imagem) — até 5 arquivos</Label>
                   <MultiFileUpload
                     value={formData.document_url}
