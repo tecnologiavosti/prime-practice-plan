@@ -26,7 +26,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search, Edit, Trash2, Upload, ExternalLink, Loader2 } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Upload, ExternalLink, Loader2, Eye } from 'lucide-react';
 import { MultiFileUpload } from '@/components/ui/multi-file-upload';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -96,6 +96,7 @@ export default function Patients() {
   const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
   const [formData, setFormData] = useState(emptyPatient);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [viewingPatient, setViewingPatient] = useState<Patient | null>(null);
   const [uploadingDoc, setUploadingDoc] = useState(false);
   const { toast } = useToast();
 
@@ -535,6 +536,9 @@ export default function Patients() {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" onClick={() => setViewingPatient(patient)} title="Visualizar">
+                        <Eye className="h-4 w-4" />
+                      </Button>
                       <Button variant="ghost" size="icon" onClick={() => openEdit(patient)} title="Editar">
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -562,6 +566,52 @@ export default function Patients() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={!!viewingPatient} onOpenChange={(open) => !open && setViewingPatient(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Detalhes do Paciente</DialogTitle>
+          </DialogHeader>
+          {viewingPatient && (
+            <div className="grid gap-3 md:grid-cols-2 text-sm">
+              <div><span className="font-semibold">Nome:</span> {viewingPatient.full_name}</div>
+              <div><span className="font-semibold">CPF:</span> {viewingPatient.cpf || '-'}</div>
+              <div><span className="font-semibold">Nascimento:</span> {viewingPatient.birth_date ? format(new Date(viewingPatient.birth_date), 'dd/MM/yyyy') : '-'}</div>
+              <div><span className="font-semibold">Gênero:</span> {viewingPatient.gender || '-'}</div>
+              <div><span className="font-semibold">Telefone:</span> {viewingPatient.phone || '-'}</div>
+              <div><span className="font-semibold">Email:</span> {viewingPatient.email || '-'}</div>
+              <div><span className="font-semibold">Tipo:</span> {viewingPatient.preferred_service_type || '-'}</div>
+              <div><span className="font-semibold">Convênio:</span> {insurances.find((i) => i.id === viewingPatient.health_insurance_id)?.name || '-'}</div>
+              <div><span className="font-semibold">Carteirinha:</span> {viewingPatient.insurance_card_number || '-'}</div>
+              <div><span className="font-semibold">CEP:</span> {viewingPatient.zip_code || '-'}</div>
+              <div className="md:col-span-2"><span className="font-semibold">Endereço:</span> {viewingPatient.address || '-'}</div>
+              <div><span className="font-semibold">Cidade:</span> {viewingPatient.city || '-'}</div>
+              <div><span className="font-semibold">Estado:</span> {viewingPatient.state || '-'}</div>
+              <div className="md:col-span-2"><span className="font-semibold">Observações:</span> {viewingPatient.notes || '-'}</div>
+              <div><span className="font-semibold">Status:</span> {viewingPatient.active ? 'Ativo' : 'Inativo'}</div>
+              {(viewingPatient as any).has_guardian && (
+                <>
+                  <div className="md:col-span-2 border-t pt-2 mt-2 font-semibold">Responsável</div>
+                  <div><span className="font-semibold">Nome:</span> {(viewingPatient as any).guardian_name || '-'}</div>
+                  <div><span className="font-semibold">CPF:</span> {(viewingPatient as any).guardian_cpf || '-'}</div>
+                  <div><span className="font-semibold">RG:</span> {(viewingPatient as any).guardian_rg || '-'}</div>
+                  <div><span className="font-semibold">Parentesco:</span> {(viewingPatient as any).guardian_relationship || '-'}</div>
+                  <div><span className="font-semibold">Telefone:</span> {(viewingPatient as any).guardian_phone || '-'}</div>
+                  <div><span className="font-semibold">Email:</span> {(viewingPatient as any).guardian_email || '-'}</div>
+                </>
+              )}
+            </div>
+          )}
+          <div className="flex justify-end gap-2 pt-4">
+            {viewingPatient && (
+              <Button variant="outline" onClick={() => { const p = viewingPatient; setViewingPatient(null); openEdit(p); }}>
+                <Edit className="mr-2 h-4 w-4" /> Editar
+              </Button>
+            )}
+            <Button onClick={() => setViewingPatient(null)}>Fechar</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

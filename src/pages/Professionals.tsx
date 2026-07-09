@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search, Edit, Trash2, Upload } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Upload, Eye } from 'lucide-react';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -105,6 +105,8 @@ export default function Professionals() {
   const [formData, setFormData] = useState(emptyProfessional);
   const [selectedInsurances, setSelectedInsurances] = useState<string[]>([]);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [viewingProf, setViewingProf] = useState<Professional | null>(null);
+  const [viewingInsurances, setViewingInsurances] = useState<string[]>([]);
   const { toast } = useToast();
 
   const handleDeleteProfessional = async () => {
@@ -543,6 +545,9 @@ export default function Professionals() {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" onClick={async () => { const ids = await fetchProfessionalInsurances(prof.id); setViewingInsurances(ids); setViewingProf(prof); }} title="Visualizar">
+                        <Eye className="h-4 w-4" />
+                      </Button>
                       <Button variant="ghost" size="icon" onClick={() => openEdit(prof)} title="Editar">
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -570,6 +575,67 @@ export default function Professionals() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={!!viewingProf} onOpenChange={(open) => !open && setViewingProf(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Detalhes do Profissional</DialogTitle>
+          </DialogHeader>
+          {viewingProf && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                {viewingProf.photo_url ? (
+                  <img src={viewingProf.photo_url} alt={viewingProf.full_name} className="h-20 w-20 rounded-full object-cover object-top border" />
+                ) : (
+                  <div className="h-20 w-20 rounded-full border bg-muted" />
+                )}
+                <div>
+                  <div className="text-lg font-semibold">{viewingProf.full_name}</div>
+                  <div className="text-sm text-muted-foreground">{specialties.find((s) => s.id === viewingProf.specialty_id)?.name || '-'}</div>
+                </div>
+              </div>
+              <div className="grid gap-3 md:grid-cols-2 text-sm">
+                <div><span className="font-semibold">CPF:</span> {viewingProf.cpf || '-'}</div>
+                <div><span className="font-semibold">Telefone:</span> {viewingProf.phone || '-'}</div>
+                <div><span className="font-semibold">Email:</span> {viewingProf.email || '-'}</div>
+                <div><span className="font-semibold">CRM:</span> {viewingProf.crm ? `${viewingProf.crm}${viewingProf.uf_crm ? '/' + viewingProf.uf_crm : ''}` : '-'}</div>
+                <div className="capitalize"><span className="font-semibold normal-case">Tipo de atendimento:</span> {viewingProf.service_type}</div>
+                <div><span className="font-semibold">Status:</span> {viewingProf.active ? 'Ativo' : 'Inativo'}</div>
+                <div><span className="font-semibold">Exibir na home:</span> {viewingProf.show_on_landing ? 'Sim' : 'Não'}</div>
+              </div>
+              <div>
+                <div className="font-semibold text-sm mb-1">Convênios atendidos</div>
+                <div className="flex flex-wrap gap-1">
+                  {viewingInsurances.length === 0 ? (
+                    <span className="text-sm text-muted-foreground">Nenhum convênio vinculado</span>
+                  ) : viewingInsurances.map((id) => (
+                    <span key={id} className="rounded-full bg-muted px-2 py-0.5 text-xs">
+                      {insurances.find((i) => i.id === id)?.name || id}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              {viewingProf.landing_bio && (
+                <div><div className="font-semibold text-sm">Mini bio</div><p className="text-sm">{viewingProf.landing_bio}</p></div>
+              )}
+              {viewingProf.landing_about && (
+                <div><div className="font-semibold text-sm">Sobre</div><p className="text-sm whitespace-pre-wrap">{viewingProf.landing_about}</p></div>
+              )}
+              {viewingProf.landing_curriculum && (
+                <div><div className="font-semibold text-sm">Currículo</div><p className="text-sm whitespace-pre-wrap">{viewingProf.landing_curriculum}</p></div>
+              )}
+            </div>
+          )}
+          <div className="flex justify-end gap-2 pt-4">
+            {viewingProf && (
+              <Button variant="outline" onClick={() => { const p = viewingProf; setViewingProf(null); openEdit(p); }}>
+                <Edit className="mr-2 h-4 w-4" /> Editar
+              </Button>
+            )}
+            <Button onClick={() => setViewingProf(null)}>Fechar</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
