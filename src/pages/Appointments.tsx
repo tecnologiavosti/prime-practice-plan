@@ -105,6 +105,7 @@ export default function Appointments() {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [administrators, setAdministrators] = useState<Administrator[]>([]);
   const [insAdminMap, setInsAdminMap] = useState<InsAdminMap[]>([]);
+  const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [dateFilter, setDateFilter] = useState(format(new Date(), 'yyyy-MM-dd'));
