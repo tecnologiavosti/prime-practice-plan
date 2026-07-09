@@ -105,6 +105,8 @@ export default function Professionals() {
   const [formData, setFormData] = useState(emptyProfessional);
   const [selectedInsurances, setSelectedInsurances] = useState<string[]>([]);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [viewingProf, setViewingProf] = useState<Professional | null>(null);
+  const [viewingInsurances, setViewingInsurances] = useState<string[]>([]);
   const { toast } = useToast();
 
   const handleDeleteProfessional = async () => {
