@@ -201,6 +201,7 @@ export type Database = {
           procedure_id: string | null
           professional_id: string
           recurring_parent_id: string | null
+          room_id: string | null
           start_time: string
           status: Database["public"]["Enums"]["appointment_status"]
           updated_at: string
@@ -222,6 +223,7 @@ export type Database = {
           procedure_id?: string | null
           professional_id: string
           recurring_parent_id?: string | null
+          room_id?: string | null
           start_time: string
           status?: Database["public"]["Enums"]["appointment_status"]
           updated_at?: string
@@ -243,6 +245,7 @@ export type Database = {
           procedure_id?: string | null
           professional_id?: string
           recurring_parent_id?: string | null
+          room_id?: string | null
           start_time?: string
           status?: Database["public"]["Enums"]["appointment_status"]
           updated_at?: string
@@ -302,6 +305,13 @@ export type Database = {
             columns: ["recurring_parent_id"]
             isOneToOne: false
             referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
             referencedColumns: ["id"]
           },
         ]
@@ -1945,6 +1955,33 @@ export type Database = {
           phone?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      rooms: {
+        Row: {
+          active: boolean
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
         }
         Relationships: []
       }

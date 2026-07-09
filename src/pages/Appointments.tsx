@@ -44,6 +44,7 @@ interface Appointment {
   procedure: { id: string; name: string; private_price?: number } | null;
   health_insurance: { id: string; name: string } | null;
   administrator: { id: string; name: string } | null;
+  room: { id: string; name: string } | null;
 }
 
 interface Patient { id: string; full_name: string; }
@@ -55,6 +56,7 @@ interface ProcedureInsurancePrice { procedure_id: string; health_insurance_id: s
 interface PaymentMethod { id: string; name: string; }
 interface Administrator { id: string; name: string; }
 interface InsAdminMap { insurance_id: string; administrator_id: string; billing_rate: number | null; }
+interface Room { id: string; name: string; active: boolean; }
 
 type ViewMode = 'daily' | 'monthly';
 
@@ -88,6 +90,7 @@ const emptyForm = {
   health_insurance_id: '',
   custom_amount: 0,
   notes: '',
+  room_id: '',
   status: 'agendado' as 'agendado' | 'confirmado' | 'em_atendimento' | 'finalizado' | 'cancelado' | 'faltou',
 };
 
@@ -102,6 +105,7 @@ export default function Appointments() {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [administrators, setAdministrators] = useState<Administrator[]>([]);
   const [insAdminMap, setInsAdminMap] = useState<InsAdminMap[]>([]);
+  const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [dateFilter, setDateFilter] = useState(format(new Date(), 'yyyy-MM-dd'));
@@ -149,6 +153,7 @@ export default function Appointments() {
         fetchPaymentMethods(),
         fetchAdministrators(),
         fetchInsAdminMap(),
+        fetchRooms(),
       ]);
     } catch (err) {
       toast({ variant: 'destructive', title: 'Erro', description: 'Erro ao carregar dados' });
@@ -166,7 +171,9 @@ export default function Appointments() {
         professional:professionals(id, full_name),
         procedure:procedures(id, name, private_price),
         health_insurance:health_insurances(id, name),
-        administrator:administrators(id, name)
+        administrator:administrators(id, name),
+        room:rooms(id, name),
+        room_id
       `)
       .order('appointment_date')
       .order('start_time');
@@ -221,6 +228,11 @@ export default function Appointments() {
     const { data } = await supabase.from('insurance_administrators_map').select('insurance_id, administrator_id, billing_rate');
     setInsAdminMap((data || []) as InsAdminMap[]);
   };
+  const fetchRooms = async () => {
+    const { data } = await (supabase as any).from('rooms').select('id, name, active').eq('active', true).order('name');
+    setRooms((data || []) as Room[]);
+  };
+
 
   const getProcedurePrice = (): number | null => {
     if (!formData.procedure_id) return null;
@@ -267,6 +279,7 @@ export default function Appointments() {
         custom_amount: formData.custom_amount > 0 ? formData.custom_amount : null,
         patient_package_id: null,
         notes: formData.notes || null,
+        room_id: formData.room_id || null,
         status: formData.status,
       };
 
@@ -283,6 +296,8 @@ export default function Appointments() {
           toast({ variant: 'destructive', title: 'Conflito de Agenda', description: 'Este profissional já possui um atendimento neste horário.' });
         } else if (msg.includes('CONFLICT_PATIENT')) {
           toast({ variant: 'destructive', title: 'Conflito de Agenda', description: 'Este paciente já possui um atendimento neste horário.' });
+        } else if (msg.includes('CONFLICT_ROOM')) {
+          toast({ variant: 'destructive', title: 'Sala ocupada', description: 'Esta sala já está ocupada neste horário.' });
         } else {
           toast({ variant: 'destructive', title: 'Erro', description: msg });
         }
@@ -456,6 +471,7 @@ export default function Appointments() {
       health_insurance_id: apt.health_insurance?.id || '',
       custom_amount: Number(apt.custom_amount) || 0,
       notes: apt.notes || '',
+      room_id: apt.room?.id || '',
       status: apt.status as any,
     });
     setDialogOpen(true);
@@ -540,6 +556,7 @@ export default function Appointments() {
         {apt.health_insurance && ` (${apt.health_insurance.name})`}
       </TableCell>
       <TableCell>{apt.administrator?.name || '-'}</TableCell>
+      <TableCell>{apt.room?.name || '-'}</TableCell>
       <TableCell className="font-mono whitespace-nowrap">
         {apt.custom_amount != null ? formatCurrency(Number(apt.custom_amount)) : (apt.procedure?.private_price ? formatCurrency(Number(apt.procedure.private_price)) : '-')}
       </TableCell>
@@ -573,7 +590,7 @@ export default function Appointments() {
     </TableRow>
   );
 
-  const colCount = viewMode === 'monthly' ? 10 : 9;
+  const colCount = viewMode === 'monthly' ? 11 : 10;
 
   return (
     <div className="p-6">
@@ -737,6 +754,41 @@ export default function Appointments() {
                   <Input type="time" required value={formData.end_time} onChange={(e) => setFormData({ ...formData, end_time: e.target.value })} />
                 </div>
                 <div className="space-y-2 md:col-span-2">
+                  <Label>Sala</Label>
+                  <Select value={formData.room_id || 'none'} onValueChange={(v) => setFormData({ ...formData, room_id: v === 'none' ? '' : v })}>
+                    <SelectTrigger><SelectValue placeholder="Selecione a sala" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Sem sala</SelectItem>
+                      {(() => {
+                        const busyRoomIds = new Set(
+                          appointments
+                            .filter(a =>
+                              a.id !== editingId &&
+                              a.appointment_date === formData.appointment_date &&
+                              !['cancelado', 'faltou'].includes(a.status) &&
+                              (a as any).room_id &&
+                              formData.start_time < (a.end_time?.slice(0, 5) || '') &&
+                              formData.end_time > (a.start_time?.slice(0, 5) || '')
+                            )
+                            .map(a => (a as any).room_id as string)
+                        );
+                        if (rooms.length === 0) {
+                          return <SelectItem value="no-rooms" disabled>Nenhuma sala cadastrada</SelectItem>;
+                        }
+                        return rooms.map((r) => {
+                          const busy = busyRoomIds.has(r.id);
+                          return (
+                            <SelectItem key={r.id} value={r.id} disabled={busy}>
+                              {r.name}{busy ? ' — Ocupada' : ''}
+                            </SelectItem>
+                          );
+                        });
+                      })()}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">Salas ocupadas no dia/horário selecionado aparecem desabilitadas.</p>
+                </div>
+                <div className="space-y-2 md:col-span-2">
                   <Label>Observações</Label>
                   <Textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
                 </div>
@@ -843,6 +895,7 @@ export default function Appointments() {
               <TableHead>Procedimento</TableHead>
               <TableHead>Tipo</TableHead>
               <TableHead>Administradora</TableHead>
+              <TableHead>Sala</TableHead>
               <TableHead>Valor</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Ações</TableHead>
@@ -873,6 +926,7 @@ export default function Appointments() {
                       {apt.health_insurance && ` (${apt.health_insurance.name})`}
                     </TableCell>
                     <TableCell>{apt.administrator?.name || '-'}</TableCell>
+                    <TableCell>{apt.room?.name || '-'}</TableCell>
                     <TableCell className="font-mono whitespace-nowrap">
                       {apt.custom_amount != null ? formatCurrency(Number(apt.custom_amount)) : (apt.procedure?.private_price ? formatCurrency(Number(apt.procedure.private_price)) : '-')}
                     </TableCell>

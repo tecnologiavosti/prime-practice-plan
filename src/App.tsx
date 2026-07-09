@@ -35,6 +35,7 @@ import Convenios from "./pages/Convenios";
 import EspecialidadePage from "./pages/Especialidade";
 import BlogPost from "./pages/BlogPost";
 import SubleasedRooms from "./pages/SubleasedRooms";
+import Rooms from "./pages/Rooms";
 import Prontuarios from "./pages/Prontuarios";
 import ProntuarioDetail from "./pages/ProntuarioDetail";
 
@@ -144,6 +145,7 @@ const App = () => (
               <Route path="/admin/seo" element={<SeoSettings />} />
               <Route path="/admin/blog" element={<Blog />} />
               <Route path="/admin/salas-sublocadas" element={<SubleasedRooms />} />
+              <Route path="/admin/salas" element={<Rooms />} />
               
             </Route>
             
