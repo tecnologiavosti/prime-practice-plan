@@ -11,7 +11,7 @@ const corsHeaders = {
 const GEMINI_TEXT_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 const GEMINI_IMAGE_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent";
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent";
 
 function slugify(s: string) {
   return s
