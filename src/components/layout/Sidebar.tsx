@@ -71,16 +71,14 @@ export function Sidebar() {
     navigate('/admin/auth');
   };
 
-  const isAdmin = roles.includes('administrador');
-
-  // Administradores veem tudo. Para os demais, filtra pelas permissões.
-  // Se nenhum módulo foi definido, mantém o comportamento antigo (apenas por role).
+  // Se allowed_modules foi definido explicitamente (lista não vazia), respeita a seleção
+  // mesmo para administradores. Caso contrário, mostra tudo permitido pela role.
+  const hasExplicitModules = Array.isArray(allowedModules) && allowedModules.length > 0;
   const filteredItems = ADMIN_MODULES.filter((item) => {
     const allowedByRole = item.roles.some((role) => roles.includes(role as any));
     if (!allowedByRole) return false;
-    if (isAdmin) return true;
-    if (!allowedModules || allowedModules.length === 0) return true;
-    return allowedModules.includes(item.key);
+    if (!hasExplicitModules) return true;
+    return allowedModules!.includes(item.key);
   });
 
   return (
