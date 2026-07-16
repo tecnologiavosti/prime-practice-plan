@@ -61,7 +61,7 @@ export function PublicHeader({ floating = false }: { floating?: boolean }) {
           <img src={clinicLogo} alt={clinicName} className="h-9 w-auto object-contain shrink-0" />
           <div className="leading-tight min-w-0">
             <div className="text-[15px] font-bold tracking-tight truncate">{clinicName}</div>
-            <div className="hidden sm:block text-[9px] font-medium uppercase tracking-[0.22em] text-[hsl(215_16%_47%)]">
+            <div className="hidden sm:block text-[7.5px] font-medium uppercase tracking-[0.18em] text-[hsl(215_16%_47%)]">
               Psicologia · Psiquiatria · Crianças, adolescentes e adultos
             </div>
           </div>
