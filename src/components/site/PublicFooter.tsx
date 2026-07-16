@@ -10,19 +10,30 @@ import {
   Mail,
   Lock,
   Building2,
+  Brain,
+  Stethoscope,
+  Apple,
+  Ear,
+  HeartPulse,
+  Baby,
+  ShieldCheck,
+  FileText,
+  Newspaper,
+  ChevronRight,
 } from 'lucide-react';
 
 const COWORKING_WA = `https://wa.me/5561981823984?text=${encodeURIComponent(
   'Olá! Tenho interesse em locação de consultório no coworking saúde da Clínica Pacem. Poderiam me passar mais informações?'
 )}`;
 
-const especialidades = [
-  'Psicologia',
-  'Psiquiatria',
-  'Nutrição',
-  'Fonoaudiologia',
-  'Clínico Geral',
-  'RN1',
+const especialidades: { label: string; icon: typeof Brain }[] = [
+  { label: 'Psicologia', icon: Brain },
+  { label: 'Psiquiatria', icon: HeartPulse },
+  { label: 'Nutrição', icon: Apple },
+  { label: 'Fonoaudiologia', icon: Ear },
+  { label: 'Clínico Geral', icon: Stethoscope },
+  { label: 'RN1', icon: Baby },
+];
 ];
 
 export function PublicFooter() {
