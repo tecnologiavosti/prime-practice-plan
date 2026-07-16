@@ -9,7 +9,12 @@ import {
   Phone,
   Mail,
   Lock,
+  Building2,
 } from 'lucide-react';
+
+const COWORKING_WA = `https://wa.me/5561981823984?text=${encodeURIComponent(
+  'Olá! Tenho interesse em locação de consultório no coworking saúde da Clínica Pacem. Poderiam me passar mais informações?'
+)}`;
 
 const especialidades = [
   'Psicologia',
@@ -64,6 +69,17 @@ export function PublicFooter() {
             <li><Link to="/convenios" className="hover:text-[hsl(221_83%_53%)]">Convênios</Link></li>
             <li><a href="/#blog" className="hover:text-[hsl(221_83%_53%)]">Blog</a></li>
             <li><Link to="/politica-de-privacidade" className="inline-flex items-center gap-1.5 hover:text-[hsl(221_83%_53%)]"><Lock className="h-3.5 w-3.5" />Política de Privacidade</Link></li>
+            <li>
+              <a
+                href={COWORKING_WA}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 hover:text-[hsl(221_83%_53%)]"
+              >
+                <Building2 className="h-3.5 w-3.5" />
+                Locação de consultório · Coworking Saúde
+              </a>
+            </li>
           </ul>
         </div>
         <div>
