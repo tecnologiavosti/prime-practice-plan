@@ -242,7 +242,7 @@ export default function LandingPage() {
                   className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl bg-[#25D366] hover:bg-[#1ebe5d] text-white text-[14.5px] font-semibold shadow-[0_14px_36px_-12px_rgba(37,211,102,0.6)] transition-all hover:-translate-y-0.5"
                 >
                   <WhatsAppIcon className="h-5 w-5" />
-                  Agendar
+                  Agende agora
                 </a>
               </motion.div>
 
