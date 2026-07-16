@@ -66,8 +66,13 @@ export function PublicFooter() {
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[hsl(222_47%_11%)] mb-4">Especialidades</p>
           <ul className="space-y-2.5 text-[13.5px]">
-            {especialidades.map((s) => (
-              <li key={s}><a href="/#especialidades" className="hover:text-[hsl(221_83%_53%)]">{s}</a></li>
+            {especialidades.map(({ label, icon: Icon }) => (
+              <li key={label}>
+                <a href="/#especialidades" className="inline-flex items-center gap-1.5 hover:text-[hsl(221_83%_53%)]">
+                  <Icon className="h-3.5 w-3.5 text-[hsl(221_83%_53%)]" />
+                  {label}
+                </a>
+              </li>
             ))}
           </ul>
         </div>
