@@ -331,7 +331,7 @@ export default function LandingPage() {
                     className="inline-flex items-center gap-2 h-12 px-5 rounded-xl bg-[#25D366] hover:bg-[#1ebe5d] text-white text-[14px] font-semibold shadow-[0_8px_20px_-10px_rgba(37,211,102,0.7)] transition-all"
                   >
                     <MessageCircle className="h-5 w-5" />
-                    Agendar
+                    Agende agora
                   </a>
                 </div>
                 <h3 className="text-[17px] font-bold mb-2">{sp.title}</h3>
@@ -554,7 +554,7 @@ export default function LandingPage() {
               className="inline-flex items-center gap-2 h-12 px-7 rounded-xl bg-white text-[#1ebe5d] text-[14.5px] font-bold hover:-translate-y-0.5 transition-all shadow-lg shrink-0"
             >
               <MessageCircle className="h-5 w-5" />
-              Conversar no WhatsApp
+              Agende agora
             </a>
           </div>
         </div>
@@ -623,7 +623,7 @@ export default function LandingPage() {
                   className="inline-flex items-center justify-center gap-2 h-12 px-7 rounded-xl bg-[#25D366] hover:bg-[#1ebe5d] text-white text-[14.5px] font-bold transition-all hover:-translate-y-0.5 shadow-lg"
                 >
                   <WhatsAppIcon className="h-5 w-5" />
-                  Falar no WhatsApp
+                  Agende agora
                 </a>
               </div>
             </div>
