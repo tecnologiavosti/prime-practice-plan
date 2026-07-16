@@ -17,9 +17,7 @@ import {
   HeartPulse,
   Baby,
   ShieldCheck,
-  FileText,
   Newspaper,
-  ChevronRight,
 } from 'lucide-react';
 
 const COWORKING_WA = `https://wa.me/5561981823984?text=${encodeURIComponent(
