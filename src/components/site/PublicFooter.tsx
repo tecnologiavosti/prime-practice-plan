@@ -86,7 +86,7 @@ export function PublicFooter() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 hover:text-[hsl(221_83%_53%)]"
               >
-                <Building2 className="h-3.5 w-3.5" />
+                <Building2 className="h-3.5 w-3.5 text-[hsl(221_83%_53%)]" />
                 Coworking Saúde
               </a>
             </li>
