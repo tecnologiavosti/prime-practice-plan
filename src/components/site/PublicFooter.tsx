@@ -79,8 +79,8 @@ export function PublicFooter() {
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[hsl(222_47%_11%)] mb-4">Institucional</p>
           <ul className="space-y-2.5 text-[13.5px]">
-            <li><Link to="/convenios" className="hover:text-[hsl(221_83%_53%)]">Convênios</Link></li>
-            <li><a href="/#blog" className="hover:text-[hsl(221_83%_53%)]">Blog</a></li>
+            <li><Link to="/convenios" className="inline-flex items-center gap-1.5 hover:text-[hsl(221_83%_53%)]"><ShieldCheck className="h-3.5 w-3.5 text-[hsl(221_83%_53%)]" />Convênios</Link></li>
+            <li><a href="/#blog" className="inline-flex items-center gap-1.5 hover:text-[hsl(221_83%_53%)]"><Newspaper className="h-3.5 w-3.5 text-[hsl(221_83%_53%)]" />Blog</a></li>
             <li>
               <a
                 href={COWORKING_WA}
