@@ -12,6 +12,7 @@ import { useClinicSettings } from '@/hooks/useClinicSettings';
 import { SeoHead } from '@/components/SeoHead';
 import { PublicHeader } from '@/components/site/PublicHeader';
 import { supabase } from '@/integrations/supabase/client';
+import { makeProfessionalSlug } from '@/lib/slug';
 import logoPacem from '@/assets/logoPacem.png';
 import clinicHero from '@/assets/clinic-hero.jpg';
 import {
@@ -402,7 +403,7 @@ export default function LandingPage() {
               {team.map((m) => (
                 <Link
                   key={m.id}
-                  to={`/equipe/${m.id}`}
+                  to={`/equipe/${makeProfessionalSlug(m.id, m.full_name)}`}
                   className="group rounded-2xl border border-[hsl(var(--lp-line))] bg-[hsl(var(--lp-bg))] p-6 text-center transition-all hover:shadow-md hover:-translate-y-0.5"
                 >
                   {m.photo_url ? (
@@ -443,10 +444,14 @@ export default function LandingPage() {
           )}
 
 
-          <div className="mt-10 text-center">
-            <a href={wa('Olá! Gostaria de conhecer a equipe da Clínica Pacem.')} target="_blank" rel="noopener noreferrer"
+          <div className="mt-10 flex flex-col sm:flex-row gap-3 items-center justify-center">
+            <Link to="/equipe"
               className="inline-flex items-center gap-2 h-11 px-6 rounded-xl bg-[hsl(var(--lp-blue))] text-white font-semibold hover:bg-[hsl(var(--lp-blue-ink))] transition-colors">
-              Falar com nossa equipe <ArrowRight className="h-4 w-4" />
+              Ver todos os profissionais <ArrowRight className="h-4 w-4" />
+            </Link>
+            <a href={wa('Olá! Gostaria de conhecer a equipe da Clínica Pacem.')} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 h-11 px-6 rounded-xl bg-[#25D366] hover:bg-[#1ebe5d] text-white font-semibold transition-colors">
+              Agende agora
             </a>
           </div>
         </div>
