@@ -197,7 +197,7 @@ export default function EspecialidadePage() {
               target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl bg-[#25D366] hover:bg-[#1ebe5d] text-white font-semibold transition-all"
             >
-              <Sparkles className="h-4 w-4" /> Agendar pelo WhatsApp
+              <Sparkles className="h-4 w-4" /> Agende agora
             </a>
             <Link to="/convenios"
               className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl border border-[hsl(214_32%_91%)] bg-white text-[hsl(222_47%_11%)] font-semibold hover:border-[hsl(221_83%_53%)] hover:text-[hsl(221_83%_53%)] transition-all">

@@ -89,7 +89,7 @@ export function PublicHeader({ floating = false }: { floating?: boolean }) {
             className="hidden sm:inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-[#25D366] text-white text-sm font-semibold hover:bg-[#1ebe5d] transition-colors"
           >
             <WhatsAppIcon className="h-4 w-4" />
-            Agendar
+            Agende agora
           </a>
           <Button
             asChild
@@ -156,7 +156,7 @@ export function PublicHeader({ floating = false }: { floating?: boolean }) {
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 h-11 rounded-xl bg-[#25D366] text-white text-sm font-semibold hover:bg-[#1ebe5d]"
                 >
-                  <WhatsAppIcon className="h-4 w-4" /> Agendar pelo WhatsApp
+                  <WhatsAppIcon className="h-4 w-4" /> Agende agora
                 </a>
                 <Link
                   to="/login"
