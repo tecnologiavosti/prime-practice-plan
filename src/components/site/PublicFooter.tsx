@@ -33,7 +33,7 @@ export function PublicFooter() {
   return (
     <footer id="contato" className="bg-white border-t border-[hsl(214_32%_91%)] text-[hsl(215_16%_47%)]">
       <div className="container mx-auto px-5 md:px-10 py-12 md:py-14 grid sm:grid-cols-2 lg:grid-cols-5 gap-8 md:gap-10">
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-1">
           <div className="flex items-center gap-3 mb-4">
             <img src={clinicLogo} alt={clinicName} className="h-9 w-auto object-contain" />
             <div className="leading-tight">
@@ -41,7 +41,7 @@ export function PublicFooter() {
               <div className="text-[10px] uppercase tracking-[0.22em]">Saúde Mental · Brasília</div>
             </div>
           </div>
-          <p className="text-[13px] leading-relaxed max-w-sm">
+          <p className="text-[13px] leading-relaxed">
             Clínica multidisciplinar especializada em saúde mental, com atendimento humanizado em Brasília.
           </p>
           <div className="flex items-center gap-3 mt-4">
@@ -62,12 +62,7 @@ export function PublicFooter() {
           </ul>
         </div>
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[hsl(222_47%_11%)] mb-4">Horários</p>
-          <ul className="space-y-2.5 text-[13.5px]">
-            <li className="flex items-start gap-2"><Clock className="h-4 w-4 mt-0.5 shrink-0 text-[hsl(221_83%_53%)]" /><div><div className="text-[hsl(222_47%_11%)] font-semibold">Seg a Sex</div>08h às 19h</div></li>
-            <li className="flex items-start gap-2"><Clock className="h-4 w-4 mt-0.5 shrink-0 text-[hsl(221_83%_53%)]" /><div><div className="text-[hsl(222_47%_11%)] font-semibold">Sábado</div>08h às 13h</div></li>
-          </ul>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[hsl(222_47%_11%)] mt-6 mb-4">Institucional</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[hsl(222_47%_11%)] mb-4">Institucional</p>
           <ul className="space-y-2.5 text-[13.5px]">
             <li><Link to="/convenios" className="hover:text-[hsl(221_83%_53%)]">Convênios</Link></li>
             <li><a href="/#blog" className="hover:text-[hsl(221_83%_53%)]">Blog</a></li>
@@ -83,6 +78,13 @@ export function PublicFooter() {
               </a>
             </li>
             <li><Link to="/politica-de-privacidade" className="inline-flex items-center gap-1.5 hover:text-[hsl(221_83%_53%)]"><Lock className="h-3.5 w-3.5" />Política de Privacidade</Link></li>
+          </ul>
+        </div>
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[hsl(222_47%_11%)] mb-4">Horários</p>
+          <ul className="space-y-2.5 text-[13.5px]">
+            <li className="flex items-start gap-2"><Clock className="h-4 w-4 mt-0.5 shrink-0 text-[hsl(221_83%_53%)]" /><div><div className="text-[hsl(222_47%_11%)] font-semibold">Seg a Sex</div>08h às 19h</div></li>
+            <li className="flex items-start gap-2"><Clock className="h-4 w-4 mt-0.5 shrink-0 text-[hsl(221_83%_53%)]" /><div><div className="text-[hsl(222_47%_11%)] font-semibold">Sábado</div>08h às 13h</div></li>
           </ul>
         </div>
         <div>
