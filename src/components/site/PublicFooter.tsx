@@ -10,19 +10,27 @@ import {
   Mail,
   Lock,
   Building2,
+  Brain,
+  Stethoscope,
+  Apple,
+  Ear,
+  HeartPulse,
+  Baby,
+  ShieldCheck,
+  Newspaper,
 } from 'lucide-react';
 
 const COWORKING_WA = `https://wa.me/5561981823984?text=${encodeURIComponent(
   'Olá! Tenho interesse em locação de consultório no coworking saúde da Clínica Pacem. Poderiam me passar mais informações?'
 )}`;
 
-const especialidades = [
-  'Psicologia',
-  'Psiquiatria',
-  'Nutrição',
-  'Fonoaudiologia',
-  'Clínico Geral',
-  'RN1',
+const especialidades: { label: string; icon: typeof Brain }[] = [
+  { label: 'Psicologia', icon: Brain },
+  { label: 'Psiquiatria', icon: HeartPulse },
+  { label: 'Nutrição', icon: Apple },
+  { label: 'Fonoaudiologia', icon: Ear },
+  { label: 'Clínico Geral', icon: Stethoscope },
+  { label: 'RN1', icon: Baby },
 ];
 
 export function PublicFooter() {
@@ -56,16 +64,21 @@ export function PublicFooter() {
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[hsl(222_47%_11%)] mb-4">Especialidades</p>
           <ul className="space-y-2.5 text-[13.5px]">
-            {especialidades.map((s) => (
-              <li key={s}><a href="/#especialidades" className="hover:text-[hsl(221_83%_53%)]">{s}</a></li>
+            {especialidades.map(({ label, icon: Icon }) => (
+              <li key={label}>
+                <a href="/#especialidades" className="inline-flex items-center gap-1.5 hover:text-[hsl(221_83%_53%)]">
+                  <Icon className="h-3.5 w-3.5 text-[hsl(221_83%_53%)]" />
+                  {label}
+                </a>
+              </li>
             ))}
           </ul>
         </div>
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[hsl(222_47%_11%)] mb-4">Institucional</p>
           <ul className="space-y-2.5 text-[13.5px]">
-            <li><Link to="/convenios" className="hover:text-[hsl(221_83%_53%)]">Convênios</Link></li>
-            <li><a href="/#blog" className="hover:text-[hsl(221_83%_53%)]">Blog</a></li>
+            <li><Link to="/convenios" className="inline-flex items-center gap-1.5 hover:text-[hsl(221_83%_53%)]"><ShieldCheck className="h-3.5 w-3.5 text-[hsl(221_83%_53%)]" />Convênios</Link></li>
+            <li><a href="/#blog" className="inline-flex items-center gap-1.5 hover:text-[hsl(221_83%_53%)]"><Newspaper className="h-3.5 w-3.5 text-[hsl(221_83%_53%)]" />Blog</a></li>
             <li>
               <a
                 href={COWORKING_WA}
