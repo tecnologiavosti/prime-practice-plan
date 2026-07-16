@@ -9,7 +9,12 @@ import {
   Phone,
   Mail,
   Lock,
+  Building2,
 } from 'lucide-react';
+
+const COWORKING_WA = `https://wa.me/5561981823984?text=${encodeURIComponent(
+  'Olá! Tenho interesse em locação de consultório no coworking saúde da Clínica Pacem. Poderiam me passar mais informações?'
+)}`;
 
 const especialidades = [
   'Psicologia',
