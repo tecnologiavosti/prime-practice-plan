@@ -12,6 +12,7 @@ import { useClinicSettings } from '@/hooks/useClinicSettings';
 import { SeoHead } from '@/components/SeoHead';
 import { PublicHeader } from '@/components/site/PublicHeader';
 import { supabase } from '@/integrations/supabase/client';
+import { makeProfessionalSlug } from '@/lib/slug';
 import logoPacem from '@/assets/logoPacem.png';
 import clinicHero from '@/assets/clinic-hero.jpg';
 import {
@@ -402,7 +403,7 @@ export default function LandingPage() {
               {team.map((m) => (
                 <Link
                   key={m.id}
-                  to={`/equipe/${m.id}`}
+                  to={`/equipe/${makeProfessionalSlug(m.id, m.full_name)}`}
                   className="group rounded-2xl border border-[hsl(var(--lp-line))] bg-[hsl(var(--lp-bg))] p-6 text-center transition-all hover:shadow-md hover:-translate-y-0.5"
                 >
                   {m.photo_url ? (
