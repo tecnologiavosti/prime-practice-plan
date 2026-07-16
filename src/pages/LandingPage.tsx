@@ -319,8 +319,20 @@ export default function LandingPage() {
                 variants={fadeUp}
                 className="group flex h-full flex-col rounded-2xl border border-[hsl(var(--lp-line))] bg-[hsl(var(--lp-bg))] p-7 transition-all duration-300 hover:-translate-y-1 hover:bg-white hover:shadow-[0_18px_40px_-18px_hsl(var(--lp-blue)/0.3)] hover:border-[hsl(var(--lp-blue)/0.3)]"
               >
-                <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-xl bg-white border border-[hsl(var(--lp-line))] text-[hsl(var(--lp-blue))] group-hover:bg-[hsl(var(--lp-blue))] group-hover:text-white group-hover:border-transparent transition-colors">
-                  <sp.icon className="h-6 w-6" strokeWidth={1.8} />
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <div className="inline-flex h-14 w-14 items-center justify-center rounded-xl bg-white border border-[hsl(var(--lp-line))] text-[hsl(var(--lp-blue))] group-hover:bg-[hsl(var(--lp-blue))] group-hover:text-white group-hover:border-transparent transition-colors">
+                    <sp.icon className="h-6 w-6" strokeWidth={1.8} />
+                  </div>
+                  <a
+                    href={wa(`Olá! Gostaria de agendar ${sp.title} na Clínica Pacem.`)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`Agendar ${sp.title} pelo WhatsApp`}
+                    className="inline-flex items-center gap-1.5 h-10 px-3.5 rounded-xl bg-[#25D366] hover:bg-[#1ebe5d] text-white text-[12.5px] font-semibold shadow-[0_8px_20px_-10px_rgba(37,211,102,0.7)] transition-all"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    WhatsApp
+                  </a>
                 </div>
                 <h3 className="text-[17px] font-bold mb-2">{sp.title}</h3>
                 <p className="text-[14px] text-[hsl(var(--lp-muted))] leading-relaxed mb-4">{sp.desc}</p>
