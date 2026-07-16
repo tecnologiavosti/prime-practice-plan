@@ -48,6 +48,7 @@ import NotFound from "./pages/NotFound";
 // Patient Portal
 import LandingPage from "./pages/LandingPage";
 import ProfessionalPublic from "./pages/ProfessionalPublic";
+import EquipePublic from "./pages/EquipePublic";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 import CookieBanner from "@/components/CookieBanner";
@@ -80,6 +81,7 @@ const App = () => (
             <Route path="/convenios" element={<Convenios />} />
             <Route path="/especialidades/:slug" element={<EspecialidadePage />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
+            <Route path="/equipe" element={<EquipePublic />} />
             <Route path="/equipe/:id" element={<ProfessionalPublic />} />
             <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
             

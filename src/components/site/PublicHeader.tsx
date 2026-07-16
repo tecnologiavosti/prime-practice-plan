@@ -20,7 +20,7 @@ const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
 const NAV_LINKS = [
   { label: 'Especialidades', href: '/#especialidades' },
   { label: 'Diferenciais', href: '/#diferenciais' },
-  { label: 'Equipe', href: '/#equipe' },
+  { label: 'Equipe', href: '/equipe' },
   { label: 'Convênios', href: '/convenios' },
   { label: 'Blog', href: '/#blog' },
   { label: 'FAQ', href: '/#faq' },
