@@ -226,7 +226,7 @@ export default function LandingPage() {
                 variants={fadeUp}
                 className="mt-5 md:mt-7 text-[32px] sm:text-[40px] md:text-[54px] lg:text-[60px] font-extrabold leading-[1.05] tracking-[-0.025em]"
               >
-                Clínica especializada em <span className="text-[hsl(var(--lp-blue))]">Saúde Mental em Brasília</span>
+                Cuidar da sua <span className="text-[hsl(var(--lp-blue))]">saúde mental</span> pode começar hoje.
               </motion.h1>
 
               <motion.p variants={fadeUp} className="mt-5 md:mt-6 text-[16px] md:text-lg text-[hsl(var(--lp-muted))] max-w-xl leading-relaxed">
