@@ -328,10 +328,10 @@ export default function LandingPage() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={`Agendar ${sp.title} pelo WhatsApp`}
-                    className="inline-flex items-center gap-1.5 h-10 px-3.5 rounded-xl bg-[#25D366] hover:bg-[#1ebe5d] text-white text-[12.5px] font-semibold shadow-[0_8px_20px_-10px_rgba(37,211,102,0.7)] transition-all"
+                    className="inline-flex items-center gap-2 h-12 px-5 rounded-xl bg-[#25D366] hover:bg-[#1ebe5d] text-white text-[14px] font-semibold shadow-[0_8px_20px_-10px_rgba(37,211,102,0.7)] transition-all"
                   >
-                    <MessageCircle className="h-4 w-4" />
-                    WhatsApp
+                    <MessageCircle className="h-5 w-5" />
+                    Agendar
                   </a>
                 </div>
                 <h3 className="text-[17px] font-bold mb-2">{sp.title}</h3>
