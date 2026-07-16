@@ -34,7 +34,6 @@ const especialidades: { label: string; icon: typeof Brain }[] = [
   { label: 'Clínico Geral', icon: Stethoscope },
   { label: 'RN1', icon: Baby },
 ];
-];
 
 export function PublicFooter() {
   const { settings } = useClinicSettings();
