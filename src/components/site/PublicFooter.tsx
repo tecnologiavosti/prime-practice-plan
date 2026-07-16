@@ -90,7 +90,7 @@ export function PublicFooter() {
                 Coworking Saúde
               </a>
             </li>
-            <li><Link to="/politica-de-privacidade" className="inline-flex items-center gap-1.5 hover:text-[hsl(221_83%_53%)]"><Lock className="h-3.5 w-3.5" />Política de Privacidade</Link></li>
+            <li><Link to="/politica-de-privacidade" className="inline-flex items-center gap-1.5 hover:text-[hsl(221_83%_53%)]"><Lock className="h-3.5 w-3.5 text-[hsl(221_83%_53%)]" />Política de Privacidade</Link></li>
           </ul>
         </div>
         <div>
