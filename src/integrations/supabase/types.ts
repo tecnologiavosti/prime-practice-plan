@@ -2353,6 +2353,13 @@ export type Database = {
           specialties_count: number
         }[]
       }
+      get_professional_availability: {
+        Args: { _end: string; _id: string; _start: string }
+        Returns: {
+          day: string
+          status: string
+        }[]
+      }
       get_professional_insurances: {
         Args: { _id: string }
         Returns: {
