@@ -39,10 +39,14 @@ function normalizeWhatsapp(raw: string | null | undefined): string {
   return `55${digits}`;
 }
 
+type AvailStatus = 'available' | 'unavailable' | 'off';
+interface AvailDay { day: string; status: AvailStatus }
+
 export default function ProfessionalPublic() {
   const { id: slug } = useParams<{ id: string }>();
   const [prof, setProf] = useState<PublicProfessional | null>(null);
   const [insurances, setInsurances] = useState<{ id: string; name: string }[]>([]);
+  const [availability, setAvailability] = useState<AvailDay[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -51,7 +55,6 @@ export default function ProfessionalPublic() {
     (async () => {
       let id = uuidFromSlug;
       if (!id) {
-        // Resolve slug (name-only) → id via landing professionals list
         const { data: list } = await (supabase.rpc as any)('get_landing_professionals');
         const target = (list as { id: string; full_name: string }[] | null)?.find(
           (p) => slugify(p.full_name) === rawSlug.toLowerCase(),
@@ -62,15 +65,28 @@ export default function ProfessionalPublic() {
         setLoading(false);
         return;
       }
-      const [{ data }, { data: ins }] = await Promise.all([
+      const today = new Date();
+      const start = new Date(today);
+      const end = new Date(today);
+      end.setDate(end.getDate() + 29);
+      const fmt = (d: Date) => d.toISOString().slice(0, 10);
+
+      const [{ data }, { data: ins }, { data: avail }] = await Promise.all([
         (supabase.rpc as any)('get_landing_professional', { _id: id }),
         (supabase.rpc as any)('get_professional_insurances', { _id: id }),
+        (supabase.rpc as any)('get_professional_availability', {
+          _id: id,
+          _start: fmt(start),
+          _end: fmt(end),
+        }),
       ]);
       setProf((data?.[0] as PublicProfessional) ?? null);
       setInsurances((ins as any) ?? []);
+      setAvailability((avail as AvailDay[]) ?? []);
       setLoading(false);
     })();
   }, [slug]);
+
 
   const waNumber = normalizeWhatsapp(prof?.landing_whatsapp);
   const waHref = prof
