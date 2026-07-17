@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { SeoHead } from '@/components/SeoHead';
+import { Helmet } from 'react-helmet-async';
 import {
   ArrowLeft,
   Users,
@@ -85,6 +86,16 @@ export default function ProfessionalPublic() {
   return (
     <div className="min-h-screen bg-[#f7f8fb] text-slate-900 antialiased">
       <SeoHead />
+      {prof.photo_url && (
+        <Helmet prioritizeSeoTags>
+          <meta property="og:image" content={prof.photo_url} />
+          <meta property="og:image:secure_url" content={prof.photo_url} />
+          <meta property="og:title" content={prof.full_name} />
+          {prof.landing_bio && <meta property="og:description" content={prof.landing_bio} />}
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:image" content={prof.photo_url} />
+        </Helmet>
+      )}
 
       {/* Minimal top bar — this page is a self-contained landing */}
       <header className="sticky top-0 z-40 backdrop-blur-md bg-white/80 border-b border-slate-200/70">
