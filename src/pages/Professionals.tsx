@@ -55,7 +55,7 @@ interface Professional {
   landing_bio: string | null;
   landing_about: string | null;
   landing_curriculum: string | null;
-
+  landing_whatsapp: string | null;
 }
 
 
