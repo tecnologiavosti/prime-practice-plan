@@ -26,9 +26,17 @@ interface PublicProfessional {
   landing_about: string | null;
   landing_curriculum: string | null;
   specialty_name: string | null;
+  landing_whatsapp: string | null;
 }
 
-const WHATSAPP = '5561981823984';
+const DEFAULT_WHATSAPP = '5561981823984';
+
+function normalizeWhatsapp(raw: string | null | undefined): string {
+  const digits = (raw || '').replace(/\D/g, '');
+  if (!digits) return DEFAULT_WHATSAPP;
+  if (digits.startsWith('55')) return digits;
+  return `55${digits}`;
+}
 
 export default function ProfessionalPublic() {
   const { id: slug } = useParams<{ id: string }>();
