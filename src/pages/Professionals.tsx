@@ -55,7 +55,7 @@ interface Professional {
   landing_bio: string | null;
   landing_about: string | null;
   landing_curriculum: string | null;
-
+  landing_whatsapp: string | null;
 }
 
 
@@ -88,6 +88,8 @@ const emptyProfessional = {
   landing_bio: '',
   landing_about: '',
   landing_curriculum: '',
+  landing_whatsapp: '',
+
 
 };
 
@@ -243,6 +245,7 @@ export default function Professionals() {
       landing_bio: professional.landing_bio || '',
       landing_about: professional.landing_about || '',
       landing_curriculum: professional.landing_curriculum || '',
+      landing_whatsapp: professional.landing_whatsapp || '',
     });
 
 
@@ -455,6 +458,17 @@ export default function Professionals() {
                         )}
                       </div>
                     </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>WhatsApp exclusivo do profissional (opcional)</Label>
+                    <Input
+                      value={formData.landing_whatsapp}
+                      onChange={(e) => setFormData({ ...formData, landing_whatsapp: e.target.value })}
+                      placeholder="Ex.: 61 98182-3984 — deixe vazio para usar o número geral da clínica"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Se preenchido, os botões de WhatsApp na página pública deste profissional usarão este número. Caso contrário, será usado o número geral.
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <Label>Mini bio (opcional)</Label>

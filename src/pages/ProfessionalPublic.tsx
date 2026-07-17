@@ -26,9 +26,17 @@ interface PublicProfessional {
   landing_about: string | null;
   landing_curriculum: string | null;
   specialty_name: string | null;
+  landing_whatsapp: string | null;
 }
 
-const WHATSAPP = '5561981823984';
+const DEFAULT_WHATSAPP = '5561981823984';
+
+function normalizeWhatsapp(raw: string | null | undefined): string {
+  const digits = (raw || '').replace(/\D/g, '');
+  if (!digits) return DEFAULT_WHATSAPP;
+  if (digits.startsWith('55')) return digits;
+  return `55${digits}`;
+}
 
 export default function ProfessionalPublic() {
   const { id: slug } = useParams<{ id: string }>();
@@ -63,8 +71,9 @@ export default function ProfessionalPublic() {
     })();
   }, [slug]);
 
+  const waNumber = normalizeWhatsapp(prof?.landing_whatsapp);
   const waHref = prof
-    ? `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(
+    ? `https://wa.me/${waNumber}?text=${encodeURIComponent(
         `Olá! Gostaria de agendar uma consulta com ${prof.full_name} na Clínica Pacem.`,
       )}`
     : '#';
