@@ -70,6 +70,8 @@ export default function ProfessionalPublic() {
     : '#';
 
   const firstName = prof?.full_name.split(' ')[0] ?? '';
+  const isFemale = /a$/i.test(firstName);
+  const artigo = isFemale ? 'da' : 'de';
 
   return (
     <div className="min-h-screen bg-[#f7f8fb] text-slate-900 antialiased">
