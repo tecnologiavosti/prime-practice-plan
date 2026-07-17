@@ -102,7 +102,7 @@ export default function ProfessionalPublic() {
   return (
     <div className="min-h-screen bg-[#f7f8fb] text-slate-900 antialiased">
       <SeoHead />
-      {prof.photo_url && (
+      {prof?.photo_url && (
         <Helmet prioritizeSeoTags>
           <meta property="og:image" content={prof.photo_url} />
           <meta property="og:image:secure_url" content={prof.photo_url} />
