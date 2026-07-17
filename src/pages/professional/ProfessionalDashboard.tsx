@@ -146,7 +146,10 @@ export default function ProfessionalDashboard() {
           <h1 className="text-2xl font-bold">Dashboard</h1>
           <p className="text-sm text-muted-foreground">Visão geral dos seus atendimentos e repasses</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <Button asChild variant="outline" className="gap-2">
+            <Link to="/professional/escalas"><Clock className="h-4 w-4" />Configurar Escala</Link>
+          </Button>
           <Button asChild variant="outline" className="gap-2">
             <Link to="/professional/pacientes"><Users className="h-4 w-4" />Pacientes</Link>
           </Button>
@@ -154,6 +157,7 @@ export default function ProfessionalDashboard() {
             <Link to="/professional/pacientes"><FilePlus className="h-4 w-4" />Novo Prontuário</Link>
           </Button>
         </div>
+
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
