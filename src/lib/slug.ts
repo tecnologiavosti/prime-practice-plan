@@ -13,7 +13,7 @@ const UUID_RE = /([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$
 
 export function makeProfessionalSlug(id: string, name: string): string {
   const s = slugify(name);
-  return s ? `${s}-${id}` : id;
+  return s || id;
 }
 
 export function extractUuidFromSlug(slug: string): string | null {
