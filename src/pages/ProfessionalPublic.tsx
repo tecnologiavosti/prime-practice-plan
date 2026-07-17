@@ -39,10 +39,14 @@ function normalizeWhatsapp(raw: string | null | undefined): string {
   return `55${digits}`;
 }
 
+type AvailStatus = 'available' | 'unavailable' | 'off';
+interface AvailDay { day: string; status: AvailStatus }
+
 export default function ProfessionalPublic() {
   const { id: slug } = useParams<{ id: string }>();
   const [prof, setProf] = useState<PublicProfessional | null>(null);
   const [insurances, setInsurances] = useState<{ id: string; name: string }[]>([]);
+  const [availability, setAvailability] = useState<AvailDay[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -51,7 +55,6 @@ export default function ProfessionalPublic() {
     (async () => {
       let id = uuidFromSlug;
       if (!id) {
-        // Resolve slug (name-only) → id via landing professionals list
         const { data: list } = await (supabase.rpc as any)('get_landing_professionals');
         const target = (list as { id: string; full_name: string }[] | null)?.find(
           (p) => slugify(p.full_name) === rawSlug.toLowerCase(),
@@ -62,15 +65,28 @@ export default function ProfessionalPublic() {
         setLoading(false);
         return;
       }
-      const [{ data }, { data: ins }] = await Promise.all([
+      const today = new Date();
+      const start = new Date(today);
+      const end = new Date(today);
+      end.setDate(end.getDate() + 29);
+      const fmt = (d: Date) => d.toISOString().slice(0, 10);
+
+      const [{ data }, { data: ins }, { data: avail }] = await Promise.all([
         (supabase.rpc as any)('get_landing_professional', { _id: id }),
         (supabase.rpc as any)('get_professional_insurances', { _id: id }),
+        (supabase.rpc as any)('get_professional_availability', {
+          _id: id,
+          _start: fmt(start),
+          _end: fmt(end),
+        }),
       ]);
       setProf((data?.[0] as PublicProfessional) ?? null);
       setInsurances((ins as any) ?? []);
+      setAvailability((avail as AvailDay[]) ?? []);
       setLoading(false);
     })();
   }, [slug]);
+
 
   const waNumber = normalizeWhatsapp(prof?.landing_whatsapp);
   const waHref = prof
@@ -322,8 +338,91 @@ export default function ProfessionalPublic() {
               </section>
             )}
 
+            {/* DISPONIBILIDADE */}
+            {availability.length > 0 && (
+              <section className="grid md:grid-cols-[240px_1fr] gap-8 md:gap-16">
+                <div>
+                  <div className="inline-flex items-center gap-2 text-sky-700 mb-3">
+                    <Clock className="h-4 w-4" />
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.22em]">
+                      Disponibilidade
+                    </span>
+                  </div>
+                  <h2 className="text-2xl md:text-3xl font-bold leading-tight text-slate-900">
+                    Próximos 30 dias
+                  </h2>
+                  <div className="mt-4 space-y-2 text-[13px] text-slate-600">
+                    <div className="flex items-center gap-2">
+                      <span className="h-3 w-3 rounded-full bg-emerald-500 inline-block" />
+                      Dia com horários livres
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="h-3 w-3 rounded-full bg-rose-400 inline-block" />
+                      Dia indisponível
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="h-3 w-3 rounded-full bg-slate-300 inline-block" />
+                      Não atende
+                    </div>
+                  </div>
+                </div>
+                <div className="rounded-2xl bg-white border border-slate-200 p-6 md:p-8 shadow-sm">
+                  <div className="grid grid-cols-7 gap-2 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-3">
+                    {['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map((d) => (
+                      <div key={d}>{d}</div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-7 gap-2">
+                    {(() => {
+                      const first = new Date(availability[0].day + 'T00:00:00');
+                      const offset = first.getDay();
+                      return Array.from({ length: offset }).map((_, i) => (
+                        <div key={`sp-${i}`} />
+                      ));
+                    })()}
+                    {availability.map((d) => {
+                      const dt = new Date(d.day + 'T00:00:00');
+                      const dayNum = dt.getDate();
+                      const cls =
+                        d.status === 'available'
+                          ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                          : d.status === 'unavailable'
+                          ? 'bg-rose-50 border-rose-200 text-rose-700 line-through'
+                          : 'bg-slate-50 border-slate-200 text-slate-400';
+                      const dot =
+                        d.status === 'available'
+                          ? 'bg-emerald-500'
+                          : d.status === 'unavailable'
+                          ? 'bg-rose-400'
+                          : 'bg-slate-300';
+                      return (
+                        <div
+                          key={d.day}
+                          className={`aspect-square rounded-lg border ${cls} flex flex-col items-center justify-center gap-1`}
+                          title={
+                            d.status === 'available'
+                              ? 'Horários livres'
+                              : d.status === 'unavailable'
+                              ? 'Indisponível'
+                              : 'Não atende'
+                          }
+                        >
+                          <span className="text-[13px] font-semibold leading-none">{dayNum}</span>
+                          <span className={`h-1.5 w-1.5 rounded-full ${dot}`} />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="mt-5 text-[13px] text-slate-500">
+                    Consulte {firstName} pelo WhatsApp para confirmar o melhor horário.
+                  </p>
+                </div>
+              </section>
+            )}
+
             {/* INFO CARDS */}
             <section className="grid sm:grid-cols-3 gap-4">
+
               {[
                 {
                   icon: MapPin,
