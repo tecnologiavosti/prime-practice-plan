@@ -245,6 +245,7 @@ export default function Professionals() {
       landing_bio: professional.landing_bio || '',
       landing_about: professional.landing_about || '',
       landing_curriculum: professional.landing_curriculum || '',
+      landing_whatsapp: professional.landing_whatsapp || '',
     });
 
 
