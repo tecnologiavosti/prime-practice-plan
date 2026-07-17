@@ -460,6 +460,17 @@ export default function Professionals() {
                     </div>
                   </div>
                   <div className="space-y-2">
+                    <Label>WhatsApp exclusivo do profissional (opcional)</Label>
+                    <Input
+                      value={formData.landing_whatsapp}
+                      onChange={(e) => setFormData({ ...formData, landing_whatsapp: e.target.value })}
+                      placeholder="Ex.: 61 98182-3984 — deixe vazio para usar o número geral da clínica"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Se preenchido, os botões de WhatsApp na página pública deste profissional usarão este número. Caso contrário, será usado o número geral.
+                    </p>
+                  </div>
+                  <div className="space-y-2">
                     <Label>Mini bio (opcional)</Label>
                     <Textarea
                       rows={2}
