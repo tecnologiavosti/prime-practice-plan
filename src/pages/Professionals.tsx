@@ -88,6 +88,8 @@ const emptyProfessional = {
   landing_bio: '',
   landing_about: '',
   landing_curriculum: '',
+  landing_whatsapp: '',
+
 
 };
 
