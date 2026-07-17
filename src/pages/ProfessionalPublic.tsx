@@ -240,7 +240,7 @@ export default function ProfessionalPublic() {
                     </span>
                   </div>
                   <h2 className="text-2xl md:text-3xl font-bold leading-tight text-slate-900">
-                    O trabalho de {firstName}
+                    O trabalho {artigo} {firstName}
                   </h2>
                 </div>
                 <div className="text-slate-700 whitespace-pre-line leading-[1.75] text-[16px] md:text-[17px] max-w-3xl">
