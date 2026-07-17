@@ -71,8 +71,9 @@ export default function ProfessionalPublic() {
     })();
   }, [slug]);
 
+  const waNumber = normalizeWhatsapp(prof?.landing_whatsapp);
   const waHref = prof
-    ? `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(
+    ? `https://wa.me/${waNumber}?text=${encodeURIComponent(
         `Olá! Gostaria de agendar uma consulta com ${prof.full_name} na Clínica Pacem.`,
       )}`
     : '#';
