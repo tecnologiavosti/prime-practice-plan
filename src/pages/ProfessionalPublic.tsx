@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { SeoHead } from '@/components/SeoHead';
+import { Helmet } from 'react-helmet-async';
 import {
   ArrowLeft,
   Users,
