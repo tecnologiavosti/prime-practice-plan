@@ -16,7 +16,7 @@ import {
   CheckCircle2,
   Phone,
 } from 'lucide-react';
-import { extractUuidFromSlug } from '@/lib/slug';
+import { extractUuidFromSlug, slugify } from '@/lib/slug';
 
 interface PublicProfessional {
   id: string;
