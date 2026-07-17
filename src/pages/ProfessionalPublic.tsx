@@ -37,12 +37,22 @@ export default function ProfessionalPublic() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const id = extractUuidFromSlug(slug || '');
-    if (!id) {
-      setLoading(false);
-      return;
-    }
+    const rawSlug = slug || '';
+    const uuidFromSlug = extractUuidFromSlug(rawSlug);
     (async () => {
+      let id = uuidFromSlug;
+      if (!id) {
+        // Resolve slug (name-only) → id via landing professionals list
+        const { data: list } = await (supabase.rpc as any)('get_landing_professionals');
+        const target = (list as { id: string; full_name: string }[] | null)?.find(
+          (p) => slugify(p.full_name) === rawSlug.toLowerCase(),
+        );
+        id = target?.id ?? null;
+      }
+      if (!id) {
+        setLoading(false);
+        return;
+      }
       const [{ data }, { data: ins }] = await Promise.all([
         (supabase.rpc as any)('get_landing_professional', { _id: id }),
         (supabase.rpc as any)('get_professional_insurances', { _id: id }),
