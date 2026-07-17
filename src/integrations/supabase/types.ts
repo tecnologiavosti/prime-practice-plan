@@ -1925,6 +1925,7 @@ export type Database = {
           landing_about: string | null
           landing_bio: string | null
           landing_curriculum: string | null
+          landing_whatsapp: string | null
           notes: string | null
           phone: string | null
           photo_url: string | null
@@ -1952,6 +1953,7 @@ export type Database = {
           landing_about?: string | null
           landing_bio?: string | null
           landing_curriculum?: string | null
+          landing_whatsapp?: string | null
           notes?: string | null
           phone?: string | null
           photo_url?: string | null
@@ -1979,6 +1981,7 @@ export type Database = {
           landing_about?: string | null
           landing_bio?: string | null
           landing_curriculum?: string | null
+          landing_whatsapp?: string | null
           notes?: string | null
           phone?: string | null
           photo_url?: string | null
@@ -2326,6 +2329,7 @@ export type Database = {
           landing_about: string
           landing_bio: string
           landing_curriculum: string
+          landing_whatsapp: string
           photo_url: string
           specialty_name: string
         }[]
