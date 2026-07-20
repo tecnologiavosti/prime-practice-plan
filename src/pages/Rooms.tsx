@@ -79,7 +79,9 @@ export default function Rooms() {
     const today = format(brNow, 'yyyy-MM-dd');
     const currentTime = format(brNow, 'HH:mm:ss');
 
-    // Main appointments occupying rooms right now
+    // Main appointments occupying rooms — do NOT filter by end_time.
+    // A sala fica ocupada a partir do horário de início e só é liberada
+    // quando o atendimento for marcado como finalizado/cancelado/faltou.
     const { data: appts } = await (supabase as any)
       .from('appointments')
       .select(`
@@ -91,7 +93,6 @@ export default function Rooms() {
       .not('room_id', 'is', null)
       .eq('appointment_date', today)
       .lte('start_time', currentTime)
-      .gte('end_time', currentTime)
       .not('status', 'in', '(cancelado,faltou,finalizado)');
 
     // Sessions
@@ -108,7 +109,6 @@ export default function Rooms() {
       `)
       .eq('session_date', today)
       .lte('start_time', currentTime)
-      .gte('end_time', currentTime)
       .not('status', 'in', '(cancelado,faltou,finalizado)');
 
     const map: Record<string, Occupancy> = {};
