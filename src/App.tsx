@@ -44,6 +44,7 @@ import ScheduleConfig from "./pages/ScheduleConfig";
 import ClinicProfile from "./pages/ClinicProfile";
 import TeamUsers from "./pages/TeamUsers";
 import Settings from "./pages/Settings";
+import MeuSite from "./pages/MeuSite";
 import { ReadOnlyGate } from "@/components/layout/ReadOnlyGate";
 
 import NotFound from "./pages/NotFound";
@@ -148,6 +149,7 @@ const App = () => (
               <Route path="/admin/escalas" element={<ReadOnlyGate moduleKey="escalas"><ScheduleConfig /></ReadOnlyGate>} />
               <Route path="/admin/perfil-clinica" element={<ReadOnlyGate moduleKey="perfil-clinica"><ClinicProfile /></ReadOnlyGate>} />
               <Route path="/admin/equipe" element={<TeamUsers />} />
+              <Route path="/admin/meu-site" element={<ReadOnlyGate moduleKey="meu-site"><MeuSite /></ReadOnlyGate>} />
               <Route path="/admin/seo" element={<ReadOnlyGate moduleKey="seo"><SeoSettings /></ReadOnlyGate>} />
               <Route path="/admin/blog" element={<ReadOnlyGate moduleKey="blog"><Blog /></ReadOnlyGate>} />
               <Route path="/admin/salas-sublocadas" element={<ReadOnlyGate moduleKey="salas-sublocadas"><SubleasedRooms /></ReadOnlyGate>} />

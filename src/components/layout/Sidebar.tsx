@@ -28,6 +28,7 @@ import {
   Search,
   Newspaper,
   Home,
+  Globe,
 } from 'lucide-react';
 
 const ICONS: Record<string, any> = {
@@ -57,6 +58,7 @@ const ICONS: Record<string, any> = {
   blog: Newspaper,
   'salas-sublocadas': Home,
   'salas': Home,
+  'meu-site': Globe,
 };
 
 export function Sidebar() {

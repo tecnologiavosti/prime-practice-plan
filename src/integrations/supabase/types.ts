@@ -1928,6 +1928,7 @@ export type Database = {
           landing_about: string | null
           landing_bio: string | null
           landing_curriculum: string | null
+          landing_order: number
           landing_whatsapp: string | null
           notes: string | null
           phone: string | null
@@ -1956,6 +1957,7 @@ export type Database = {
           landing_about?: string | null
           landing_bio?: string | null
           landing_curriculum?: string | null
+          landing_order?: number
           landing_whatsapp?: string | null
           notes?: string | null
           phone?: string | null
@@ -1984,6 +1986,7 @@ export type Database = {
           landing_about?: string | null
           landing_bio?: string | null
           landing_curriculum?: string | null
+          landing_order?: number
           landing_whatsapp?: string | null
           notes?: string | null
           phone?: string | null
@@ -2164,6 +2167,27 @@ export type Database = {
           robots_txt?: string | null
           singleton?: boolean
           updated_at?: string
+        }
+        Relationships: []
+      }
+      site_content: {
+        Row: {
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
         }
         Relationships: []
       }
