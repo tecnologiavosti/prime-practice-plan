@@ -83,7 +83,7 @@ const DEFAULTS = {
   privacidade: {
     content: '',
   },
-} as const;
+};
 
 // Small helpers
 function ArrayEditor<T extends Record<string, any>>({
