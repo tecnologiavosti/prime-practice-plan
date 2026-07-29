@@ -30,8 +30,10 @@ interface Appointment {
   end_time: string;
   status: string;
   consultation_type: string;
+  professional_id: string;
   patient: { full_name: string } | null;
   procedure: { name: string } | null;
+  professional: { full_name: string } | null;
 }
 
 const statusColors: Record<string, string> = {
@@ -58,9 +60,7 @@ export default function Schedule() {
   useRealtime(['appointments','professional_schedules','schedule_blocks','professional_special_periods'], () => fetchProfessionals());
 
   useEffect(() => {
-    if (selectedProfessional) {
-      fetchAppointments();
-    }
+    fetchAppointments();
   }, [selectedProfessional, currentDate, viewType]);
 
   const fetchProfessionals = async () => {
@@ -70,9 +70,8 @@ export default function Schedule() {
       .eq('active', true)
       .order('full_name');
     setProfessionals(data || []);
-    if (data && data.length > 0) {
-      setSelectedProfessional(data[0].id);
-    }
+    // Padrão: mostrar todos os profissionais
+    setSelectedProfessional('all');
     setLoading(false);
   };
 
@@ -90,7 +89,7 @@ export default function Schedule() {
       endDate = endOfMonth(currentDate);
     }
 
-    const { data } = await supabase
+    let query = supabase
       .from('appointments')
       .select(`
         id,
@@ -99,13 +98,20 @@ export default function Schedule() {
         end_time,
         status,
         consultation_type,
+        professional_id,
         patient:patients(full_name),
-        procedure:procedures(name)
+        procedure:procedures(name),
+        professional:professionals(full_name)
       `)
-      .eq('professional_id', selectedProfessional)
       .gte('appointment_date', format(startDate, 'yyyy-MM-dd'))
       .lte('appointment_date', format(endDate, 'yyyy-MM-dd'))
       .order('start_time');
+
+    if (selectedProfessional && selectedProfessional !== 'all') {
+      query = query.eq('professional_id', selectedProfessional);
+    }
+
+    const { data } = await query;
 
     setAppointments((data as any) || []);
   };
@@ -156,21 +162,16 @@ export default function Schedule() {
         </div>
         <div className="flex flex-wrap gap-3">
           <Select value={selectedProfessional} onValueChange={setSelectedProfessional}>
-            <SelectTrigger className="w-[200px]">
+            <SelectTrigger className="w-[220px]">
               <SelectValue placeholder="Selecione um profissional" />
             </SelectTrigger>
             <SelectContent>
-              {professionals.length === 0 ? (
-                <SelectItem value="none" disabled>
-                  Nenhum profissional cadastrado
+              <SelectItem value="all">Todos os profissionais</SelectItem>
+              {professionals.map((prof) => (
+                <SelectItem key={prof.id} value={prof.id}>
+                  {prof.full_name}
                 </SelectItem>
-              ) : (
-                professionals.map((prof) => (
-                  <SelectItem key={prof.id} value={prof.id}>
-                    {prof.full_name}
-                  </SelectItem>
-                ))
-              )}
+              ))}
             </SelectContent>
           </Select>
           <Select value={viewType} onValueChange={(v) => setViewType(v as ViewType)}>
@@ -253,6 +254,9 @@ export default function Schedule() {
                             <div className="text-xs">
                               {apt.start_time.slice(0, 5)} - {apt.end_time.slice(0, 5)} | {apt.procedure?.name}
                             </div>
+                            {selectedProfessional === 'all' && apt.professional?.full_name && (
+                              <div className="text-[11px] opacity-80 mt-0.5">Dr(a). {apt.professional.full_name}</div>
+                            )}
                           </div>
                         ))
                       )}
@@ -292,6 +296,9 @@ export default function Schedule() {
                     >
                       <div className="font-medium truncate">{apt.patient?.full_name}</div>
                       <div>{apt.start_time.slice(0, 5)}</div>
+                      {selectedProfessional === 'all' && apt.professional?.full_name && (
+                        <div className="truncate opacity-80">{apt.professional.full_name}</div>
+                      )}
                     </div>
                   ))
                 )}
