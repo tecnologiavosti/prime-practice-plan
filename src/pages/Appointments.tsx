@@ -844,12 +844,27 @@ export default function Appointments() {
                     />
                   </div>
                 )}
-                {formData.procedure_id && formData.consultation_type === 'particular' && (
+                {formData.consultation_type === 'particular' && (
                   <div className="space-y-2">
-                    <Label>Valor do Procedimento</Label>
-                    <div className="flex h-10 items-center rounded-md border bg-muted px-3 text-sm font-medium">
-                      {getProcedurePrice() !== null ? formatCurrency(getProcedurePrice()!) : 'Valor não cadastrado'}
-                    </div>
+                    <Label>Valor (R$) — editável</Label>
+                    <CurrencyInput
+                      value={formData.custom_amount || (getProcedurePrice() ?? 0)}
+                      onChange={(v) => setFormData({ ...formData, custom_amount: v })}
+                    />
+                    {formData.procedure_id && getProcedurePrice() !== null && (
+                      <p className="text-xs text-muted-foreground">
+                        Sugestão do procedimento: {formatCurrency(getProcedurePrice()!)}
+                      </p>
+                    )}
+                  </div>
+                )}
+                {formData.consultation_type === 'pacote' && (
+                  <div className="space-y-2">
+                    <Label>Valor (R$) — editável</Label>
+                    <CurrencyInput
+                      value={formData.custom_amount}
+                      onChange={(v) => setFormData({ ...formData, custom_amount: v })}
+                    />
                   </div>
                 )}
                 {editingId && (
