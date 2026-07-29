@@ -364,11 +364,15 @@ function EspecialidadesTab() {
           labelKey="title"
           addLabel="Adicionar especialidade"
           fields={[
-            { key: 'title', label: 'Título' },
-            { key: 'slug', label: 'Slug (URL)' },
+            { key: 'title', label: 'Nome (ex.: Psicologia)' },
+            { key: 'slug', label: 'Identificador da URL (ex.: psicologia, sem espaços)' },
             { key: 'icon', label: 'Ícone (nome lucide)', placeholder: 'ex: Brain, Stethoscope' },
-            { key: 'desc', label: 'Descrição curta', type: 'textarea' },
-            { key: 'long', label: 'Descrição longa (página interna)', type: 'textarea' },
+            { key: 'desc', label: 'Descrição curta (card da home)', type: 'textarea' },
+            { key: 'subtitle', label: 'Subtítulo da página' },
+            { key: 'intro', label: 'Texto de introdução (página da especialidade)', type: 'textarea' },
+            { key: 'benefits', label: 'Benefícios — um por linha', type: 'textarea' },
+            { key: 'indications', label: 'Indicações — uma por linha', type: 'textarea' },
+            { key: 'long', label: 'Texto complementar (opcional)', type: 'textarea' },
           ]}
         />
       )}
