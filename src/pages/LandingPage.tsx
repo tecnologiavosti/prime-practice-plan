@@ -39,6 +39,10 @@ import {
   GraduationCap,
   Calendar,
   MessageCircle,
+  ClipboardList,
+  Cross,
+  BookOpen,
+  Activity,
 } from 'lucide-react';
 import { PublicFooter } from '@/components/site/PublicFooter';
 
@@ -82,6 +86,30 @@ const especialidades = [
     icon: Briefcase,
     title: 'RN-1',
     desc: 'Cuidado completo para colaboradores com acesso à Psiquiatria, Psicologia, Nutrição e Personal Trainer, além de atendimento médico 24h e teleconsultas. Mais saúde, bem-estar e produtividade para sua equipe.',
+  },
+  {
+    slug: 'avaliacao-neuropsicologica',
+    icon: ClipboardList,
+    title: 'Avaliação Neuropsicológica',
+    desc: 'Investigação aprofundada das funções cognitivas — memória, atenção, linguagem e funções executivas — para diagnóstico e orientação terapêutica.',
+  },
+  {
+    slug: 'clinico-medico',
+    icon: Cross,
+    title: 'Clínico Médico',
+    desc: 'Consulta médica ampla com avaliação clínica, solicitação de exames, acompanhamento de doenças crônicas e cuidado preventivo em todas as idades.',
+  },
+  {
+    slug: 'psicopedagogia',
+    icon: BookOpen,
+    title: 'Psicopedagogia',
+    desc: 'Avaliação e intervenção para dificuldades de aprendizagem, desenvolvimento escolar, TDAH e organização de estudos para crianças e adolescentes.',
+  },
+  {
+    slug: 'neurologia',
+    icon: Activity,
+    title: 'Neurologia',
+    desc: 'Diagnóstico e tratamento de doenças do sistema nervoso: cefaleias, epilepsia, tonturas, distúrbios do sono e doenças neurodegenerativas.',
   },
 ];
 

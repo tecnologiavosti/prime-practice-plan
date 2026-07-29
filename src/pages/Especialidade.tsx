@@ -7,6 +7,7 @@ import type { LucideIcon } from 'lucide-react';
 import {
   ArrowRight, Brain, Stethoscope, Apple, MessageSquare,
   HeartPulse, Briefcase, CheckCircle2, Sparkles, Clock, Users, ShieldCheck,
+  ClipboardList, Cross, BookOpen, Activity,
 } from 'lucide-react';
 
 const WHATSAPP = '5561981823984';
@@ -134,6 +135,86 @@ const ESPECIALIDADES: Record<string, Especialidade> = {
     beneficios: [],
     indicacoes: [],
     custom: 'rn1',
+  },
+  'avaliacao-neuropsicologica': {
+    slug: 'avaliacao-neuropsicologica',
+    title: 'Avaliação Neuropsicológica',
+    tagline: 'Mapeamento aprofundado das funções cognitivas',
+    intro: 'Bateria completa de testes padronizados para avaliar memória, atenção, linguagem, raciocínio e funções executivas. Emitimos laudo detalhado com orientações para tratamento, escola e trabalho.',
+    icon: ClipboardList,
+    beneficios: [
+      'Laudo técnico completo e detalhado',
+      'Testes padronizados internacionalmente',
+      'Orientação para escola, família e trabalho',
+      'Integração com psicologia e psiquiatria',
+    ],
+    indicacoes: [
+      'Suspeita de TDAH em crianças e adultos',
+      'Investigação de dificuldades de aprendizagem',
+      'Avaliação de TEA (Transtorno do Espectro Autista)',
+      'Diagnóstico diferencial em quadros complexos',
+      'Avaliação de demências e declínio cognitivo',
+    ],
+  },
+  'clinico-medico': {
+    slug: 'clinico-medico',
+    title: 'Clínico Médico',
+    tagline: 'Cuidado médico integral para toda a família',
+    intro: 'Consulta clínica ampla com anamnese detalhada, exame físico, solicitação e análise de exames, além de acompanhamento de doenças crônicas e cuidado preventivo em todas as fases da vida.',
+    icon: Cross,
+    beneficios: [
+      'Avaliação médica completa',
+      'Coordenação com outras especialidades',
+      'Renovação e ajuste de medicações',
+      'Foco em prevenção e qualidade de vida',
+    ],
+    indicacoes: [
+      'Check-up periódico',
+      'Hipertensão, diabetes e colesterol',
+      'Avaliação pré-operatória',
+      'Sintomas gerais sem diagnóstico definido',
+      'Acompanhamento de doenças crônicas',
+    ],
+  },
+  'psicopedagogia': {
+    slug: 'psicopedagogia',
+    title: 'Psicopedagogia',
+    tagline: 'Aprender com autonomia, confiança e prazer',
+    intro: 'Avaliação e intervenção psicopedagógica para crianças, adolescentes e adultos com dificuldades de aprendizagem, foco, organização de estudos e desempenho escolar.',
+    icon: BookOpen,
+    beneficios: [
+      'Diagnóstico psicopedagógico completo',
+      'Intervenção lúdica e personalizada',
+      'Orientação a pais e escolas',
+      'Estratégias práticas de estudo',
+    ],
+    indicacoes: [
+      'Dificuldades de leitura e escrita',
+      'Baixo rendimento escolar',
+      'TDAH e problemas de atenção',
+      'Dislexia, discalculia e disgrafia',
+      'Ansiedade em provas e concursos',
+    ],
+  },
+  'neurologia': {
+    slug: 'neurologia',
+    title: 'Neurologia',
+    tagline: 'Cuidado especializado para o sistema nervoso',
+    intro: 'Diagnóstico e tratamento de doenças neurológicas com abordagem baseada em evidências, incluindo cefaleias, epilepsia, distúrbios do sono, tonturas e doenças neurodegenerativas.',
+    icon: Activity,
+    beneficios: [
+      'Avaliação neurológica detalhada',
+      'Solicitação e leitura de exames especializados',
+      'Tratamento medicamentoso individualizado',
+      'Acompanhamento contínuo de longo prazo',
+    ],
+    indicacoes: [
+      'Enxaquecas e cefaleias crônicas',
+      'Epilepsia e crises convulsivas',
+      'Tonturas, vertigens e desequilíbrios',
+      'Insônia e distúrbios do sono',
+      'Doenças neurodegenerativas (Alzheimer, Parkinson)',
+    ],
   },
 };
 
