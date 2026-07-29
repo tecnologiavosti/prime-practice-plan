@@ -50,68 +50,23 @@ const WHATSAPP = '5561981823984';
 const wa = (msg = 'Olá! Gostaria de agendar uma consulta na Clínica Pacem.') =>
   `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
 
-const especialidades = [
-  {
-    slug: 'psicologia',
-    icon: Brain,
-    title: 'Psicologia',
-    desc: 'Acompanhamento psicoterapêutico individual para adultos, adolescentes e crianças.',
-  },
-  {
-    slug: 'psiquiatria',
-    icon: Stethoscope,
-    title: 'Psiquiatria',
-    desc: 'Avaliação e tratamento medicamentoso para depressão, ansiedade, TDAH e outros transtornos.',
-  },
-  {
-    slug: 'nutricao',
-    icon: Apple,
-    title: 'Nutrição',
-    desc: 'Nutrição comportamental integrada à saúde mental e qualidade de vida.',
-  },
-  {
-    slug: 'fonoaudiologia',
-    icon: MessageSquare,
-    title: 'Fonoaudiologia',
-    desc: 'Diagnóstico e terapia para linguagem, fala, voz e desenvolvimento infantil.',
-  },
-  {
-    slug: 'clinico-geral',
-    icon: HeartPulse,
-    title: 'Clínico Geral',
-    desc: 'Avaliação clínica abrangente, acompanhamento de saúde, exames de rotina e cuidado preventivo.',
-  },
-  {
-    slug: 'rn1',
-    icon: Briefcase,
-    title: 'RN-1',
-    desc: 'Cuidado completo para colaboradores com acesso à Psiquiatria, Psicologia, Nutrição e Personal Trainer, além de atendimento médico 24h e teleconsultas. Mais saúde, bem-estar e produtividade para sua equipe.',
-  },
-  {
-    slug: 'avaliacao-neuropsicologica',
-    icon: ClipboardList,
-    title: 'Avaliação Neuropsicológica',
-    desc: 'Investigação aprofundada das funções cognitivas — memória, atenção, linguagem e funções executivas — para diagnóstico e orientação terapêutica.',
-  },
-  {
-    slug: 'clinico-medico',
-    icon: Cross,
-    title: 'Clínico Médico',
-    desc: 'Consulta médica ampla com avaliação clínica, solicitação de exames, acompanhamento de doenças crônicas e cuidado preventivo em todas as idades.',
-  },
-  {
-    slug: 'psicopedagogia',
-    icon: BookOpen,
-    title: 'Psicopedagogia',
-    desc: 'Avaliação e intervenção para dificuldades de aprendizagem, desenvolvimento escolar, TDAH e organização de estudos para crianças e adolescentes.',
-  },
-  {
-    slug: 'neurologia',
-    icon: Activity,
-    title: 'Neurologia',
-    desc: 'Diagnóstico e tratamento de doenças do sistema nervoso: cefaleias, epilepsia, tonturas, distúrbios do sono e doenças neurodegenerativas.',
-  },
+const ICON_MAP: Record<string, any> = {
+  Brain, Stethoscope, Apple, MessageSquare, HeartPulse, Briefcase,
+  ClipboardList, Cross, BookOpen, Activity, Heart,
+};
+
+const especialidadesDefault = [
+  { slug: 'psicologia', icon: 'Brain', title: 'Psicologia', desc: 'Acompanhamento psicoterapêutico individual para adultos, adolescentes e crianças.' },
+  { slug: 'psiquiatria', icon: 'Stethoscope', title: 'Psiquiatria', desc: 'Avaliação e tratamento medicamentoso para depressão, ansiedade, TDAH e outros transtornos.' },
+  { slug: 'nutricao', icon: 'Apple', title: 'Nutrição', desc: 'Nutrição comportamental integrada à saúde mental e qualidade de vida.' },
+  { slug: 'fonoaudiologia', icon: 'MessageSquare', title: 'Fonoaudiologia', desc: 'Diagnóstico e terapia para linguagem, fala, voz e desenvolvimento infantil.' },
+  { slug: 'rn1', icon: 'Briefcase', title: 'RN-1', desc: 'Cuidado completo para colaboradores com acesso à Psiquiatria, Psicologia, Nutrição e Personal Trainer, além de atendimento médico 24h e teleconsultas. Mais saúde, bem-estar e produtividade para sua equipe.' },
+  { slug: 'avaliacao-neuropsicologica', icon: 'ClipboardList', title: 'Avaliação Neuropsicológica', desc: 'Investigação aprofundada das funções cognitivas — memória, atenção, linguagem e funções executivas — para diagnóstico e orientação terapêutica.' },
+  { slug: 'clinico-medico', icon: 'Cross', title: 'Clínico Médico', desc: 'Consulta médica ampla com avaliação clínica, solicitação de exames, acompanhamento de doenças crônicas e cuidado preventivo em todas as idades.' },
+  { slug: 'psicopedagogia', icon: 'BookOpen', title: 'Psicopedagogia', desc: 'Avaliação e intervenção para dificuldades de aprendizagem, desenvolvimento escolar, TDAH e organização de estudos para crianças e adolescentes.' },
+  { slug: 'neurologia', icon: 'Activity', title: 'Neurologia', desc: 'Diagnóstico e tratamento de doenças do sistema nervoso: cefaleias, epilepsia, tonturas, distúrbios do sono e doenças neurodegenerativas.' },
 ];
+
 
 const diferenciais = [
   { icon: Users, title: 'Equipe multidisciplinar', desc: 'Psicólogos, psiquiatras, nutricionistas e fonoaudiólogos trabalhando juntos.' },
