@@ -298,15 +298,17 @@ export default function LandingPage() {
             variants={stagger}
             className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto"
           >
-            {especialidades.map((sp) => (
+            {especialidades.map((sp) => {
+              const Icon = ICON_MAP[sp.icon] || Stethoscope;
+              return (
               <motion.div
-                key={sp.title}
+                key={sp.slug || sp.title}
                 variants={fadeUp}
                 className="group flex h-full flex-col rounded-2xl border border-[hsl(var(--lp-line))] bg-[hsl(var(--lp-bg))] p-7 transition-all duration-300 hover:-translate-y-1 hover:bg-white hover:shadow-[0_18px_40px_-18px_hsl(var(--lp-blue)/0.3)] hover:border-[hsl(var(--lp-blue)/0.3)]"
               >
                 <div className="mb-4 flex items-center justify-between gap-3">
                   <div className="inline-flex h-14 w-14 items-center justify-center rounded-xl bg-white border border-[hsl(var(--lp-line))] text-[hsl(var(--lp-blue))] group-hover:bg-[hsl(var(--lp-blue))] group-hover:text-white group-hover:border-transparent transition-colors">
-                    <sp.icon className="h-6 w-6" strokeWidth={1.8} />
+                    <Icon className="h-6 w-6" strokeWidth={1.8} />
                   </div>
                   <a
                     href={wa(`Olá! Gostaria de agendar ${sp.title} na Clínica Pacem.`)}
