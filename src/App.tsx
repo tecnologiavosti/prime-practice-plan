@@ -44,6 +44,8 @@ import ScheduleConfig from "./pages/ScheduleConfig";
 import ClinicProfile from "./pages/ClinicProfile";
 import TeamUsers from "./pages/TeamUsers";
 import Settings from "./pages/Settings";
+import { ReadOnlyGate } from "@/components/layout/ReadOnlyGate";
+
 import NotFound from "./pages/NotFound";
 // Patient Portal
 import LandingPage from "./pages/LandingPage";
