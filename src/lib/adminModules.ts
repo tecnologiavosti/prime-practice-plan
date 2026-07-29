@@ -9,7 +9,7 @@ export interface AdminModule {
 
 export const ADMIN_MODULES: AdminModule[] = [
   { key: 'dashboard', label: 'Dashboard', to: '/admin', roles: ['administrador', 'recepcao', 'financeiro'] },
-  { key: 'meu-site', label: 'Meu Site', to: '/admin/meu-site', roles: ['administrador'] },
+  
   { key: 'agenda', label: 'Agenda', to: '/admin/agenda', roles: ['administrador', 'recepcao'] },
   { key: 'agendamentos', label: 'Agendamentos', to: '/admin/agendamentos', roles: ['administrador', 'recepcao'] },
   { key: 'salas', label: 'Salas', to: '/admin/salas', roles: ['administrador', 'recepcao'] },
@@ -36,4 +36,6 @@ export const ADMIN_MODULES: AdminModule[] = [
   { key: 'equipe', label: 'Equipe / Usuários', to: '/admin/equipe', roles: ['administrador'] },
   { key: 'seo', label: 'SEO / Google', to: '/admin/seo', roles: ['administrador'] },
   { key: 'blog', label: 'Blog', to: '/admin/blog', roles: ['administrador'] },
+  { key: 'meu-site', label: 'Meu Site', to: '/admin/meu-site', roles: ['administrador'] },
+
 ];
