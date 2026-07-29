@@ -39,6 +39,10 @@ import {
   GraduationCap,
   Calendar,
   MessageCircle,
+  ClipboardList,
+  Cross,
+  BookOpen,
+  Activity,
 } from 'lucide-react';
 import { PublicFooter } from '@/components/site/PublicFooter';
 
