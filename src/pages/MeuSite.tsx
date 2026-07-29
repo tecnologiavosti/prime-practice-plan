@@ -239,7 +239,7 @@ function IdentidadeTab() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div>
         <Label>Logo da clínica</Label>
         <div className="flex items-center gap-3 mt-1">
