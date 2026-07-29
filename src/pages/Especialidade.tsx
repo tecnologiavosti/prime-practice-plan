@@ -1,14 +1,22 @@
+import { useEffect, useState } from 'react';
 import { Link, useParams, Navigate } from 'react-router-dom';
 import { useClinicSettings } from '@/hooks/useClinicSettings';
 import { SeoHead } from '@/components/SeoHead';
 import { PublicHeader } from '@/components/site/PublicHeader';
 import { PublicFooter } from '@/components/site/PublicFooter';
+import { fetchSiteContent } from '@/hooks/useSiteContent';
 import type { LucideIcon } from 'lucide-react';
 import {
   ArrowRight, Brain, Stethoscope, Apple, MessageSquare,
   HeartPulse, Briefcase, CheckCircle2, Sparkles, Clock, Users, ShieldCheck,
   ClipboardList, Cross, BookOpen, Activity,
 } from 'lucide-react';
+
+const ICON_MAP: Record<string, LucideIcon> = {
+  Brain, Stethoscope, Apple, MessageSquare, HeartPulse, Briefcase,
+  ClipboardList, Cross, BookOpen, Activity,
+};
+
 
 const WHATSAPP = '5561981823984';
 const wa = (msg: string) => `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
