@@ -182,6 +182,25 @@ export default function LandingPage() {
     })();
   }, []);
 
+  useEffect(() => {
+    (async () => {
+      const data = await fetchSiteContent<any[]>('especialidades');
+      if (Array.isArray(data) && data.length > 0) {
+        setEspecialidades(
+          data
+            .filter((x) => x && (x.title || x.slug))
+            .map((x) => ({
+              slug: x.slug || '',
+              icon: x.icon || 'Stethoscope',
+              title: x.title || '',
+              desc: x.desc || '',
+            })),
+        );
+      }
+    })();
+  }, []);
+
+
 
   return (
     <div
