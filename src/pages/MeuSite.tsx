@@ -373,29 +373,59 @@ function EspecialidadesTab() {
       fetchSiteContent<any[]>('especialidades'),
     ]);
     const savedArr: any[] = Array.isArray(saved) ? saved : [];
-    const merged: any[] = [];
-    // 1) each DB specialty becomes an item (source of truth for existence)
-    for (const s of dbSpecs || []) {
-      const match = savedArr.find(
-        (x) =>
-          (x.title || '').toLowerCase() === (s.name || '').toLowerCase() ||
-          (x.slug && x.slug === slugify(s.name)),
+    const homeDefaults = DEFAULTS.especialidades;
+
+    const findDefault = (name: string) => {
+      const s = slugify(name);
+      const n = (name || '').toLowerCase();
+      return homeDefaults.find(
+        (d) => d.slug === s || (d.title || '').toLowerCase() === n,
       );
-      merged.push({
-        title: s.name,
-        slug: match?.slug || slugify(s.name),
-        icon: match?.icon || 'Stethoscope',
-        desc: match?.desc || '',
-        subtitle: match?.subtitle || '',
-        intro: match?.intro || '',
-        benefits: match?.benefits || '',
-        indications: match?.indications || '',
-        long: match?.long || '',
-      });
+    };
+    const findSaved = (name: string) => {
+      const s = slugify(name);
+      const n = (name || '').toLowerCase();
+      return savedArr.find(
+        (x) => (x.title || '').toLowerCase() === n || (x.slug && x.slug === s),
+      );
+    };
+
+    const buildItem = (name: string) => {
+      const def = findDefault(name) || ({} as any);
+      const match = findSaved(name) || ({} as any);
+      // priority: saved user edits > home defaults > empty
+      return {
+        title: name,
+        slug: match.slug || def.slug || slugify(name),
+        icon: match.icon || def.icon || 'Stethoscope',
+        desc: match.desc || def.desc || '',
+        subtitle: match.subtitle || def.subtitle || '',
+        intro: match.intro || def.intro || '',
+        benefits: match.benefits || def.benefits || '',
+        indications: match.indications || def.indications || '',
+        long: match.long || def.long || '',
+      };
+    };
+
+    const merged: any[] = [];
+    const seen = new Set<string>();
+
+    // 1) each DB specialty first (source of truth for existence)
+    for (const s of dbSpecs || []) {
+      merged.push(buildItem(s.name));
+      seen.add((s.name || '').toLowerCase());
     }
-    // 2) keep any saved item that isn't in DB (manual extras)
+    // 2) add home defaults not present in DB, so all 6 home cards show up
+    for (const d of homeDefaults) {
+      if (!seen.has((d.title || '').toLowerCase())) {
+        merged.push(buildItem(d.title));
+        seen.add((d.title || '').toLowerCase());
+      }
+    }
+    // 3) keep saved manual extras
     for (const x of savedArr) {
-      if (!merged.find((m) => (m.title || '').toLowerCase() === (x.title || '').toLowerCase())) {
+      const key = (x.title || '').toLowerCase();
+      if (key && !seen.has(key)) {
         merged.push({
           title: x.title || '',
           slug: x.slug || slugify(x.title || ''),
@@ -407,11 +437,13 @@ function EspecialidadesTab() {
           indications: x.indications || '',
           long: x.long || '',
         });
+        seen.add(key);
       }
     }
     setItems(merged);
     setLoading(false);
   };
+
 
   useEffect(() => {
     loadAndMerge();
