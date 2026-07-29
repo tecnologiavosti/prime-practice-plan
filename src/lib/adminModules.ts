@@ -36,4 +36,6 @@ export const ADMIN_MODULES: AdminModule[] = [
   { key: 'equipe', label: 'Equipe / Usuários', to: '/admin/equipe', roles: ['administrador'] },
   { key: 'seo', label: 'SEO / Google', to: '/admin/seo', roles: ['administrador'] },
   { key: 'blog', label: 'Blog', to: '/admin/blog', roles: ['administrador'] },
+  { key: 'meu-site', label: 'Meu Site', to: '/admin/meu-site', roles: ['administrador'] },
+
 ];
