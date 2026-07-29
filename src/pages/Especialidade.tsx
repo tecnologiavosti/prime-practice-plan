@@ -106,26 +106,6 @@ const ESPECIALIDADES: Record<string, Especialidade> = {
       'Apoio a TEA e TDAH',
     ],
   },
-  'clinico-geral': {
-    slug: 'clinico-geral',
-    title: 'Clínico Geral',
-    tagline: 'Cuidado médico integral e preventivo',
-    intro: 'Avaliação clínica abrangente, acompanhamento de saúde, exames de rotina e cuidado preventivo para adultos e idosos.',
-    icon: HeartPulse,
-    beneficios: [
-      'Consulta clínica detalhada',
-      'Acompanhamento de doenças crônicas',
-      'Pedido e análise de exames',
-      'Coordenação com outras especialidades',
-    ],
-    indicacoes: [
-      'Check-up de rotina',
-      'Hipertensão e diabetes',
-      'Avaliação pré-operatória',
-      'Doenças agudas comuns',
-      'Cuidado preventivo',
-    ],
-  },
   'rn1': {
     slug: 'rn1',
     title: 'RN-1',
