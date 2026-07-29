@@ -31,13 +31,13 @@ const DEFAULTS = {
     bullets: ['Equipe especializada', 'Ambiente acolhedor', 'Presencial e online'] as string[],
   },
   especialidades: [
-    { slug: 'psicologia', icon: 'Brain', title: 'Psicologia', desc: 'Acompanhamento psicoterapêutico individual para adultos, adolescentes e crianças.', long: '' },
-    { slug: 'psiquiatria', icon: 'Stethoscope', title: 'Psiquiatria', desc: 'Avaliação e tratamento medicamentoso.', long: '' },
-    { slug: 'nutricao', icon: 'Apple', title: 'Nutrição', desc: 'Nutrição comportamental integrada à saúde mental.', long: '' },
-    { slug: 'fonoaudiologia', icon: 'MessageSquare', title: 'Fonoaudiologia', desc: 'Terapia para linguagem, fala e voz.', long: '' },
-    { slug: 'clinico-geral', icon: 'HeartPulse', title: 'Clínico Geral', desc: 'Cuidado clínico preventivo e acompanhamento de saúde.', long: '' },
-    { slug: 'rn1', icon: 'Briefcase', title: 'RN-1', desc: 'Cuidado completo para colaboradores com acesso a Psiquiatria, Psicologia, Nutrição e Personal Trainer.', long: '' },
-  ] as Array<{ slug: string; icon: string; title: string; desc: string; long: string }>,
+    { slug: 'psicologia', icon: 'Brain', title: 'Psicologia', desc: 'Acompanhamento psicoterapêutico individual para adultos, adolescentes e crianças.', subtitle: 'Cuidado emocional contínuo para todas as fases da vida', intro: 'Atendimento psicoterapêutico individual com abordagens baseadas em evidências.', benefits: 'Acolhimento humanizado e sigiloso\nAtendimento presencial e online\nAbordagens TCC, psicanálise e humanista\nAcompanhamento contínuo personalizado', indications: 'Ansiedade e crises de pânico\nDepressão e tristeza persistente\nEstresse, burnout e sobrecarga\nConflitos familiares e relacionais', long: '' },
+    { slug: 'psiquiatria', icon: 'Stethoscope', title: 'Psiquiatria', desc: 'Avaliação e tratamento medicamentoso.', subtitle: '', intro: '', benefits: '', indications: '', long: '' },
+    { slug: 'nutricao', icon: 'Apple', title: 'Nutrição', desc: 'Nutrição comportamental integrada à saúde mental.', subtitle: '', intro: '', benefits: '', indications: '', long: '' },
+    { slug: 'fonoaudiologia', icon: 'MessageSquare', title: 'Fonoaudiologia', desc: 'Terapia para linguagem, fala e voz.', subtitle: '', intro: '', benefits: '', indications: '', long: '' },
+    { slug: 'clinico-geral', icon: 'HeartPulse', title: 'Clínico Geral', desc: 'Cuidado clínico preventivo e acompanhamento de saúde.', subtitle: '', intro: '', benefits: '', indications: '', long: '' },
+    { slug: 'rn1', icon: 'Briefcase', title: 'RN-1', desc: 'Cuidado completo para colaboradores com acesso a Psiquiatria, Psicologia, Nutrição e Personal Trainer.', subtitle: '', intro: '', benefits: '', indications: '', long: '' },
+  ] as Array<{ slug: string; icon: string; title: string; desc: string; subtitle: string; intro: string; benefits: string; indications: string; long: string }>,
   diferenciais: [
     { icon: 'Users', title: 'Equipe multidisciplinar', desc: 'Psicólogos, psiquiatras, nutricionistas e fonoaudiólogos.' },
     { icon: 'Heart', title: 'Atendimento humanizado', desc: 'Acolhimento real, sem julgamentos.' },
@@ -364,11 +364,15 @@ function EspecialidadesTab() {
           labelKey="title"
           addLabel="Adicionar especialidade"
           fields={[
-            { key: 'title', label: 'Título' },
-            { key: 'slug', label: 'Slug (URL)' },
+            { key: 'title', label: 'Nome (ex.: Psicologia)' },
+            { key: 'slug', label: 'Identificador da URL (ex.: psicologia, sem espaços)' },
             { key: 'icon', label: 'Ícone (nome lucide)', placeholder: 'ex: Brain, Stethoscope' },
-            { key: 'desc', label: 'Descrição curta', type: 'textarea' },
-            { key: 'long', label: 'Descrição longa (página interna)', type: 'textarea' },
+            { key: 'desc', label: 'Descrição curta (card da home)', type: 'textarea' },
+            { key: 'subtitle', label: 'Subtítulo da página' },
+            { key: 'intro', label: 'Texto de introdução (página da especialidade)', type: 'textarea' },
+            { key: 'benefits', label: 'Benefícios — um por linha', type: 'textarea' },
+            { key: 'indications', label: 'Indicações — uma por linha', type: 'textarea' },
+            { key: 'long', label: 'Texto complementar (opcional)', type: 'textarea' },
           ]}
         />
       )}
