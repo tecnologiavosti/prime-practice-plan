@@ -352,31 +352,110 @@ function SobreTab() {
   );
 }
 
+function slugify(s: string) {
+  return (s || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
 function EspecialidadesTab() {
+  const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const loadAndMerge = async () => {
+    setLoading(true);
+    const [{ data: dbSpecs }, saved] = await Promise.all([
+      supabase.from('specialties').select('id, name, active').eq('active', true).order('name'),
+      fetchSiteContent<any[]>('especialidades'),
+    ]);
+    const savedArr: any[] = Array.isArray(saved) ? saved : [];
+    const merged: any[] = [];
+    // 1) each DB specialty becomes an item (source of truth for existence)
+    for (const s of dbSpecs || []) {
+      const match = savedArr.find(
+        (x) =>
+          (x.title || '').toLowerCase() === (s.name || '').toLowerCase() ||
+          (x.slug && x.slug === slugify(s.name)),
+      );
+      merged.push({
+        title: s.name,
+        slug: match?.slug || slugify(s.name),
+        icon: match?.icon || 'Stethoscope',
+        desc: match?.desc || '',
+        subtitle: match?.subtitle || '',
+        intro: match?.intro || '',
+        benefits: match?.benefits || '',
+        indications: match?.indications || '',
+        long: match?.long || '',
+      });
+    }
+    // 2) keep any saved item that isn't in DB (manual extras)
+    for (const x of savedArr) {
+      if (!merged.find((m) => (m.title || '').toLowerCase() === (x.title || '').toLowerCase())) {
+        merged.push({
+          title: x.title || '',
+          slug: x.slug || slugify(x.title || ''),
+          icon: x.icon || 'Stethoscope',
+          desc: x.desc || '',
+          subtitle: x.subtitle || '',
+          intro: x.intro || '',
+          benefits: x.benefits || '',
+          indications: x.indications || '',
+          long: x.long || '',
+        });
+      }
+    }
+    setItems(merged);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    loadAndMerge();
+  }, []);
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await saveSiteContent('especialidades', items);
+      toast.success('Especialidades atualizadas');
+    } catch (e: any) {
+      toast.error(e.message || 'Erro ao salvar');
+    }
+    setSaving(false);
+  };
+
+  if (loading) return <div className="text-sm text-muted-foreground">Carregando...</div>;
+
   return (
-    <GenericTab
-      contentKey="especialidades"
-      fallback={DEFAULTS.especialidades as any}
-      render={(v: any[], set) => (
-        <ArrayEditor
-          items={v}
-          onChange={set}
-          labelKey="title"
-          addLabel="Adicionar especialidade"
-          fields={[
-            { key: 'title', label: 'Nome (ex.: Psicologia)' },
-            { key: 'slug', label: 'Identificador da URL (ex.: psicologia, sem espaços)' },
-            { key: 'icon', label: 'Ícone (nome lucide)', placeholder: 'ex: Brain, Stethoscope' },
-            { key: 'desc', label: 'Descrição curta (card da home)', type: 'textarea' },
-            { key: 'subtitle', label: 'Subtítulo da página' },
-            { key: 'intro', label: 'Texto de introdução (página da especialidade)', type: 'textarea' },
-            { key: 'benefits', label: 'Benefícios — um por linha', type: 'textarea' },
-            { key: 'indications', label: 'Indicações — uma por linha', type: 'textarea' },
-            { key: 'long', label: 'Texto complementar (opcional)', type: 'textarea' },
-          ]}
-        />
-      )}
-    />
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <Button variant="outline" size="sm" onClick={loadAndMerge}>
+          Sincronizar do cadastro
+        </Button>
+      </div>
+      <ArrayEditor
+        items={items}
+        onChange={setItems}
+        labelKey="title"
+        addLabel="Adicionar especialidade"
+        fields={[
+          { key: 'title', label: 'Nome (ex.: Psicologia)' },
+          { key: 'slug', label: 'Identificador da URL (ex.: psicologia, sem espaços)' },
+          { key: 'icon', label: 'Ícone (nome lucide)', placeholder: 'ex: Brain, Stethoscope' },
+          { key: 'desc', label: 'Descrição curta (card da home)', type: 'textarea' },
+          { key: 'subtitle', label: 'Subtítulo da página' },
+          { key: 'intro', label: 'Texto de introdução (página da especialidade)', type: 'textarea' },
+          { key: 'benefits', label: 'Benefícios — um por linha', type: 'textarea' },
+          { key: 'indications', label: 'Indicações — uma por linha', type: 'textarea' },
+          { key: 'long', label: 'Texto complementar (opcional)', type: 'textarea' },
+        ]}
+      />
+      <SaveBar onSave={save} saving={saving} />
+    </div>
   );
 }
 
