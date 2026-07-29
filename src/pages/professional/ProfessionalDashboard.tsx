@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { useRealtime } from '@/hooks/useRealtime';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -7,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar, Wallet, CheckCircle2, Clock, FilePlus, Users, Upload, Loader2, ExternalLink } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { slugify } from '@/lib/slug';
 
@@ -18,6 +20,7 @@ export default function ProfessionalDashboard() {
     pendingPayouts: 0,
     paidPayouts: 0,
   });
+  const [upcoming, setUpcoming] = useState<any[]>([]);
 
   const [profId, setProfId] = useState<string | null>(null);
   const [profName, setProfName] = useState('');
@@ -31,33 +34,44 @@ export default function ProfessionalDashboard() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
 
+  const loadStats = useCallback(async () => {
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const weekAhead = new Date();
+    weekAhead.setDate(weekAhead.getDate() + 7);
+    const weekEnd = format(weekAhead, 'yyyy-MM-dd');
+
+    const [{ count: todayCount }, { count: weekCount }, { data: payouts }, { data: nextAppts }] = await Promise.all([
+      supabase.from('appointments').select('*', { count: 'exact', head: true }).eq('appointment_date', today),
+      supabase
+        .from('appointments')
+        .select('*', { count: 'exact', head: true })
+        .gte('appointment_date', today)
+        .lte('appointment_date', weekEnd),
+      supabase.from('professional_payouts').select('payout_amount, status'),
+      supabase
+        .from('appointments')
+        .select('id, appointment_date, start_time, end_time, status, consultation_type, patient:patients(full_name), procedure:procedures(name)')
+        .gte('appointment_date', today)
+        .not('status', 'in', '(cancelado,faltou)')
+        .order('appointment_date', { ascending: true })
+        .order('start_time', { ascending: true })
+        .limit(10),
+    ]);
+    setUpcoming(nextAppts || []);
+
+    const pending = (payouts || []).filter((p) => p.status === 'pendente').reduce((s, p) => s + Number(p.payout_amount), 0);
+    const paid = (payouts || []).filter((p) => p.status === 'pago').reduce((s, p) => s + Number(p.payout_amount), 0);
+
+    setStats({
+      todayCount: todayCount || 0,
+      weekCount: weekCount || 0,
+      pendingPayouts: pending,
+      paidPayouts: paid,
+    });
+  }, []);
+
   useEffect(() => {
-    (async () => {
-      const today = format(new Date(), 'yyyy-MM-dd');
-      const weekAhead = new Date();
-      weekAhead.setDate(weekAhead.getDate() + 7);
-      const weekEnd = format(weekAhead, 'yyyy-MM-dd');
-
-      const [{ count: todayCount }, { count: weekCount }, { data: payouts }] = await Promise.all([
-        supabase.from('appointments').select('*', { count: 'exact', head: true }).eq('appointment_date', today),
-        supabase
-          .from('appointments')
-          .select('*', { count: 'exact', head: true })
-          .gte('appointment_date', today)
-          .lte('appointment_date', weekEnd),
-        supabase.from('professional_payouts').select('payout_amount, status'),
-      ]);
-
-      const pending = (payouts || []).filter((p) => p.status === 'pendente').reduce((s, p) => s + Number(p.payout_amount), 0);
-      const paid = (payouts || []).filter((p) => p.status === 'pago').reduce((s, p) => s + Number(p.payout_amount), 0);
-
-      setStats({
-        todayCount: todayCount || 0,
-        weekCount: weekCount || 0,
-        pendingPayouts: pending,
-        paidPayouts: paid,
-      });
-    })();
+    loadStats();
 
     (async () => {
       setLoadingProfile(true);
@@ -80,7 +94,9 @@ export default function ProfessionalDashboard() {
       }
       setLoadingProfile(false);
     })();
-  }, []);
+  }, [loadStats]);
+
+  useRealtime(['appointments', 'professional_payouts'], loadStats);
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const original = e.target.files?.[0];
@@ -173,6 +189,42 @@ export default function ProfessionalDashboard() {
           </Card>
         ))}
       </div>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="text-base">Próximos agendamentos</CardTitle>
+            <CardDescription>Consultas agendadas por você ou pela recepção.</CardDescription>
+          </div>
+          <Button asChild variant="outline" size="sm">
+            <Link to="/professional/agendamentos">Ver todos</Link>
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {upcoming.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Nenhum agendamento futuro.</p>
+          ) : (
+            <div className="divide-y">
+              {upcoming.map((apt) => (
+                <div key={apt.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                  <div>
+                    <div className="font-medium">{apt.patient?.full_name || 'Paciente'}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {format(parseISO(apt.appointment_date), "EEEE, dd 'de' MMMM", { locale: ptBR })}{' '}
+                      · {apt.start_time.slice(0, 5)}–{apt.end_time.slice(0, 5)}
+                      {apt.procedure?.name ? ` · ${apt.procedure.name}` : ''}
+                    </div>
+                  </div>
+                  <span className="text-xs rounded-full border px-2 py-0.5 capitalize">
+                    {String(apt.status).replace('_', ' ')}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
 
       <Card>
         <CardHeader className="flex flex-row items-start justify-between gap-3">
