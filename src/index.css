@@ -115,3 +115,14 @@
     font-feature-settings: 'cv11', 'ss01', 'ss03';
   }
 }
+
+/* Read-only mode: neutralize mutating buttons while keeping tabs, comboboxes,
+   navigation, filters and inputs usable so the user can still browse data. */
+.readonly-mode button:not([role="tab"]):not([role="combobox"]):not([role="switch"]):not([data-readonly-safe]):not([data-state]):not([aria-haspopup="dialog"]):not([type="button"][aria-expanded]) {
+  pointer-events: none !important;
+  opacity: 0.45 !important;
+  cursor: not-allowed !important;
+}
+.readonly-mode [data-readonly-hide] {
+  display: none !important;
+}
