@@ -230,11 +230,42 @@ export default function EspecialidadePage() {
   const { settings } = useClinicSettings();
   const clinicName = settings?.nome_fantasia || 'Clínica Pacem';
 
-  const data = slug ? ESPECIALIDADES[slug] : null;
-  if (!data) return <Navigate to="/" replace />;
+  const [override, setOverride] = useState<any | null>(null);
+  const [loadedCms, setLoadedCms] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const items = await fetchSiteContent<any[]>('especialidades');
+      if (Array.isArray(items) && slug) {
+        const found = items.find((x) => (x?.slug || '') === slug);
+        if (found) setOverride(found);
+      }
+      setLoadedCms(true);
+    })();
+  }, [slug]);
+
+  const base = slug ? ESPECIALIDADES[slug] : null;
+
+  if (!base && !override && loadedCms) return <Navigate to="/" replace />;
+  if (!base && !loadedCms) return null;
+
+  const splitLines = (s?: string) =>
+    (s || '').split('\n').map((l) => l.trim()).filter(Boolean);
+
+  const data = {
+    slug: slug || base?.slug || '',
+    title: override?.title || base?.title || '',
+    tagline: override?.subtitle || base?.tagline || '',
+    intro: override?.intro || base?.intro || '',
+    icon: (override?.icon && ICON_MAP[override.icon]) || base?.icon || Stethoscope,
+    beneficios: override?.benefits ? splitLines(override.benefits) : (base?.beneficios || []),
+    indicacoes: override?.indications ? splitLines(override.indications) : (base?.indicacoes || []),
+    custom: base?.custom,
+  };
 
   const Icon = data.icon;
   const isRn1 = data.custom === 'rn1';
+
 
   return (
     <div className="min-h-screen bg-[hsl(210_40%_98%)] font-['Inter',_sans-serif] text-[hsl(222_47%_11%)]">
