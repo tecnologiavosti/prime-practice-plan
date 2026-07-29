@@ -7,6 +7,7 @@ import type { LucideIcon } from 'lucide-react';
 import {
   ArrowRight, Brain, Stethoscope, Apple, MessageSquare,
   HeartPulse, Briefcase, CheckCircle2, Sparkles, Clock, Users, ShieldCheck,
+  ClipboardList, Cross, BookOpen, Activity,
 } from 'lucide-react';
 
 const WHATSAPP = '5561981823984';
