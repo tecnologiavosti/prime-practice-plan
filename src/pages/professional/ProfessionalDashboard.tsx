@@ -191,6 +191,42 @@ export default function ProfessionalDashboard() {
       </div>
 
       <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="text-base">Próximos agendamentos</CardTitle>
+            <CardDescription>Consultas agendadas por você ou pela recepção.</CardDescription>
+          </div>
+          <Button asChild variant="outline" size="sm">
+            <Link to="/professional/agendamentos">Ver todos</Link>
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {upcoming.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Nenhum agendamento futuro.</p>
+          ) : (
+            <div className="divide-y">
+              {upcoming.map((apt) => (
+                <div key={apt.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                  <div>
+                    <div className="font-medium">{apt.patient?.full_name || 'Paciente'}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {format(parseISO(apt.appointment_date), "EEEE, dd 'de' MMMM", { locale: ptBR })}{' '}
+                      · {apt.start_time.slice(0, 5)}–{apt.end_time.slice(0, 5)}
+                      {apt.procedure?.name ? ` · ${apt.procedure.name}` : ''}
+                    </div>
+                  </div>
+                  <span className="text-xs rounded-full border px-2 py-0.5 capitalize">
+                    {String(apt.status).replace('_', ' ')}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+
+      <Card>
         <CardHeader className="flex flex-row items-start justify-between gap-3">
           <div>
             <CardTitle className="text-base">Meu perfil público</CardTitle>
