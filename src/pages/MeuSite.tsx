@@ -643,7 +643,7 @@ export default function MeuSite() {
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="p-6 space-y-6">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2"><Globe className="h-6 w-6" /> Meu Site</h1>
