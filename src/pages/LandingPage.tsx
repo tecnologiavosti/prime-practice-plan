@@ -331,7 +331,8 @@ export default function LandingPage() {
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </motion.div>
-            ))}
+              );
+            })}
           </motion.div>
         </div>
       </section>
