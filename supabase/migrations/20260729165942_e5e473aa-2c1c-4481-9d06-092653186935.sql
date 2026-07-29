@@ -1,0 +1,1 @@
+ALTER TABLE public.authorized_admins ADD COLUMN IF NOT EXISTS readonly_modules text[] NOT NULL DEFAULT '{}'::text[];

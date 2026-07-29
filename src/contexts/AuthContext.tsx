@@ -10,12 +10,15 @@ interface AuthContextType {
   loading: boolean;
   roles: AppRole[];
   allowedModules: string[] | null; // null = not loaded yet, [] = no row, list = explicit
+  readonlyModules: string[]; // modules where user can only view
+  canEditModule: (moduleKey: string) => boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   hasRole: (role: AppRole) => boolean;
   hasAnyRole: () => boolean;
 }
+
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -25,16 +28,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [allowedModules, setAllowedModules] = useState<string[] | null>(null);
+  const [readonlyModules, setReadonlyModules] = useState<string[]>([]);
 
   const fetchAllowedModules = async (email: string | null | undefined) => {
-    if (!email) return [];
+    if (!email) return { allowed: [] as string[], readonly: [] as string[] };
     const { data } = await supabase
       .from('authorized_admins')
-      .select('allowed_modules')
+      .select('allowed_modules, readonly_modules')
       .ilike('email', email)
       .maybeSingle();
-    return ((data as any)?.allowed_modules as string[]) ?? [];
+    return {
+      allowed: ((data as any)?.allowed_modules as string[]) ?? [],
+      readonly: ((data as any)?.readonly_modules as string[]) ?? [],
+    };
   };
+
 
   const provisionCurrentSignup = async (account: { email: string; fullName: string; cpf?: string | null }) => {
     const { error } = await (supabase.rpc as any)('provision_current_user_signup', {
@@ -100,7 +108,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             ]).then(([r, mods]) => {
               if (mounted) {
                 setRoles(r);
-                setAllowedModules(mods);
+                setAllowedModules(mods.allowed);
+                setReadonlyModules(mods.readonly);
                 setLoading(false);
               }
             });
@@ -108,8 +117,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } else {
           setRoles([]);
           setAllowedModules(null);
+          setReadonlyModules([]);
           setLoading(false);
         }
+
       }
     );
 
@@ -125,7 +136,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         ]).then(([r, mods]) => {
           if (mounted) {
             setRoles(r);
-            setAllowedModules(mods);
+            setAllowedModules(mods.allowed);
+            setReadonlyModules(mods.readonly);
             setLoading(false);
           }
         });
@@ -133,6 +145,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLoading(false);
       }
     });
+
 
     return () => {
       mounted = false;
@@ -177,10 +190,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setSession(null);
     setRoles([]);
     setAllowedModules(null);
+    setReadonlyModules([]);
   };
 
   const hasRole = (role: AppRole) => roles.includes(role);
   const hasAnyRole = () => roles.length > 0;
+  const canEditModule = (moduleKey: string) => {
+    if (roles.includes('administrador')) return true;
+    return !readonlyModules.includes(moduleKey);
+  };
 
   return (
     <AuthContext.Provider
@@ -190,6 +208,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loading,
         roles,
         allowedModules,
+        readonlyModules,
+        canEditModule,
         signIn,
         signUp,
         signOut,
@@ -200,6 +220,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       {children}
     </AuthContext.Provider>
   );
+
 };
 
 export const useAuth = () => {
