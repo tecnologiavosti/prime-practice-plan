@@ -1,14 +1,22 @@
+import { useEffect, useState } from 'react';
 import { Link, useParams, Navigate } from 'react-router-dom';
 import { useClinicSettings } from '@/hooks/useClinicSettings';
 import { SeoHead } from '@/components/SeoHead';
 import { PublicHeader } from '@/components/site/PublicHeader';
 import { PublicFooter } from '@/components/site/PublicFooter';
+import { fetchSiteContent } from '@/hooks/useSiteContent';
 import type { LucideIcon } from 'lucide-react';
 import {
   ArrowRight, Brain, Stethoscope, Apple, MessageSquare,
   HeartPulse, Briefcase, CheckCircle2, Sparkles, Clock, Users, ShieldCheck,
   ClipboardList, Cross, BookOpen, Activity,
 } from 'lucide-react';
+
+const ICON_MAP: Record<string, LucideIcon> = {
+  Brain, Stethoscope, Apple, MessageSquare, HeartPulse, Briefcase,
+  ClipboardList, Cross, BookOpen, Activity,
+};
+
 
 const WHATSAPP = '5561981823984';
 const wa = (msg: string) => `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
@@ -104,26 +112,6 @@ const ESPECIALIDADES: Record<string, Especialidade> = {
       'Gagueira',
       'Alterações de voz',
       'Apoio a TEA e TDAH',
-    ],
-  },
-  'clinico-geral': {
-    slug: 'clinico-geral',
-    title: 'Clínico Geral',
-    tagline: 'Cuidado médico integral e preventivo',
-    intro: 'Avaliação clínica abrangente, acompanhamento de saúde, exames de rotina e cuidado preventivo para adultos e idosos.',
-    icon: HeartPulse,
-    beneficios: [
-      'Consulta clínica detalhada',
-      'Acompanhamento de doenças crônicas',
-      'Pedido e análise de exames',
-      'Coordenação com outras especialidades',
-    ],
-    indicacoes: [
-      'Check-up de rotina',
-      'Hipertensão e diabetes',
-      'Avaliação pré-operatória',
-      'Doenças agudas comuns',
-      'Cuidado preventivo',
     ],
   },
   'rn1': {
@@ -242,11 +230,42 @@ export default function EspecialidadePage() {
   const { settings } = useClinicSettings();
   const clinicName = settings?.nome_fantasia || 'Clínica Pacem';
 
-  const data = slug ? ESPECIALIDADES[slug] : null;
-  if (!data) return <Navigate to="/" replace />;
+  const [override, setOverride] = useState<any | null>(null);
+  const [loadedCms, setLoadedCms] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const items = await fetchSiteContent<any[]>('especialidades');
+      if (Array.isArray(items) && slug) {
+        const found = items.find((x) => (x?.slug || '') === slug);
+        if (found) setOverride(found);
+      }
+      setLoadedCms(true);
+    })();
+  }, [slug]);
+
+  const base = slug ? ESPECIALIDADES[slug] : null;
+
+  if (!base && !override && loadedCms) return <Navigate to="/" replace />;
+  if (!base && !loadedCms) return null;
+
+  const splitLines = (s?: string) =>
+    (s || '').split('\n').map((l) => l.trim()).filter(Boolean);
+
+  const data = {
+    slug: slug || base?.slug || '',
+    title: override?.title || base?.title || '',
+    tagline: override?.subtitle || base?.tagline || '',
+    intro: override?.intro || base?.intro || '',
+    icon: (override?.icon && ICON_MAP[override.icon]) || base?.icon || Stethoscope,
+    beneficios: override?.benefits ? splitLines(override.benefits) : (base?.beneficios || []),
+    indicacoes: override?.indications ? splitLines(override.indications) : (base?.indicacoes || []),
+    custom: base?.custom,
+  };
 
   const Icon = data.icon;
   const isRn1 = data.custom === 'rn1';
+
 
   return (
     <div className="min-h-screen bg-[hsl(210_40%_98%)] font-['Inter',_sans-serif] text-[hsl(222_47%_11%)]">

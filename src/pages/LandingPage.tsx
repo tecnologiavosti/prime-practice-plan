@@ -12,6 +12,7 @@ import { useClinicSettings } from '@/hooks/useClinicSettings';
 import { SeoHead } from '@/components/SeoHead';
 import { PublicHeader } from '@/components/site/PublicHeader';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchSiteContent } from '@/hooks/useSiteContent';
 import { makeProfessionalSlug } from '@/lib/slug';
 import logoPacem from '@/assets/logoPacem.png';
 import clinicHero from '@/assets/clinic-hero.jpg';
@@ -50,68 +51,23 @@ const WHATSAPP = '5561981823984';
 const wa = (msg = 'Olá! Gostaria de agendar uma consulta na Clínica Pacem.') =>
   `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
 
-const especialidades = [
-  {
-    slug: 'psicologia',
-    icon: Brain,
-    title: 'Psicologia',
-    desc: 'Acompanhamento psicoterapêutico individual para adultos, adolescentes e crianças.',
-  },
-  {
-    slug: 'psiquiatria',
-    icon: Stethoscope,
-    title: 'Psiquiatria',
-    desc: 'Avaliação e tratamento medicamentoso para depressão, ansiedade, TDAH e outros transtornos.',
-  },
-  {
-    slug: 'nutricao',
-    icon: Apple,
-    title: 'Nutrição',
-    desc: 'Nutrição comportamental integrada à saúde mental e qualidade de vida.',
-  },
-  {
-    slug: 'fonoaudiologia',
-    icon: MessageSquare,
-    title: 'Fonoaudiologia',
-    desc: 'Diagnóstico e terapia para linguagem, fala, voz e desenvolvimento infantil.',
-  },
-  {
-    slug: 'clinico-geral',
-    icon: HeartPulse,
-    title: 'Clínico Geral',
-    desc: 'Avaliação clínica abrangente, acompanhamento de saúde, exames de rotina e cuidado preventivo.',
-  },
-  {
-    slug: 'rn1',
-    icon: Briefcase,
-    title: 'RN-1',
-    desc: 'Cuidado completo para colaboradores com acesso à Psiquiatria, Psicologia, Nutrição e Personal Trainer, além de atendimento médico 24h e teleconsultas. Mais saúde, bem-estar e produtividade para sua equipe.',
-  },
-  {
-    slug: 'avaliacao-neuropsicologica',
-    icon: ClipboardList,
-    title: 'Avaliação Neuropsicológica',
-    desc: 'Investigação aprofundada das funções cognitivas — memória, atenção, linguagem e funções executivas — para diagnóstico e orientação terapêutica.',
-  },
-  {
-    slug: 'clinico-medico',
-    icon: Cross,
-    title: 'Clínico Médico',
-    desc: 'Consulta médica ampla com avaliação clínica, solicitação de exames, acompanhamento de doenças crônicas e cuidado preventivo em todas as idades.',
-  },
-  {
-    slug: 'psicopedagogia',
-    icon: BookOpen,
-    title: 'Psicopedagogia',
-    desc: 'Avaliação e intervenção para dificuldades de aprendizagem, desenvolvimento escolar, TDAH e organização de estudos para crianças e adolescentes.',
-  },
-  {
-    slug: 'neurologia',
-    icon: Activity,
-    title: 'Neurologia',
-    desc: 'Diagnóstico e tratamento de doenças do sistema nervoso: cefaleias, epilepsia, tonturas, distúrbios do sono e doenças neurodegenerativas.',
-  },
+const ICON_MAP: Record<string, any> = {
+  Brain, Stethoscope, Apple, MessageSquare, HeartPulse, Briefcase,
+  ClipboardList, Cross, BookOpen, Activity, Heart,
+};
+
+const especialidadesDefault = [
+  { slug: 'psicologia', icon: 'Brain', title: 'Psicologia', desc: 'Acompanhamento psicoterapêutico individual para adultos, adolescentes e crianças.' },
+  { slug: 'psiquiatria', icon: 'Stethoscope', title: 'Psiquiatria', desc: 'Avaliação e tratamento medicamentoso para depressão, ansiedade, TDAH e outros transtornos.' },
+  { slug: 'nutricao', icon: 'Apple', title: 'Nutrição', desc: 'Nutrição comportamental integrada à saúde mental e qualidade de vida.' },
+  { slug: 'fonoaudiologia', icon: 'MessageSquare', title: 'Fonoaudiologia', desc: 'Diagnóstico e terapia para linguagem, fala, voz e desenvolvimento infantil.' },
+  { slug: 'rn1', icon: 'Briefcase', title: 'RN-1', desc: 'Cuidado completo para colaboradores com acesso à Psiquiatria, Psicologia, Nutrição e Personal Trainer, além de atendimento médico 24h e teleconsultas. Mais saúde, bem-estar e produtividade para sua equipe.' },
+  { slug: 'avaliacao-neuropsicologica', icon: 'ClipboardList', title: 'Avaliação Neuropsicológica', desc: 'Investigação aprofundada das funções cognitivas — memória, atenção, linguagem e funções executivas — para diagnóstico e orientação terapêutica.' },
+  { slug: 'clinico-medico', icon: 'Cross', title: 'Clínico Médico', desc: 'Consulta médica ampla com avaliação clínica, solicitação de exames, acompanhamento de doenças crônicas e cuidado preventivo em todas as idades.' },
+  { slug: 'psicopedagogia', icon: 'BookOpen', title: 'Psicopedagogia', desc: 'Avaliação e intervenção para dificuldades de aprendizagem, desenvolvimento escolar, TDAH e organização de estudos para crianças e adolescentes.' },
+  { slug: 'neurologia', icon: 'Activity', title: 'Neurologia', desc: 'Diagnóstico e tratamento de doenças do sistema nervoso: cefaleias, epilepsia, tonturas, distúrbios do sono e doenças neurodegenerativas.' },
 ];
+
 
 const diferenciais = [
   { icon: Users, title: 'Equipe multidisciplinar', desc: 'Psicólogos, psiquiatras, nutricionistas e fonoaudiólogos trabalhando juntos.' },
@@ -184,6 +140,7 @@ export default function LandingPage() {
   const [stats, setStats] = useState<{ patients: number; appointments: number } | null>(null);
   const [posts, setPosts] = useState<Array<{ id: string; title: string; excerpt: string | null; cover_url: string | null; author: string | null; published_at: string; slug: string }>>([]);
   const [team, setTeam] = useState<Array<{ id: string; full_name: string; photo_url: string | null; landing_bio: string | null; specialty_name: string | null }>>([]);
+  const [especialidades, setEspecialidades] = useState<Array<{ slug: string; icon: string; title: string; desc: string }>>(especialidadesDefault);
 
 
   const clinicName = settings?.nome_fantasia || 'Clínica Pacem';
@@ -224,6 +181,25 @@ export default function LandingPage() {
       if (data) setTeam(data as any);
     })();
   }, []);
+
+  useEffect(() => {
+    (async () => {
+      const data = await fetchSiteContent<any[]>('especialidades');
+      if (Array.isArray(data) && data.length > 0) {
+        setEspecialidades(
+          data
+            .filter((x) => x && (x.title || x.slug))
+            .map((x) => ({
+              slug: x.slug || '',
+              icon: x.icon || 'Stethoscope',
+              title: x.title || '',
+              desc: x.desc || '',
+            })),
+        );
+      }
+    })();
+  }, []);
+
 
 
   return (
@@ -342,15 +318,17 @@ export default function LandingPage() {
             variants={stagger}
             className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto"
           >
-            {especialidades.map((sp) => (
+            {especialidades.map((sp) => {
+              const Icon = ICON_MAP[sp.icon] || Stethoscope;
+              return (
               <motion.div
-                key={sp.title}
+                key={sp.slug || sp.title}
                 variants={fadeUp}
                 className="group flex h-full flex-col rounded-2xl border border-[hsl(var(--lp-line))] bg-[hsl(var(--lp-bg))] p-7 transition-all duration-300 hover:-translate-y-1 hover:bg-white hover:shadow-[0_18px_40px_-18px_hsl(var(--lp-blue)/0.3)] hover:border-[hsl(var(--lp-blue)/0.3)]"
               >
                 <div className="mb-4 flex items-center justify-between gap-3">
                   <div className="inline-flex h-14 w-14 items-center justify-center rounded-xl bg-white border border-[hsl(var(--lp-line))] text-[hsl(var(--lp-blue))] group-hover:bg-[hsl(var(--lp-blue))] group-hover:text-white group-hover:border-transparent transition-colors">
-                    <sp.icon className="h-6 w-6" strokeWidth={1.8} />
+                    <Icon className="h-6 w-6" strokeWidth={1.8} />
                   </div>
                   <a
                     href={wa(`Olá! Gostaria de agendar ${sp.title} na Clínica Pacem.`)}
@@ -373,7 +351,8 @@ export default function LandingPage() {
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </motion.div>
-            ))}
+              );
+            })}
           </motion.div>
         </div>
       </section>
