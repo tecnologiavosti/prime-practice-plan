@@ -239,7 +239,7 @@ function IdentidadeTab() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div>
         <Label>Logo da clínica</Label>
         <div className="flex items-center gap-3 mt-1">
@@ -654,14 +654,16 @@ export default function MeuSite() {
       </div>
 
       <Tabs defaultValue="identidade" className="w-full">
-        <TabsList className="flex flex-wrap h-auto justify-start">
+        <TabsList className="flex flex-wrap h-auto justify-start gap-1 p-1">
           {tabs.map((t) => (
             <TabsTrigger key={t.key} value={t.key}>{t.label}</TabsTrigger>
           ))}
         </TabsList>
         {tabs.map((t) => (
           <TabsContent key={t.key} value={t.key} className="mt-4">
-            <Card className="p-5">{t.body}</Card>
+            <Card className="p-6 [&_label]:block [&_label]:mb-1.5 [&_label]:text-sm [&_label]:font-medium">
+              {t.body}
+            </Card>
           </TabsContent>
         ))}
       </Tabs>
