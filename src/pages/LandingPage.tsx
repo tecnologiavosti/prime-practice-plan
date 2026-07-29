@@ -12,6 +12,7 @@ import { useClinicSettings } from '@/hooks/useClinicSettings';
 import { SeoHead } from '@/components/SeoHead';
 import { PublicHeader } from '@/components/site/PublicHeader';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchSiteContent } from '@/hooks/useSiteContent';
 import { makeProfessionalSlug } from '@/lib/slug';
 import logoPacem from '@/assets/logoPacem.png';
 import clinicHero from '@/assets/clinic-hero.jpg';
