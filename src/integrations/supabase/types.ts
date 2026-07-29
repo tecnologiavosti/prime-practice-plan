@@ -368,6 +368,7 @@ export type Database = {
           full_name: string
           id: string
           invited_by: string | null
+          readonly_modules: string[]
           role: Database["public"]["Enums"]["app_role"]
           updated_at: string
           used: boolean
@@ -380,6 +381,7 @@ export type Database = {
           full_name: string
           id?: string
           invited_by?: string | null
+          readonly_modules?: string[]
           role?: Database["public"]["Enums"]["app_role"]
           updated_at?: string
           used?: boolean
@@ -392,6 +394,7 @@ export type Database = {
           full_name?: string
           id?: string
           invited_by?: string | null
+          readonly_modules?: string[]
           role?: Database["public"]["Enums"]["app_role"]
           updated_at?: string
           used?: boolean

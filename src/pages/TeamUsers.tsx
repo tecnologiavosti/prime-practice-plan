@@ -35,7 +35,9 @@ interface AuthorizedAdmin {
   created_at: string;
   role: 'administrador' | 'profissional';
   allowed_modules: string[] | null;
+  readonly_modules: string[] | null;
 }
+
 
 export default function TeamUsers() {
   const { user, hasRole, loading } = useAuth();
@@ -47,8 +49,9 @@ export default function TeamUsers() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [toDelete, setToDelete] = useState<AuthorizedAdmin | null>(null);
   const [permEditing, setPermEditing] = useState<AuthorizedAdmin | null>(null);
-  const [permSelected, setPermSelected] = useState<string[]>([]);
+  const [permMap, setPermMap] = useState<Record<string, 'none' | 'view' | 'edit'>>({});
   const [permSaving, setPermSaving] = useState(false);
+
   const [editUser, setEditUser] = useState<AuthorizedAdmin | null>(null);
   const [editName, setEditName] = useState('');
   const [editRole, setEditRole] = useState<'administrador' | 'profissional'>('administrador');
@@ -69,28 +72,45 @@ export default function TeamUsers() {
 
   const openPermissions = (item: AuthorizedAdmin) => {
     setPermEditing(item);
-    setPermSelected(item.allowed_modules ?? []);
+    const allowed = new Set(item.allowed_modules ?? []);
+    const readonly = new Set(item.readonly_modules ?? []);
+    const map: Record<string, 'none' | 'view' | 'edit'> = {};
+    for (const m of ADMIN_MODULES) {
+      if (readonly.has(m.key)) map[m.key] = 'view';
+      else if (allowed.has(m.key)) map[m.key] = 'edit';
+      else map[m.key] = 'none';
+    }
+    setPermMap(map);
   };
 
-  const togglePerm = (key: string, checked: boolean) => {
-    setPermSelected((prev) => (checked ? Array.from(new Set([...prev, key])) : prev.filter((k) => k !== key)));
+  const setPermAll = (level: 'none' | 'view' | 'edit') => {
+    const map: Record<string, 'none' | 'view' | 'edit'> = {};
+    for (const m of ADMIN_MODULES) map[m.key] = level;
+    setPermMap(map);
   };
 
   const savePermissions = async () => {
     if (!permEditing) return;
     setPermSaving(true);
+    const allowed_modules = Object.entries(permMap)
+      .filter(([, v]) => v === 'edit' || v === 'view')
+      .map(([k]) => k);
+    const readonly_modules = Object.entries(permMap)
+      .filter(([, v]) => v === 'view')
+      .map(([k]) => k);
     const { error } = await (supabase.from('authorized_admins') as any)
-      .update({ allowed_modules: permSelected })
+      .update({ allowed_modules, readonly_modules })
       .eq('id', permEditing.id);
     setPermSaving(false);
     if (error) {
       toast({ variant: 'destructive', title: 'Erro', description: error.message });
       return;
     }
-    toast({ title: 'Permissões atualizadas', description: 'O usuário verá apenas os módulos selecionados.' });
+    toast({ title: 'Permissões atualizadas', description: 'As permissões do usuário foram salvas.' });
     setPermEditing(null);
     fetchData();
   };
+
 
   const fetchData = async () => {
     const { data, error } = await supabase
@@ -294,31 +314,53 @@ export default function TeamUsers() {
           </DialogHeader>
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              Selecione os módulos que <span className="font-medium">{permEditing?.full_name}</span> poderá acessar no painel.
-              Se nada for selecionado, o usuário verá todos os módulos do seu perfil.
+              Defina o nível de acesso de <span className="font-medium">{permEditing?.full_name}</span> em cada módulo.
+              <br />
+              <span className="text-xs">
+                <b>Sem acesso</b>: o módulo não aparece. <b>Somente ver</b>: pode visualizar mas não editar/criar/excluir. <b>Editar</b>: acesso completo.
+              </span>
             </p>
-            <div className="flex items-center gap-2">
-              <Button type="button" variant="outline" size="sm" onClick={() => setPermSelected(ADMIN_MODULES.map((m) => m.key))}>
-                Selecionar todos
-              </Button>
-              <Button type="button" variant="outline" size="sm" onClick={() => setPermSelected([])}>
-                Limpar
-              </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={() => setPermAll('edit')}>Tudo: Editar</Button>
+              <Button type="button" variant="outline" size="sm" onClick={() => setPermAll('view')}>Tudo: Somente ver</Button>
+              <Button type="button" variant="outline" size="sm" onClick={() => setPermAll('none')}>Limpar</Button>
             </div>
-            <ScrollArea className="h-72 rounded border p-3">
+            <ScrollArea className="h-80 rounded border p-3">
               <div className="grid grid-cols-1 gap-2">
-                {ADMIN_MODULES.map((m) => (
-                  <label key={m.key} className="flex items-center gap-2 text-sm cursor-pointer">
-                    <Checkbox
-                      checked={permSelected.includes(m.key)}
-                      onCheckedChange={(c) => togglePerm(m.key, !!c)}
-                    />
-                    <span>{m.label}</span>
-                  </label>
-                ))}
+                {ADMIN_MODULES.map((m) => {
+                  const val = permMap[m.key] ?? 'none';
+                  const btn = (level: 'none' | 'view' | 'edit', label: string) => (
+                    <button
+                      type="button"
+                      onClick={() => setPermMap((prev) => ({ ...prev, [m.key]: level }))}
+                      className={`px-2 py-1 rounded text-xs border transition ${
+                        val === level
+                          ? level === 'edit'
+                            ? 'bg-primary text-primary-foreground border-primary'
+                            : level === 'view'
+                              ? 'bg-amber-500 text-white border-amber-500'
+                              : 'bg-muted text-muted-foreground border-muted'
+                          : 'bg-background hover:bg-muted'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  );
+                  return (
+                    <div key={m.key} className="flex items-center justify-between gap-2 text-sm">
+                      <span className="truncate">{m.label}</span>
+                      <div className="flex gap-1 shrink-0">
+                        {btn('none', 'Sem acesso')}
+                        {btn('view', 'Somente ver')}
+                        {btn('edit', 'Editar')}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </ScrollArea>
           </div>
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setPermEditing(null)}>Cancelar</Button>
             <Button onClick={savePermissions} disabled={permSaving}>{permSaving ? 'Salvando...' : 'Salvar permissões'}</Button>

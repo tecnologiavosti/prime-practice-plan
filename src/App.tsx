@@ -44,6 +44,8 @@ import ScheduleConfig from "./pages/ScheduleConfig";
 import ClinicProfile from "./pages/ClinicProfile";
 import TeamUsers from "./pages/TeamUsers";
 import Settings from "./pages/Settings";
+import { ReadOnlyGate } from "@/components/layout/ReadOnlyGate";
+
 import NotFound from "./pages/NotFound";
 // Patient Portal
 import LandingPage from "./pages/LandingPage";
@@ -122,34 +124,35 @@ const App = () => (
             <Route element={<AuthProvider><MainLayout /></AuthProvider>}>
               <Route path="/admin" element={<Dashboard />} />
               <Route path="/admin/dashboard" element={<Dashboard />} />
-              <Route path="/admin/pacientes" element={<Patients />} />
-              <Route path="/admin/prontuarios" element={<Prontuarios />} />
-              <Route path="/admin/prontuarios/:patientId" element={<ProntuarioDetail />} />
-              <Route path="/admin/profissionais" element={<Professionals />} />
-              <Route path="/admin/procedimentos" element={<Procedures />} />
-              <Route path="/admin/convenios" element={<HealthInsurances />} />
-              <Route path="/admin/administradoras" element={<Administrators />} />
-              <Route path="/admin/especialidades" element={<Specialties />} />
-              <Route path="/admin/pacotes" element={<Packages />} />
-              <Route path="/admin/agenda" element={<Schedule />} />
-              <Route path="/admin/agendamentos" element={<Appointments />} />
-              <Route path="/admin/financeiro" element={<FinancialTransactions />} />
-              <Route path="/admin/fluxo-caixa" element={<CashFlow />} />
-              <Route path="/admin/guias" element={<MedicalGuides />} />
-              <Route path="/admin/repasses" element={<ProfessionalPayouts />} />
-              <Route path="/admin/repasse-convenios" element={<InsuranceReimbursements />} />
-              <Route path="/admin/lotes-faturamento" element={<BillingBatches />} />
-              <Route path="/admin/relatorios-financeiros" element={<FinancialReports />} />
-              <Route path="/admin/relatorios" element={<Reports />} />
-              <Route path="/admin/formas-pagamento" element={<PaymentMethods />} />
-              
-              <Route path="/admin/escalas" element={<ScheduleConfig />} />
-              <Route path="/admin/perfil-clinica" element={<ClinicProfile />} />
+              <Route path="/admin/pacientes" element={<ReadOnlyGate moduleKey="pacientes"><Patients /></ReadOnlyGate>} />
+              <Route path="/admin/prontuarios" element={<ReadOnlyGate moduleKey="prontuarios"><Prontuarios /></ReadOnlyGate>} />
+              <Route path="/admin/prontuarios/:patientId" element={<ReadOnlyGate moduleKey="prontuarios"><ProntuarioDetail /></ReadOnlyGate>} />
+              <Route path="/admin/profissionais" element={<ReadOnlyGate moduleKey="profissionais"><Professionals /></ReadOnlyGate>} />
+              <Route path="/admin/procedimentos" element={<ReadOnlyGate moduleKey="procedimentos"><Procedures /></ReadOnlyGate>} />
+              <Route path="/admin/convenios" element={<ReadOnlyGate moduleKey="convenios"><HealthInsurances /></ReadOnlyGate>} />
+              <Route path="/admin/administradoras" element={<ReadOnlyGate moduleKey="administradoras"><Administrators /></ReadOnlyGate>} />
+              <Route path="/admin/especialidades" element={<ReadOnlyGate moduleKey="especialidades"><Specialties /></ReadOnlyGate>} />
+              <Route path="/admin/pacotes" element={<ReadOnlyGate moduleKey="pacotes"><Packages /></ReadOnlyGate>} />
+              <Route path="/admin/agenda" element={<ReadOnlyGate moduleKey="agenda"><Schedule /></ReadOnlyGate>} />
+              <Route path="/admin/agendamentos" element={<ReadOnlyGate moduleKey="agendamentos"><Appointments /></ReadOnlyGate>} />
+              <Route path="/admin/financeiro" element={<ReadOnlyGate moduleKey="financeiro"><FinancialTransactions /></ReadOnlyGate>} />
+              <Route path="/admin/fluxo-caixa" element={<ReadOnlyGate moduleKey="fluxo-caixa"><CashFlow /></ReadOnlyGate>} />
+              <Route path="/admin/guias" element={<ReadOnlyGate moduleKey="guias"><MedicalGuides /></ReadOnlyGate>} />
+              <Route path="/admin/repasses" element={<ReadOnlyGate moduleKey="repasses"><ProfessionalPayouts /></ReadOnlyGate>} />
+              <Route path="/admin/repasse-convenios" element={<ReadOnlyGate moduleKey="repasse-convenios"><InsuranceReimbursements /></ReadOnlyGate>} />
+              <Route path="/admin/lotes-faturamento" element={<ReadOnlyGate moduleKey="lotes-faturamento"><BillingBatches /></ReadOnlyGate>} />
+              <Route path="/admin/relatorios-financeiros" element={<ReadOnlyGate moduleKey="relatorios-financeiros"><FinancialReports /></ReadOnlyGate>} />
+              <Route path="/admin/relatorios" element={<ReadOnlyGate moduleKey="relatorios"><Reports /></ReadOnlyGate>} />
+              <Route path="/admin/formas-pagamento" element={<ReadOnlyGate moduleKey="formas-pagamento"><PaymentMethods /></ReadOnlyGate>} />
+
+              <Route path="/admin/escalas" element={<ReadOnlyGate moduleKey="escalas"><ScheduleConfig /></ReadOnlyGate>} />
+              <Route path="/admin/perfil-clinica" element={<ReadOnlyGate moduleKey="perfil-clinica"><ClinicProfile /></ReadOnlyGate>} />
               <Route path="/admin/equipe" element={<TeamUsers />} />
-              <Route path="/admin/seo" element={<SeoSettings />} />
-              <Route path="/admin/blog" element={<Blog />} />
-              <Route path="/admin/salas-sublocadas" element={<SubleasedRooms />} />
-              <Route path="/admin/salas" element={<Rooms />} />
+              <Route path="/admin/seo" element={<ReadOnlyGate moduleKey="seo"><SeoSettings /></ReadOnlyGate>} />
+              <Route path="/admin/blog" element={<ReadOnlyGate moduleKey="blog"><Blog /></ReadOnlyGate>} />
+              <Route path="/admin/salas-sublocadas" element={<ReadOnlyGate moduleKey="salas-sublocadas"><SubleasedRooms /></ReadOnlyGate>} />
+              <Route path="/admin/salas" element={<ReadOnlyGate moduleKey="salas"><Rooms /></ReadOnlyGate>} />
+
               
             </Route>
             
