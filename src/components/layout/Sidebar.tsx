@@ -75,12 +75,22 @@ export function Sidebar() {
 
   // Se allowed_modules foi definido explicitamente (lista não vazia), respeita a seleção
   // mesmo para administradores. Caso contrário, mostra tudo permitido pela role.
-  const hasExplicitModules = Array.isArray(allowedModules);
+  const hasExplicitModules = Array.isArray(allowedModules) && allowedModules.length > 0;
   const filteredItems = ADMIN_MODULES.filter((item) => {
     const allowedByRole = item.roles.some((role) => roles.includes(role as any));
     if (!allowedByRole) return false;
-    if (!hasExplicitModules) return true;
-    return allowedModules!.includes(item.key);
+    
+    // Se for administrador e não houver módulos selecionados explicitamente, mostra tudo.
+    // Se houver módulos selecionados, respeita a seleção.
+    if (roles.includes('administrador') && !hasExplicitModules) return true;
+    
+    // Se houver módulos selecionados, verifica se este item está na lista.
+    if (hasExplicitModules) {
+      return allowedModules!.includes(item.key);
+    }
+    
+    // Se não for admin e não tiver seleção explícita, permite baseado na role.
+    return true;
   });
 
   return (
