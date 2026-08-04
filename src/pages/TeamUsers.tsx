@@ -98,7 +98,8 @@ export default function TeamUsers() {
     const readonly_modules = Object.entries(permMap)
       .filter(([, v]) => v === 'view')
       .map(([k]) => k);
-    const { error } = await (supabase.from('authorized_admins') as any)
+    const { error } = await supabase
+      .from('authorized_admins')
       .update({ allowed_modules, readonly_modules })
       .eq('id', permEditing.id);
     setPermSaving(false);
