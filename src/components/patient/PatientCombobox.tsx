@@ -66,7 +66,7 @@ export function PatientCombobox({ value, onChange, placeholder = 'Buscar por nom
       let query = supabase
         .from('patients')
         .select('id, full_name, cpf, active')
-        .eq('active', true)
+        // .eq('active', true) // Removed filter to allow searching inactive patients
         .order('full_name')
         .limit(20);
       const term = debounced.trim();
