@@ -66,21 +66,33 @@ export function PatientCombobox({ value, onChange, placeholder = 'Buscar por nom
       let query = supabase
         .from('patients')
         .select('id, full_name, cpf, active')
-        // .eq('active', true) // Removed filter to allow searching inactive patients
         .order('full_name')
-        .limit(20);
+        .limit(100);
+
       const term = debounced.trim();
       if (term.length > 0) {
         const digits = term.replace(/\D/g, '');
-        if (digits.length >= 3 && digits.length === term.replace(/\s/g, '').length) {
+        const hasDigits = digits.length > 0;
+        
+        // If searching, we don't necessarily need the limit to be as low, 
+        // but 100 is still a good safety net.
+        if (hasDigits && digits.length === term.replace(/\s/g, '').length) {
+          // If the term is only digits (ignoring spaces/formatting), search strictly by CPF
           query = query.ilike('cpf', `%${digits}%`);
         } else {
-          query = query.or(`full_name.ilike.%${term}%,cpf.ilike.%${term.replace(/\D/g, '')}%`);
+          // Otherwise, search by name OR by digits in CPF if digits are present
+          if (hasDigits) {
+            query = query.or(`full_name.ilike.%${term}%,cpf.ilike.%${digits}%`);
+          } else {
+            query = query.ilike('full_name', `%${term}%`);
+          }
         }
       }
+      
       const { data, error } = await query;
       if (cancelled) return;
       if (error) {
+        console.error('Error fetching patients:', error);
         setResults([]);
       } else {
         setResults((data as PatientOption[]) || []);
