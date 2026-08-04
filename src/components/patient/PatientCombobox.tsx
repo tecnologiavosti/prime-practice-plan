@@ -17,6 +17,7 @@ interface PatientOption {
   id: string;
   full_name: string;
   cpf: string | null;
+  active?: boolean;
 }
 
 interface PatientComboboxProps {
@@ -64,7 +65,7 @@ export function PatientCombobox({ value, onChange, placeholder = 'Buscar por nom
       setLoading(true);
       let query = supabase
         .from('patients')
-        .select('id, full_name, cpf')
+        .select('id, full_name, cpf, active')
         .eq('active', true)
         .order('full_name')
         .limit(20);
@@ -97,7 +98,7 @@ export function PatientCombobox({ value, onChange, placeholder = 'Buscar por nom
     (async () => {
       const { data } = await supabase
         .from('patients')
-        .select('id, full_name, cpf')
+        .select('id, full_name, cpf, active')
         .eq('id', value)
         .maybeSingle();
       if (data) setSelected(data as PatientOption);
@@ -135,7 +136,7 @@ export function PatientCombobox({ value, onChange, placeholder = 'Buscar por nom
     const { data, error } = await supabase
       .from('patients')
       .insert(payload)
-      .select('id, full_name, cpf')
+      .select('id, full_name, cpf, active')
       .single();
     setCreating(false);
     if (error) {
@@ -199,7 +200,9 @@ export function PatientCombobox({ value, onChange, placeholder = 'Buscar por nom
                     )}
                   >
                     <div className="min-w-0 flex-1">
-                      <div className="truncate font-medium">{p.full_name}</div>
+                      <div className="truncate font-medium">
+                        {p.full_name} {!p.active && <span className="text-[10px] bg-muted px-1 rounded ml-1 text-muted-foreground uppercase">Inativo</span>}
+                      </div>
                       {p.cpf && (
                         <div className="truncate text-xs text-muted-foreground">CPF: {maskCpf(p.cpf)}</div>
                       )}
