@@ -75,7 +75,7 @@ export function Sidebar() {
 
   // Se allowed_modules foi definido explicitamente (lista não vazia), respeita a seleção
   // mesmo para administradores. Caso contrário, mostra tudo permitido pela role.
-  const hasExplicitModules = Array.isArray(allowedModules) && allowedModules.length > 0;
+  const hasExplicitModules = Array.isArray(allowedModules);
   const filteredItems = ADMIN_MODULES.filter((item) => {
     const allowedByRole = item.roles.some((role) => roles.includes(role as any));
     if (!allowedByRole) return false;
