@@ -66,8 +66,8 @@ export function PatientCombobox({ value, onChange, placeholder = 'Buscar por nom
       let query = supabase
         .from('patients')
         .select('id, full_name, cpf, active')
-        .order('full_name')
-        .limit(100);
+        .order('full_name');
+
 
       const term = debounced.trim();
       if (term.length > 0) {
