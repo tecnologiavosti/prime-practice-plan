@@ -71,81 +71,131 @@ const emptyTenantForm = {
 
 export default function SubleasedRooms() {
   const [rooms, setRooms] = useState<Room[]>([]);
+  const [tenants, setTenants] = useState<Tenant[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [form, setForm] = useState(emptyForm);
+  
+  // Room state
+  const [roomDialogOpen, setRoomDialogOpen] = useState(false);
+  const [editingRoomId, setEditingRoomId] = useState<string | null>(null);
+  const [deleteRoomId, setDeleteRoomId] = useState<string | null>(null);
+  const [roomForm, setRoomForm] = useState(emptyRoomForm);
+  
+  // Tenant state
+  const [tenantDialogOpen, setTenantDialogOpen] = useState(false);
+  const [editingTenantId, setEditingTenantId] = useState<string | null>(null);
+  const [deleteTenantId, setDeleteTenantId] = useState<string | null>(null);
+  const [tenantForm, setTenantForm] = useState(emptyTenantForm);
+
   const [receiveRoom, setReceiveRoom] = useState<Room | null>(null);
   const [receiveDate, setReceiveDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [receiveAmount, setReceiveAmount] = useState(0);
   const { toast } = useToast();
 
-  const fetch = async () => {
+  const fetchData = async () => {
     setLoading(true);
-    const { data, error } = await (supabase as any)
-      .from('subleased_rooms')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (error) toast({ title: 'Erro', description: error.message, variant: 'destructive' });
-    setRooms((data ?? []) as Room[]);
+    const [roomsRes, tenantsRes] = await Promise.all([
+      (supabase as any).from('subleased_rooms').select('*, tenant:subleased_tenants(*)').order('created_at', { ascending: false }),
+      (supabase as any).from('subleased_tenants').select('*').order('name', { ascending: true })
+    ]);
+
+    if (roomsRes.error) toast({ title: 'Erro ao buscar salas', description: roomsRes.error.message, variant: 'destructive' });
+    if (tenantsRes.error) toast({ title: 'Erro ao buscar locatários', description: tenantsRes.error.message, variant: 'destructive' });
+
+    setRooms((roomsRes.data ?? []) as Room[]);
+    setTenants((tenantsRes.data ?? []) as Tenant[]);
     setLoading(false);
   };
 
-  useEffect(() => { fetch(); }, []);
+  useEffect(() => { fetchData(); }, []);
 
-  const openNew = () => { setEditingId(null); setForm(emptyForm); setDialogOpen(true); };
-  const openEdit = (r: Room) => {
-    setEditingId(r.id);
-    setForm({
+  // Room Actions
+  const openNewRoom = () => { setEditingRoomId(null); setRoomForm(emptyRoomForm); setRoomDialogOpen(true); };
+  const openEditRoom = (r: Room) => {
+    setEditingRoomId(r.id);
+    setRoomForm({
       name: r.name,
       room_number: r.room_number ?? '',
       address: r.address ?? '',
-      tenant_name: r.tenant_name ?? '',
-      tenant_contact: r.tenant_contact ?? '',
+      tenant_id: r.tenant_id ?? '',
       monthly_value: Number(r.monthly_value),
       due_day: r.due_day ?? 5,
       notes: r.notes ?? '',
       active: r.active,
     });
-    setDialogOpen(true);
+    setRoomDialogOpen(true);
   };
 
-  const save = async () => {
-    if (!form.name) {
+  const saveRoom = async () => {
+    if (!roomForm.name) {
       toast({ title: 'Informe o nome / identificação da sala', variant: 'destructive' });
       return;
     }
     const payload = {
-      name: form.name,
-      room_number: form.room_number || null,
-      address: form.address || null,
-      tenant_name: form.tenant_name || null,
-      tenant_contact: form.tenant_contact || null,
-      monthly_value: form.monthly_value,
-      due_day: form.due_day || null,
-      notes: form.notes || null,
-      active: form.active,
+      ...roomForm,
+      tenant_id: roomForm.tenant_id || null,
     };
-    const { error } = editingId
-      ? await (supabase as any).from('subleased_rooms').update(payload).eq('id', editingId)
+    const { error } = editingRoomId
+      ? await (supabase as any).from('subleased_rooms').update(payload).eq('id', editingRoomId)
       : await (supabase as any).from('subleased_rooms').insert([payload]);
+    
     if (error) {
-      toast({ title: 'Erro ao salvar', description: error.message, variant: 'destructive' });
+      toast({ title: 'Erro ao salvar sala', description: error.message, variant: 'destructive' });
       return;
     }
-    toast({ title: editingId ? 'Sala atualizada' : 'Sala cadastrada' });
-    setDialogOpen(false);
-    fetch();
+    toast({ title: editingRoomId ? 'Sala atualizada' : 'Sala cadastrada' });
+    setRoomDialogOpen(false);
+    fetchData();
   };
 
-  const remove = async () => {
-    if (!deleteId) return;
-    const { error } = await (supabase as any).from('subleased_rooms').delete().eq('id', deleteId);
+  const removeRoom = async () => {
+    if (!deleteRoomId) return;
+    const { error } = await (supabase as any).from('subleased_rooms').delete().eq('id', deleteRoomId);
     if (error) toast({ title: 'Erro', description: error.message, variant: 'destructive' });
     else toast({ title: 'Sala excluída' });
-    setDeleteId(null);
-    fetch();
+    setDeleteRoomId(null);
+    fetchData();
+  };
+
+  // Tenant Actions
+  const openNewTenant = () => { setEditingTenantId(null); setTenantForm(emptyTenantForm); setTenantDialogOpen(true); };
+  const openEditTenant = (t: Tenant) => {
+    setEditingTenantId(t.id);
+    setTenantForm({
+      name: t.name,
+      document: t.document ?? '',
+      contact: t.contact ?? '',
+      email: t.email ?? '',
+      notes: t.notes ?? '',
+      active: t.active,
+    });
+    setTenantDialogOpen(true);
+  };
+
+  const saveTenant = async () => {
+    if (!tenantForm.name) {
+      toast({ title: 'Informe o nome do locatário', variant: 'destructive' });
+      return;
+    }
+    const { error } = editingTenantId
+      ? await (supabase as any).from('subleased_tenants').update(tenantForm).eq('id', editingTenantId)
+      : await (supabase as any).from('subleased_tenants').insert([tenantForm]);
+    
+    if (error) {
+      toast({ title: 'Erro ao salvar locatário', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: editingTenantId ? 'Locatário atualizado' : 'Locatário cadastrado' });
+    setTenantDialogOpen(false);
+    fetchData();
+  };
+
+  const removeTenant = async () => {
+    if (!deleteTenantId) return;
+    const { error } = await (supabase as any).from('subleased_tenants').delete().eq('id', deleteTenantId);
+    if (error) toast({ title: 'Erro', description: error.message, variant: 'destructive' });
+    else toast({ title: 'Locatário excluído' });
+    setDeleteTenantId(null);
+    fetchData();
   };
 
   const openReceive = (r: Room) => {
@@ -156,10 +206,11 @@ export default function SubleasedRooms() {
 
   const confirmReceive = async () => {
     if (!receiveRoom) return;
+    const tName = receiveRoom.tenant?.name || receiveRoom.tenant_name || 'N/A';
     const { error } = await supabase.from('cash_flow_entries').insert([{
       entry_type: 'entrada',
       category: 'Sala Sublocada',
-      description: `Aluguel - ${receiveRoom.name} (${receiveRoom.tenant_name})`,
+      description: `Aluguel - ${receiveRoom.name} (${tName})`,
       amount: receiveAmount,
       entry_date: receiveDate,
     }]);
@@ -176,10 +227,21 @@ export default function SubleasedRooms() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2"><Home className="h-6 w-6" /> Salas Sublocadas</h1>
-          <p className="text-sm text-muted-foreground">Cadastre as salas sublocadas. Os recebimentos são lançados no Fluxo de Caixa.</p>
+          <p className="text-sm text-muted-foreground">Gerencie as salas sublocadas e locatários.</p>
         </div>
-        <Button onClick={openNew}><Plus className="h-4 w-4 mr-2" /> Nova Sala</Button>
       </div>
+
+      <Tabs defaultValue="rooms" className="w-full">
+        <TabsList className="grid w-[400px] grid-cols-2">
+          <TabsTrigger value="rooms" className="flex items-center gap-2"><Home className="h-4 w-4" /> Salas</TabsTrigger>
+          <TabsTrigger value="tenants" className="flex items-center gap-2"><Users className="h-4 w-4" /> Locatários</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="rooms" className="space-y-4 pt-4">
+          <div className="flex justify-end">
+            <Button onClick={openNewRoom}><Plus className="h-4 w-4 mr-2" /> Nova Sala</Button>
+          </div>
+
 
       <div className="rounded-md border bg-card">
         <Table>
