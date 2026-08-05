@@ -383,7 +383,7 @@ export default function BillingBatches() {
               Novo Lote
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Criar Lote de Faturamento</DialogTitle>
             </DialogHeader>
@@ -665,7 +665,7 @@ export default function BillingBatches() {
       )}
 
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar Lote</DialogTitle>
           </DialogHeader>

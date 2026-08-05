@@ -280,7 +280,7 @@ export default function Professionals() {
               Novo Profissional
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingProfessional ? 'Editar Profissional' : 'Novo Profissional'}
@@ -593,7 +593,7 @@ export default function Professionals() {
       </AlertDialog>
 
       <Dialog open={!!viewingProf} onOpenChange={(open) => !open && setViewingProf(null)}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Detalhes do Profissional</DialogTitle>
           </DialogHeader>

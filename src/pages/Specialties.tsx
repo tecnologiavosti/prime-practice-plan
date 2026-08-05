@@ -188,7 +188,7 @@ export default function Specialties() {
           <DialogTrigger asChild>
             <Button onClick={openNew}><Plus className="mr-2 h-4 w-4" /> Nova Especialidade</Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editing ? 'Editar Especialidade' : 'Nova Especialidade'}</DialogTitle>
             </DialogHeader>

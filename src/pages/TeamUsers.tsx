@@ -249,7 +249,7 @@ export default function TeamUsers() {
       </Card>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Novo Usuário</DialogTitle>
           </DialogHeader>
@@ -309,7 +309,7 @@ export default function TeamUsers() {
       </AlertDialog>
 
       <Dialog open={!!permEditing} onOpenChange={(o) => !o && setPermEditing(null)}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Permissões de acesso</DialogTitle>
           </DialogHeader>
@@ -370,7 +370,7 @@ export default function TeamUsers() {
       </Dialog>
 
       <Dialog open={!!editUser} onOpenChange={(o) => !o && setEditUser(null)}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar usuário</DialogTitle>
           </DialogHeader>

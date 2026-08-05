@@ -307,7 +307,7 @@ export default function Administrators() {
               Nova Administradora
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingAdmin ? 'Editar Administradora' : 'Nova Administradora'}
@@ -484,7 +484,7 @@ export default function Administrators() {
 
       {/* Dialog para gerenciar convênios e valores */}
       <Dialog open={insuranceDialogOpen} onOpenChange={setInsuranceDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Link2 className="h-5 w-5" />
