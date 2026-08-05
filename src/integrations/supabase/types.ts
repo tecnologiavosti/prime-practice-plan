@@ -2256,6 +2256,7 @@ export type Database = {
           notes: string | null
           room_number: string | null
           tenant_contact: string | null
+          tenant_id: string | null
           tenant_name: string | null
           updated_at: string
         }
@@ -2270,6 +2271,7 @@ export type Database = {
           notes?: string | null
           room_number?: string | null
           tenant_contact?: string | null
+          tenant_id?: string | null
           tenant_name?: string | null
           updated_at?: string
         }
@@ -2284,7 +2286,52 @@ export type Database = {
           notes?: string | null
           room_number?: string | null
           tenant_contact?: string | null
+          tenant_id?: string | null
           tenant_name?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subleased_rooms_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "subleased_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subleased_tenants: {
+        Row: {
+          active: boolean
+          contact: string | null
+          created_at: string
+          document: string | null
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          contact?: string | null
+          created_at?: string
+          document?: string | null
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          contact?: string | null
+          created_at?: string
+          document?: string | null
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
           updated_at?: string
         }
         Relationships: []
