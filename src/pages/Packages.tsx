@@ -263,7 +263,7 @@ export default function Packages() {
               Novo Pacote
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingPackage ? 'Editar Pacote' : 'Novo Pacote'}</DialogTitle>
             </DialogHeader>

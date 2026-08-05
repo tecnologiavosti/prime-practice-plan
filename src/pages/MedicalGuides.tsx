@@ -793,7 +793,7 @@ export default function MedicalGuides() {
               Nova Guia
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingId ? 'Editar Guia' : 'Nova Guia'}</DialogTitle>
             </DialogHeader>

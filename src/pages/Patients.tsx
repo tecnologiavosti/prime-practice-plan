@@ -254,7 +254,7 @@ export default function Patients() {
               Novo Paciente
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingPatient ? 'Editar Paciente' : 'Novo Paciente'}
@@ -570,7 +570,7 @@ export default function Patients() {
       </AlertDialog>
 
       <Dialog open={!!viewingPatient} onOpenChange={(open) => !open && setViewingPatient(null)}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Detalhes do Paciente</DialogTitle>
           </DialogHeader>
