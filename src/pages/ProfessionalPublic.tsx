@@ -73,15 +73,24 @@ export default function ProfessionalPublic() {
 
       const [{ data }, { data: ins }, { data: avail }] = await Promise.all([
         (supabase.rpc as any)('get_landing_professional', { _id: id }),
-        (supabase.rpc as any)('get_professional_insurances', { _id: id }),
+        supabase
+          .from('professional_insurances')
+          .select('health_insurances(id, name)')
+          .eq('professional_id', id),
         (supabase.rpc as any)('get_professional_availability', {
           _id: id,
           _start: fmt(start),
           _end: fmt(end),
         }),
       ]);
+
+      const formattedInsurances = (ins as any[])?.map((item: any) => ({
+        id: item.health_insurances.id,
+        name: item.health_insurances.name
+      })) || [];
+
       setProf((data?.[0] as PublicProfessional) ?? null);
-      setInsurances((ins as any) ?? []);
+      setInsurances(formattedInsurances);
       setAvailability((avail as AvailDay[]) ?? []);
       setLoading(false);
     })();
