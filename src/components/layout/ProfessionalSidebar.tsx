@@ -31,7 +31,7 @@ export function ProfessionalSidebar() {
   };
 
   return (
-    <aside className="flex h-screen w-60 flex-col bg-sidebar border-r border-sidebar-border">
+    <aside className="flex h-screen w-60 flex-col bg-sidebar border-r border-sidebar-border shrink-0">
       <div className="flex h-14 items-center gap-2.5 border-b border-sidebar-border px-4">
         <img src={logoSrc} alt={clinicName} className="h-8 w-auto rounded object-contain" />
         <div className="flex items-baseline gap-1.5 min-w-0">
