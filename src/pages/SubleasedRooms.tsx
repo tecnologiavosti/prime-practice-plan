@@ -24,27 +24,47 @@ import { useToast } from '@/hooks/use-toast';
 import { Plus, Pencil, Trash2, DollarSign, Home, Users } from 'lucide-react';
 import { format } from 'date-fns';
 
+interface Tenant {
+  id: string;
+  name: string;
+  document: string | null;
+  contact: string | null;
+  email: string | null;
+  notes: string | null;
+  active: boolean;
+}
+
 interface Room {
   id: string;
   name: string;
   room_number: string | null;
   address: string | null;
+  tenant_id: string | null;
   tenant_name: string | null;
   tenant_contact: string | null;
   monthly_value: number;
   due_day: number | null;
   notes: string | null;
   active: boolean;
+  tenant?: Tenant;
 }
 
-const emptyForm = {
+const emptyRoomForm = {
   name: '',
   room_number: '',
   address: '',
-  tenant_name: '',
-  tenant_contact: '',
+  tenant_id: '',
   monthly_value: 0,
   due_day: 5,
+  notes: '',
+  active: true,
+};
+
+const emptyTenantForm = {
+  name: '',
+  document: '',
+  contact: '',
+  email: '',
   notes: '',
   active: true,
 };
