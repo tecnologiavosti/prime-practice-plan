@@ -40,8 +40,6 @@ interface Room {
   room_number: string | null;
   address: string | null;
   tenant_id: string | null;
-  tenant_name: string | null;
-  tenant_contact: string | null;
   monthly_value: number;
   due_day: number | null;
   notes: string | null;
@@ -206,7 +204,7 @@ export default function SubleasedRooms() {
 
   const confirmReceive = async () => {
     if (!receiveRoom) return;
-    const tName = receiveRoom.tenant?.name || receiveRoom.tenant_name || 'N/A';
+    const tName = receiveRoom.tenant?.name || 'N/A';
     const { error } = await supabase.from('cash_flow_entries').insert([{
       entry_type: 'entrada',
       category: 'Sala Sublocada',
@@ -242,101 +240,162 @@ export default function SubleasedRooms() {
             <Button onClick={openNewRoom}><Plus className="h-4 w-4 mr-2" /> Nova Sala</Button>
           </div>
 
+          <div className="rounded-md border bg-card">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Sala</TableHead>
+                  <TableHead>Endereço</TableHead>
+                  <TableHead>Locatário</TableHead>
+                  <TableHead className="text-right">Valor mensal</TableHead>
+                  <TableHead>Venc.</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow><TableCell colSpan={7} className="text-center py-6 text-muted-foreground">Carregando...</TableCell></TableRow>
+                ) : rooms.length === 0 ? (
+                  <TableRow><TableCell colSpan={7} className="text-center py-6 text-muted-foreground">Nenhuma sala cadastrada.</TableCell></TableRow>
+                ) : rooms.map((r, i) => (
+                  <TableRow key={r.id} className={i % 2 ? 'bg-muted/30' : ''}>
+                    <TableCell className="font-medium">
+                      {r.name}{r.room_number ? <span className="text-muted-foreground"> · nº {r.room_number}</span> : null}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{r.address || '-'}</TableCell>
+                    <TableCell>
+                      {r.tenant?.name ? (
+                        <div className="flex flex-col">
+                          <span>{r.tenant.name}</span>
+                          <span className="text-xs text-muted-foreground">{r.tenant.contact}</span>
+                        </div>
+                      ) : '-'}
+                    </TableCell>
+                    <TableCell className="text-right font-mono">R$ {Number(r.monthly_value).toFixed(2)}</TableCell>
+                    <TableCell>{r.due_day ? `Dia ${r.due_day}` : '-'}</TableCell>
+                    <TableCell><Badge variant={r.active ? 'default' : 'secondary'}>{r.active ? 'Ativa' : 'Inativa'}</Badge></TableCell>
+                    <TableCell>
+                      <div className="flex gap-1 justify-end">
+                        <Button size="sm" variant="outline" onClick={() => openReceive(r)} title="Registrar recebimento">
+                          <DollarSign className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => openEditRoom(r)}><Pencil className="h-4 w-4" /></Button>
+                        <Button size="sm" variant="ghost" onClick={() => setDeleteRoomId(r.id)}><Trash2 className="h-4 w-4" /></Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </TabsContent>
 
-      <div className="rounded-md border bg-card">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Sala</TableHead>
-              <TableHead>Endereço</TableHead>
-              <TableHead>Locatário</TableHead>
-              <TableHead>Contato</TableHead>
-              <TableHead className="text-right">Valor mensal</TableHead>
-              <TableHead>Venc.</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow><TableCell colSpan={8} className="text-center py-6 text-muted-foreground">Carregando...</TableCell></TableRow>
-            ) : rooms.length === 0 ? (
-              <TableRow><TableCell colSpan={8} className="text-center py-6 text-muted-foreground">Nenhuma sala cadastrada.</TableCell></TableRow>
-            ) : rooms.map((r, i) => (
-              <TableRow key={r.id} className={i % 2 ? 'bg-muted/30' : ''}>
-                <TableCell className="font-medium">
-                  {r.name}{r.room_number ? <span className="text-muted-foreground"> · nº {r.room_number}</span> : null}
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">{r.address || '-'}</TableCell>
-                <TableCell>{r.tenant_name || '-'}</TableCell>
-                <TableCell className="text-sm">{r.tenant_contact || '-'}</TableCell>
-                <TableCell className="text-right font-mono">R$ {Number(r.monthly_value).toFixed(2)}</TableCell>
-                <TableCell>{r.due_day ? `Dia ${r.due_day}` : '-'}</TableCell>
-                <TableCell><Badge variant={r.active ? 'default' : 'secondary'}>{r.active ? 'Ativa' : 'Inativa'}</Badge></TableCell>
-                <TableCell>
-                  <div className="flex gap-1 justify-end">
-                    <Button size="sm" variant="outline" onClick={() => openReceive(r)} title="Registrar recebimento">
-                      <DollarSign className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" variant="ghost" onClick={() => openEdit(r)}><Pencil className="h-4 w-4" /></Button>
-                    <Button size="sm" variant="ghost" onClick={() => setDeleteId(r.id)}><Trash2 className="h-4 w-4" /></Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+        <TabsContent value="tenants" className="space-y-4 pt-4">
+          <div className="flex justify-end">
+            <Button onClick={openNewTenant}><Plus className="h-4 w-4 mr-2" /> Novo Locatário</Button>
+          </div>
 
-      {/* Form Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <div className="rounded-md border bg-card">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>CPF/CNPJ</TableHead>
+                  <TableHead>Contato</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow><TableCell colSpan={6} className="text-center py-6 text-muted-foreground">Carregando...</TableCell></TableRow>
+                ) : tenants.length === 0 ? (
+                  <TableRow><TableCell colSpan={6} className="text-center py-6 text-muted-foreground">Nenhum locatário cadastrado.</TableCell></TableRow>
+                ) : tenants.map((t, i) => (
+                  <TableRow key={t.id} className={i % 2 ? 'bg-muted/30' : ''}>
+                    <TableCell className="font-medium">{t.name}</TableCell>
+                    <TableCell>{t.document || '-'}</TableCell>
+                    <TableCell>{t.contact || '-'}</TableCell>
+                    <TableCell>{t.email || '-'}</TableCell>
+                    <TableCell><Badge variant={t.active ? 'default' : 'secondary'}>{t.active ? 'Ativo' : 'Inativo'}</Badge></TableCell>
+                    <TableCell>
+                      <div className="flex gap-1 justify-end">
+                        <Button size="sm" variant="ghost" onClick={() => openEditTenant(t)}><Pencil className="h-4 w-4" /></Button>
+                        <Button size="sm" variant="ghost" onClick={() => setDeleteTenantId(t.id)}><Trash2 className="h-4 w-4" /></Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      {/* Room Dialog */}
+      <Dialog open={roomDialogOpen} onOpenChange={setRoomDialogOpen}>
         <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{editingId ? 'Editar Sala' : 'Nova Sala'}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{editingRoomId ? 'Editar Sala' : 'Nova Sala'}</DialogTitle></DialogHeader>
           <div className="grid gap-3">
             <div className="grid grid-cols-[1fr_140px] gap-3">
-              <div><Label>Nome / Identificação *</Label><Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></div>
-              <div><Label>Nº da sala</Label><Input value={form.room_number} onChange={e => setForm({ ...form, room_number: e.target.value })} /></div>
+              <div><Label>Nome / Identificação *</Label><Input value={roomForm.name} onChange={e => setRoomForm({ ...roomForm, name: e.target.value })} /></div>
+              <div><Label>Nº da sala</Label><Input value={roomForm.room_number} onChange={e => setRoomForm({ ...roomForm, room_number: e.target.value })} /></div>
             </div>
             <div>
-              <Label>CEP</Label>
-              <Input
-                placeholder="00000-000"
-                maxLength={9}
-                onChange={async (e) => {
-                  let v = e.target.value.replace(/\D/g, '').slice(0, 8);
-                  if (v.length > 5) v = v.slice(0, 5) + '-' + v.slice(5);
-                  e.target.value = v;
-                  const digits = v.replace(/\D/g, '');
-                  if (digits.length === 8) {
-                    try {
-                      const r = await window.fetch(`https://viacep.com.br/ws/${digits}/json/`);
-                      const d = await r.json();
-                      if (!d.erro) {
-                        const addr = `${d.logradouro}${d.bairro ? ', ' + d.bairro : ''} - ${d.localidade}/${d.uf}`;
-                        setForm(f => ({ ...f, address: addr }));
-                      }
-                    } catch {}
-                  }
-                }}
-              />
+              <Label>Endereço</Label>
+              <Input value={roomForm.address} onChange={e => setRoomForm({ ...roomForm, address: e.target.value })} />
             </div>
-            <div><Label>Endereço</Label><Input value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} /></div>
-            <div className="grid grid-cols-2 gap-3">
-              <div><Label>Locatário</Label><Input value={form.tenant_name} onChange={e => setForm({ ...form, tenant_name: e.target.value })} /></div>
-              <div><Label>Contato</Label><Input value={form.tenant_contact} onChange={e => setForm({ ...form, tenant_contact: e.target.value })} /></div>
+            <div>
+              <Label>Locatário</Label>
+              <Select value={roomForm.tenant_id} onValueChange={v => setRoomForm({ ...roomForm, tenant_id: v })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione um locatário" />
+                </SelectTrigger>
+                <SelectContent>
+                  {tenants.filter(t => t.active).map(t => (
+                    <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Valor mensal (R$)</Label><CurrencyInput value={form.monthly_value} onChange={v => setForm({ ...form, monthly_value: v })} /></div>
-              <div><Label>Dia de vencimento</Label><Input type="number" min={1} max={31} value={form.due_day} onChange={e => setForm({ ...form, due_day: parseInt(e.target.value) || 0 })} /></div>
+              <div><Label>Valor mensal (R$)</Label><CurrencyInput value={roomForm.monthly_value} onChange={v => setRoomForm({ ...roomForm, monthly_value: v })} /></div>
+              <div><Label>Dia de vencimento</Label><Input type="number" min={1} max={31} value={roomForm.due_day} onChange={e => setRoomForm({ ...roomForm, due_day: parseInt(e.target.value) || 0 })} /></div>
             </div>
-            <div><Label>Observações</Label><Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
+            <div><Label>Observações</Label><Textarea value={roomForm.notes} onChange={e => setRoomForm({ ...roomForm, notes: e.target.value })} /></div>
             <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })} />
+              <input type="checkbox" checked={roomForm.active} onChange={e => setRoomForm({ ...roomForm, active: e.target.checked })} />
               Ativa
             </label>
             <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
-              <Button onClick={save}>Salvar</Button>
+              <Button variant="outline" onClick={() => setRoomDialogOpen(false)}>Cancelar</Button>
+              <Button onClick={saveRoom}>Salvar</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Tenant Dialog */}
+      <Dialog open={tenantDialogOpen} onOpenChange={setTenantDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader><DialogTitle>{editingTenantId ? 'Editar Locatário' : 'Novo Locatário'}</DialogTitle></DialogHeader>
+          <div className="grid gap-3">
+            <div><Label>Nome Completo *</Label><Input value={tenantForm.name} onChange={e => setTenantForm({ ...tenantForm, name: e.target.value })} /></div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>CPF / CNPJ</Label><Input value={tenantForm.document} onChange={e => setTenantForm({ ...tenantForm, document: e.target.value })} /></div>
+              <div><Label>Contato</Label><Input value={tenantForm.contact} onChange={e => setTenantForm({ ...tenantForm, contact: e.target.value })} /></div>
+            </div>
+            <div><Label>E-mail</Label><Input type="email" value={tenantForm.email} onChange={e => setTenantForm({ ...tenantForm, email: e.target.value })} /></div>
+            <div><Label>Observações</Label><Textarea value={tenantForm.notes} onChange={e => setTenantForm({ ...tenantForm, notes: e.target.value })} /></div>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={tenantForm.active} onChange={e => setTenantForm({ ...tenantForm, active: e.target.checked })} />
+              Ativo
+            </label>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setTenantDialogOpen(false)}>Cancelar</Button>
+              <Button onClick={saveTenant}>Salvar</Button>
             </div>
           </div>
         </DialogContent>
@@ -349,7 +408,7 @@ export default function SubleasedRooms() {
           {receiveRoom && (
             <div className="grid gap-3">
               <p className="text-sm text-muted-foreground">
-                <strong>{receiveRoom.name}</strong> — {receiveRoom.tenant_name}
+                <strong>{receiveRoom.name}</strong> — {receiveRoom.tenant?.name || 'N/A'}
               </p>
               <div><Label>Valor recebido (R$)</Label><CurrencyInput value={receiveAmount} onChange={setReceiveAmount} /></div>
               <div><Label>Data do recebimento</Label><Input type="date" value={receiveDate} onChange={e => setReceiveDate(e.target.value)} /></div>
@@ -363,7 +422,8 @@ export default function SubleasedRooms() {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
+      {/* Delete Room Alert */}
+      <AlertDialog open={!!deleteRoomId} onOpenChange={(o) => !o && setDeleteRoomId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir sala?</AlertDialogTitle>
@@ -371,7 +431,21 @@ export default function SubleasedRooms() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={remove}>Excluir</AlertDialogAction>
+            <AlertDialogAction onClick={removeRoom}>Excluir</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Tenant Alert */}
+      <AlertDialog open={!!deleteTenantId} onOpenChange={(o) => !o && setDeleteTenantId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir locatário?</AlertDialogTitle>
+            <AlertDialogDescription>Esta ação não pode ser desfeita. Isso pode afetar as salas vinculadas.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={removeTenant}>Excluir</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
