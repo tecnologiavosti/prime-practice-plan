@@ -210,7 +210,7 @@ export default function InsuranceReimbursements() {
               Novo Repasse
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingId ? 'Editar Repasse' : 'Registrar Repasse'}</DialogTitle>
             </DialogHeader>

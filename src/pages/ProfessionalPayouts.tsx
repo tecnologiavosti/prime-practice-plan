@@ -334,7 +334,7 @@ export default function ProfessionalPayouts() {
               Config. Repasse
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingFeeId ? 'Editar Configuração de Repasse' : 'Configurar Repasse'}</DialogTitle>
             </DialogHeader>
@@ -599,7 +599,7 @@ export default function ProfessionalPayouts() {
       )}
 
       <Dialog open={editPayoutDialogOpen} onOpenChange={setEditPayoutDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar Repasse</DialogTitle>
           </DialogHeader>

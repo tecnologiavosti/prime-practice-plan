@@ -331,7 +331,7 @@ export default function ScheduleConfig() {
 
       {/* Create / Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingSchedule ? 'Editar Horário' : 'Adicionar Horários'}</DialogTitle>
           </DialogHeader>

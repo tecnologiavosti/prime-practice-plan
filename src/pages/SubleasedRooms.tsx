@@ -336,7 +336,7 @@ export default function SubleasedRooms() {
 
       {/* Room Dialog */}
       <Dialog open={roomDialogOpen} onOpenChange={setRoomDialogOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editingRoomId ? 'Editar Sala' : 'Nova Sala'}</DialogTitle></DialogHeader>
           <div className="grid gap-3">
             <div className="grid grid-cols-[1fr_140px] gap-3">
@@ -379,7 +379,7 @@ export default function SubleasedRooms() {
 
       {/* Tenant Dialog */}
       <Dialog open={tenantDialogOpen} onOpenChange={setTenantDialogOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editingTenantId ? 'Editar Locatário' : 'Novo Locatário'}</DialogTitle></DialogHeader>
           <div className="grid gap-3">
             <div><Label>Nome Completo *</Label><Input value={tenantForm.name} onChange={e => setTenantForm({ ...tenantForm, name: e.target.value })} /></div>
@@ -403,7 +403,7 @@ export default function SubleasedRooms() {
 
       {/* Receive Dialog */}
       <Dialog open={!!receiveRoom} onOpenChange={(o) => !o && setReceiveRoom(null)}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Registrar Recebimento</DialogTitle></DialogHeader>
           {receiveRoom && (
             <div className="grid gap-3">

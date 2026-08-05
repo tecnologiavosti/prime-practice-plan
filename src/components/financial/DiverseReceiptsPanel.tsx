@@ -183,7 +183,7 @@ export function DiverseReceiptsPanel() {
           <DialogTrigger asChild>
             <Button onClick={resetForm}><Plus className="mr-2 h-4 w-4" />Novo lançamento</Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
             <DialogHeader><DialogTitle>{editingId ? 'Editar lançamento' : 'Novo lançamento'}</DialogTitle></DialogHeader>
             <form onSubmit={handleSave} className="space-y-3">
               <div className="grid grid-cols-2 gap-3">

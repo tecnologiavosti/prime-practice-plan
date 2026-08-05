@@ -1233,7 +1233,7 @@ export default function MedicalGuides() {
       </div>
 
       <Dialog open={attachmentsDialog !== null} onOpenChange={(o) => !o && setAttachmentsDialog(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Anexos da guia</DialogTitle>
           </DialogHeader>

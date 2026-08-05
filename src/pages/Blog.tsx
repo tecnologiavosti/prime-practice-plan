@@ -145,7 +145,7 @@ export default function Blog() {
             <DialogTrigger asChild>
               <Button variant="outline"><Sparkles className="mr-2 h-4 w-4" /> Gerar com IA</Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Gerar artigo com IA</DialogTitle>
               </DialogHeader>

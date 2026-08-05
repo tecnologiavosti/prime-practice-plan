@@ -1221,7 +1221,7 @@ export default function Appointments() {
 
       {/* Finalize Consultation Dialog */}
       <Dialog open={finalizeDialogOpen} onOpenChange={setFinalizeDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Finalizar Consulta</DialogTitle>
           </DialogHeader>

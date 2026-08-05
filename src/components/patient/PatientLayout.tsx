@@ -77,7 +77,7 @@ export function PatientLayout() {
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       {/* Sidebar */}
-      <aside className="flex h-screen w-64 flex-col border-r bg-card">
+      <aside className="flex h-screen w-64 flex-col border-r bg-card shrink-0">
         <div className="flex h-16 items-center gap-2 border-b px-4">
           <Calendar className="h-6 w-6 text-primary" />
           <span className="text-lg font-semibold">Portal do Paciente</span>
@@ -117,8 +117,10 @@ export function PatientLayout() {
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 overflow-y-auto">
-        <Outlet />
+      <main className="flex-1 overflow-x-auto overflow-y-auto">
+        <div className="min-w-max md:min-w-0">
+          <Outlet />
+        </div>
       </main>
     </div>
   );
