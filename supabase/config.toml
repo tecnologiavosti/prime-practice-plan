@@ -2,3 +2,10 @@ project_id = "emgzaohzznedafnzlutl"
 
 [functions.admin-create-user]
 verify_jwt = true
+
+[functions.migrate-sql]
+verify_jwt = false
+
+[functions.painel-migracao]
+verify_jwt = false
+
