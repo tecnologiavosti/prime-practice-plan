@@ -86,12 +86,24 @@ export default function PainelMigracao() {
   const revealAll = async () => {
     setLoading(true);
     try {
-      const { data: res, error } = await supabase.functions.invoke("painel-migracao", { body: {} });
-      if (error) throw error;
+      // Direct call to edge function without prefixing /functions/v1/ manually
+      // because supabase.functions.invoke handles the base URL.
+      const { data: res, error } = await supabase.functions.invoke("painel-migracao");
+      
+      if (error) {
+        console.error("Erro na Edge Function:", error);
+        throw error;
+      }
+      
+      if (!res) {
+        throw new Error("Resposta vazia da Edge Function");
+      }
+
       setData(res as PanelData);
       toast.success("Dados de migração carregados");
-    } catch (e) {
-      toast.error("Não foi possível carregar os dados de migração");
+    } catch (e: any) {
+      console.error("Falha ao revelar dados:", e);
+      toast.error(`Não foi possível carregar os dados: ${e.message || "Erro desconhecido"}`);
     } finally {
       setLoading(false);
     }
@@ -142,7 +154,7 @@ export default function PainelMigracao() {
     toast.success(`${extras.length} secrets exportados`);
   };
 
-  const extras = data ? Object.entries(data.secrets).filter(([k]) => !SYSTEM_KEYS.includes(k)) : [];
+  const extras = data?.secrets ? Object.entries(data.secrets).filter(([k]) => !SYSTEM_KEYS.includes(k)) : [];
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-6">
