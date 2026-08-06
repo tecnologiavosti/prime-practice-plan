@@ -53,6 +53,7 @@ import LandingPage from "./pages/LandingPage";
 import ProfessionalPublic from "./pages/ProfessionalPublic";
 import EquipePublic from "./pages/EquipePublic";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import PainelMigracao from "./pages/PainelMigracao";
 
 import CookieBanner from "@/components/CookieBanner";
 import PatientAuth from "./pages/patient/PatientAuth";
