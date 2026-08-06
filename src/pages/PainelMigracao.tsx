@@ -86,14 +86,11 @@ export default function PainelMigracao() {
   const revealAll = async () => {
     setLoading(true);
     try {
-      console.log("Invoking painel-migracao...");
       const { data: res, error } = await supabase.functions.invoke("painel-migracao", { body: {} });
-      console.log("Response from painel-migracao:", { data: res, error });
       if (error) throw error;
       setData(res as PanelData);
       toast.success("Dados de migração carregados");
     } catch (e) {
-      console.error("Error loading migration data:", e);
       toast.error("Não foi possível carregar os dados de migração");
     } finally {
       setLoading(false);
