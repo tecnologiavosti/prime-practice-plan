@@ -1,1 +1,0 @@
-O painel de migração foi corrigido com a criação da função SQL necessária e ajustes nas Edge Functions; por favor, recarregue a página e tente novamente.
