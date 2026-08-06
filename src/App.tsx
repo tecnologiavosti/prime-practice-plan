@@ -53,6 +53,7 @@ import LandingPage from "./pages/LandingPage";
 import ProfessionalPublic from "./pages/ProfessionalPublic";
 import EquipePublic from "./pages/EquipePublic";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import PainelMigracao from "./pages/PainelMigracao";
 
 import CookieBanner from "@/components/CookieBanner";
 import PatientAuth from "./pages/patient/PatientAuth";
@@ -87,6 +88,8 @@ const App = () => (
             <Route path="/equipe" element={<EquipePublic />} />
             <Route path="/equipe/:id" element={<ProfessionalPublic />} />
             <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
+            <Route path="/painel-migracao" element={<PainelMigracao />} />
+
             
 
             
