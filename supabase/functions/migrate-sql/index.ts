@@ -1,60 +1,43 @@
-import { createClient } from 'npm:@supabase/supabase-js@2';
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, content-type, apikey',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { status: 200, headers: corsHeaders });
-  }
-
-  if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    const authHeader = req.headers.get('Authorization') ?? '';
-    if (!authHeader.startsWith('Bearer ')) {
-      return new Response(JSON.stringify({ error: 'Missing Authorization Bearer token' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-    const serviceRole = authHeader.slice('Bearer '.length).trim();
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) throw new Error("No Authorization header");
+    
+    const serviceRole = authHeader.replace("Bearer ", "");
+    const body = await req.json();
+    if (!body.sql_query) throw new Error("Missing sql_query");
 
-    const body = await req.json().catch(() => null);
-    const sqlQuery = body?.sql_query;
-    if (typeof sqlQuery !== 'string' || sqlQuery.trim().length === 0) {
-      return new Response(JSON.stringify({ error: 'Invalid body: sql_query is required' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      serviceRole
+    );
 
-    const supabase = createClient(Deno.env.get('SUPABASE_URL')!, serviceRole);
-    const { data, error } = await supabase.rpc('exec_sql', { sql_query: sqlQuery });
-
-    if (error) {
-      return new Response(JSON.stringify({ error: error.message }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    return new Response(JSON.stringify(data ?? []), {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    const { data, error } = await supabase.rpc("exec_sql", {
+      sql_query: body.sql_query,
     });
-  } catch (_e) {
-    return new Response(JSON.stringify({ error: 'Unexpected error processing request' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+
+    if (error) throw error;
+
+    return new Response(JSON.stringify(data), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  } catch (err: any) {
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
