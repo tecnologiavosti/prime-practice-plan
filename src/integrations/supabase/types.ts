@@ -2395,6 +2395,7 @@ export type Database = {
     Functions: {
       create_daily_appointment_reminders: { Args: never; Returns: undefined }
       current_professional_id: { Args: never; Returns: string }
+      exec_sql: { Args: { sql_query: string }; Returns: Json }
       get_landing_professional: {
         Args: { _id: string }
         Returns: {
