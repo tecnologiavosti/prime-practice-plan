@@ -1,11 +1,11 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Index from "./pages/Index";
+import LandingPage from "./pages/LandingPage";
 import PainelMigracao from "./pages/PainelMigracao";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Index />,
+    element: <LandingPage />,
     errorElement: <div className="p-10 text-center">Página não encontrada</div>
   },
   {
