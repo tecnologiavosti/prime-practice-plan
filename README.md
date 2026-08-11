@@ -1,73 +1,94 @@
-# Welcome to your Lovable project
+# ClinicFlow: Management System
 
-## Project info
+Crie um sistema web completo de gestão para clínica, com foco em operação e agenda.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+1. Autenticação
+- Perfis: administrador, recepção, profissional e financeiro
+- Controle de permissões por módulo
 
-## How can I edit this code?
+2. Cadastro de Pacientes
+- Dados completos
+- Seleção de convênio
+- Número da carteirinha
+- Opção de atendimento: particular ou convênio
+- Histórico de consultas
+- Ficha de anamnese vinculada ao paciente e à consulta
 
-There are several ways of editing your application.
+3. Cadastro de Profissionais
+- Dados completos
+- Especialidade
+- Convênios atendidos
+- Tipo de atendimento:
+  - particular
+  - convênio
+  - ambos
+- Configuração de agenda individual
 
-**Use Lovable**
+4. Agenda Médica
+- Agenda por profissional
+- Visualização diária, semanal e mensal
+- Definir períodos em que o profissional atende:
+  - determinados convênios
+  - particular
+- Bloqueio automático fora do período configurado
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+5. Agendamentos
+- Agendamento com:
+  - paciente
+  - profissional
+  - procedimento
+  - convênio ou particular (selecionável)
+- Consultas recorrentes:
+  - por convênio
+  - particular
 
-Changes made via Lovable will be committed automatically to this repo.
+6. Procedimentos
+- Cadastro de procedimentos
+- Código
+- Valor particular
+- Convênios compatíveis
+- Tempo de duração
 
-**Use your preferred IDE**
+7. Convênios
+- Cadastro de convênios
+- Valores por procedimento
+- Regras básicas de atendimento
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+8. Administradoras
+- Cadastro de administradoras
+- Vincular convênios
+- Não utilizar campo de data de recebimento
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+9. Pacotes Particulares
+- Nome do pacote
+- Valor fechado
+- Procedimentos incluídos
+- Vínculo com agenda
+- Marcação se a consulta é pacote, particular ou convênio
 
-Follow these steps:
+Objetivo:
+Sistema completo operacional, sem módulo financeiro neste momento.
+Interface simples, organizada e sem automações desnecessárias.
+
+This project was built with [Lovable](https://lovable.dev).
+
+**Live app**: https://prime-practice-plan.lovable.app
+
+## Build with Lovable
+
+Continue developing this project in the [Lovable editor](https://lovable.dev/projects/6a3d2291-7bab-4b20-96b9-b91fb26e848d).
+
+- **Ship faster**: describe what you want to build and Lovable handles the code.
+- **Stay in sync**: every change made in Lovable is committed straight to this repository.
+- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+
+## Development
+
+Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
+git clone <this-repository-url>
+cd <repository-name>
 npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
 npm run dev
 ```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
