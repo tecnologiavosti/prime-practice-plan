@@ -86,8 +86,6 @@ export default function PainelMigracao() {
   const revealAll = async () => {
     setLoading(true);
     try {
-      // Direct call to edge function without prefixing /functions/v1/ manually
-      // because supabase.functions.invoke handles the base URL.
       const { data: res, error } = await supabase.functions.invoke("painel-migracao");
       
       if (error) {
@@ -159,7 +157,7 @@ export default function PainelMigracao() {
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-6">
       <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-4 text-xs font-mono whitespace-pre-wrap mb-8">
-        {`ATENÇÃO — REQUISITO BLOQUEANTE:
+        ATENÇÃO — REQUISITO BLOQUEANTE:
 
 - migrate-sql deve ser uma SUPABASE EDGE FUNCTION REAL.
 
@@ -221,7 +219,7 @@ SECURITY DEFINER
 
 SET search_path TO 'public', 'pg_catalog', 'information_schema', 'auth', 'storage'
 
-AS \$\$
+AS $$
 
 DECLARE
 
@@ -233,23 +231,23 @@ DECLARE
 
 BEGIN
 
-  caller_role := current_setting('request.jwt.claims', true)::json->>\'role\';
+  caller_role := current_setting('request.jwt.claims', true)::json->>'role';
 
-  IF caller_role IS DISTINCT FROM \'service_role\' THEN
+  IF caller_role IS DISTINCT FROM 'service_role' THEN
 
-    RAISE EXCEPTION \'Acesso negado: apenas service_role pode executar esta função.\';
+    RAISE EXCEPTION 'Acesso negado: apenas service_role pode executar esta função.';
 
   END IF;
 
-  clean_query := rtrim(sql_query, \'; \');
+  clean_query := rtrim(sql_query, '; ');
 
-  EXECUTE \'SELECT json_agg(row_to_json(t)) FROM (\' || clean_query || \') t\' INTO result;
+  EXECUTE 'SELECT json_agg(row_to_json(t)) FROM (' || clean_query || ') t' INTO result;
 
-  RETURN COALESCE(result, \'[]\'::json);
+  RETURN COALESCE(result, '[]'::json);
 
 END;
 
-\$\$;
+$$;
 
 \`\`\`
 
@@ -283,7 +281,7 @@ Esta função permite que a ferramenta de migração leia o banco mesmo quando a
 
 - Retorne project_url, anon_key, service_role_key em campos separados.
 
-- Descubra Edge Functions via probe: defina um array knownFunctionNames com os nomes das funções do projeto. Use Promise.allSettled para fazer fetch(OPTIONS) cada URL \${SUPABASE_URL}/functions/v1/\${name}. Considere existente qualquer função que retorne status < 500. Retorne edge_functions (array) e edge_functions_count (número).
+- Descubra Edge Functions via probe: defina um array knownFunctionNames com os nomes das funções do projeto. Use Promise.allSettled para fazer fetch(OPTIONS) em cada URL \${SUPABASE_URL}/functions/v1/\${name}. Considere existente qualquer função que retorne status < 500. Retorne edge_functions (array) e edge_functions_count (número).
 
 - Descubra tabelas do banco via exec_sql (service_role): execute a query que lista tablename, row_count, column_count, encrypted_columns e has_user_id do schema public, e retorne database_tables no JSON.
 
@@ -309,7 +307,7 @@ A página deve ser um passo a passo VERTICAL, numerado, na ORDEM EXATA de coleta
 
 - Adicione a rota /painel-migracao no App.tsx como rota PÚBLICA (NÃO use ProtectedRoute — não exige login).
 
-- Imports lucide-react: Eye, EyeOff, Copy, Check, ShieldAlert, Key, Download, Loader2, Code2, Database, AlertTriangle, Info.`}
+- Imports lucide-react: Eye, EyeOff, Copy, Check, ShieldAlert, Key, Download, Loader2, Code2, Database, AlertTriangle, Info.
       </div>
 
       <header className="space-y-1">
@@ -435,17 +433,6 @@ A página deve ser um passo a passo VERTICAL, numerado, na ORDEM EXATA de coleta
                 </div>
               );
             })}
-          </div>
-          <div className="flex gap-2 rounded-md border border-warning/40 bg-warning/10 p-3 text-sm">
-            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-            <p>
-              As senhas são copiadas como hash bcrypt. Se o JWT secret do destino mudar, as sessões
-              antigas caem, mas a senha do usuário continua válida.
-            </p>
-          </div>
-          <div className="flex gap-2 rounded-md border bg-muted/40 p-3 text-sm text-muted-foreground">
-            <Info className="mt-0.5 h-4 w-4 shrink-0" />
-            <p>Página temporária de migração — remova-a após concluir a cópia dos dados.</p>
           </div>
         </CardContent>
       </Card>
