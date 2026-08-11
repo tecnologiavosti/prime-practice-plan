@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { supabase } from "@/integrations/supabase/client";
 import { Eye, EyeOff, Copy, ShieldAlert, Key, Loader2, Code2, Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,12 +12,25 @@ const PainelMigracao = () => {
   const revealAll = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${window.location.origin}/functions/v1/painel-migracao`);
-      if (!response.ok) throw new Error('Falha ao buscar dados');
+      const { data: session } = await supabase.auth.getSession();
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/painel-migracao`, {
+        headers: {
+          'Authorization': `Bearer ${session?.session?.access_token || import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        }
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Erro na função:', errorText);
+        throw new Error('Falha ao buscar dados');
+      }
+      
       const json = await response.json();
       setData(json);
+      toast.success('Credenciais reveladas com sucesso');
     } catch (err) {
-      toast.error('Erro ao buscar credenciais');
+      console.error(err);
+      toast.error('Erro ao buscar credenciais. Verifique se o backend está ativo e as funções implantadas.');
     } finally {
       setLoading(false);
     }
